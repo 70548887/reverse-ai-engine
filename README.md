@@ -11,6 +11,17 @@
 
 ## 当前状态
 
+> ✅ **P0 基础设施完成** — 2026-04-22
+
+### 记忆层已就绪
+
+| 层次 | 状态 | 详情 |
+|------|------|------|
+| Qdrant 向量库 | ✅ | 云端 152.136.169.127:32768，collection: openclaw_memory，1306条 |
+| SESSION-STATE.md | ✅ | 热记忆在 `/opt/data/home/.openclaw/workspace/` |
+| 本地目录结构 | ✅ | memory/ + tasks/ 已建立 |
+| 持久化记忆 | ✅ | 关键配置已写入 memory tool |
+
 ### 工具链已就绪
 
 | 工具 | 版本 | 状态 |
@@ -21,7 +32,7 @@
 | apktool | 2.7.0 | ✅ |
 | Java (Temurin) | 17.0.18 | ✅ |
 | Python | 3.13.5 | ✅ |
-| Node.js | 20.19.2 | ✅ |
+| Node.js | 22.14.0 | /opt/data/home/nodejs/bin/ |
 
 > 大型二进制文件（frida-server ARM64、JDK）存放于 `reverse-tools/` 目录，不在 Git 仓库中。
 
