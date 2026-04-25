@@ -177,3 +177,63 @@ def list_entities():
 curl -H "X-API-Key: m0sk_..." http://152.136.169.127:6002/requests?limit=20
 ```
 返回每个请求的 `method`, `path`, `status_code`, `latency_ms`，502 错误的 upstream 问题会在这里看到具体耗时。
+
+---
+
+## 数据持久化与备份策略
+
+### 关键问题：mem0 记忆丢失
+
+mem0 的 `history_db_path: /app/history/history.db` 是 SQLite，写在容器内存层。
+session 切换或上下文压缩时，记忆会丢失。
+
+**症状**：新 session 开始后，之前的记忆全部消失。
+
+### 备份方案：定时同步到 GitHub
+
+mem0 服务数据在内存层，断线丢失 → 解决方案是定时备份到 GitHub。
+
+#### 备份脚本
+
+`/opt/data/scripts/mem0-backup.py` 实现：
+1. `GET /memories` → 获取所有记忆（虽然有 502 bug，但 backup 时单独处理）
+2. `GET /entities` → 获取用户/agent 列表
+3. 读取本地 skills 目录
+4. 整体写入 JSON → `PUT /repos/{owner}/{repo}/contents/{path}` 到 GitHub
+
+#### GitHub 备份目标
+
+```
+GitHub: 70548887/reverse-ai-engine
+ Branch: main
+  Path: memory-backup/
+    ├── mem0_latest.json      ← 完整记忆快照
+    ├── mem0_history/         ← 历史版本
+    ├── config/                ← mem0 配置备份
+    └── skills/                ← 9个skill完整备份
+```
+
+#### Cron Job 配置
+
+| Job | 频率 | 职责 |
+|-----|------|------|
+| `memory-sync-hourly` | 每60分钟 | workspace/memory → Qdrant |
+| `mem0-backup-daily` | 每天04:00 | mem0 → GitHub |
+
+Job ID: `76fb8a841243`
+
+#### 断线恢复流程
+
+```
+新 session 开始
+  → curl GET /repos/70548887/reverse-ai-engine/contents/memory-backup/mem0_latest.json
+  → 解析记忆内容 → 重建 context
+  → 继续工作
+```
+
+#### Fine-Grained PAT 注意事项
+
+GitHub Fine-Grained PAT 只读无法写（repos 权限默认 read）：
+- 创建时需勾选 `Contents: Read & Write`
+- 或使用 Classic PAT（推荐，简单位置兼容）
+- 验证写权限：`PUT /repos/{owner}/{repo}/contents/{path}` + sha 测试
