@@ -1,0 +1,50 @@
+{
+  "backup_at": "2026-04-25 15:12:29",
+  "total": 11,
+  "memories": [
+    {
+      "id": "48d6a4bf-1406-47ec-ae7d-8ec851956a6f",
+      "memory": "用户正在逆向抖音直播 APP"
+    },
+    {
+      "id": "80204b73-8d6c-4d1f-acf0-eb5467a1410d",
+      "memory": "用户偏好：喜欢简洁直接回复，不要废话，直接给最优方案。"
+    },
+    {
+      "id": "c5487f54-75dd-460e-b120-728d286afe7b",
+      "memory": "核心加密SO是libropaencrypt.so (35KB, ARM64)，JNI_OnLoad导出，依赖libttcrypto.so (AES-128)和系统OpenSSL。核心API: RopaEncrypt.getEncryptSeq(String, boolean) -> EncryptResult{int status; String data}"
+    },
+    {
+      "id": "2e53967b-8b25-45aa-bbd1-8d2617912a07",
+      "memory": "HTTP Header: x-tt-encrypt-queries（URL query加密）、x-tt-encrypt-info（请求体加密）、x-tt-logid（UUID）、x-gorgon（设备指纹MD5）、x-khronos（Unix时间戳）"
+    },
+    {
+      "id": "5b4e163e-1150-489c-8b72-398ca21a1976",
+      "memory": "Frida hook脚本: /tmp/frida_douyin_hook.js，hook目标: RopaEncrypt.getEncryptSeq 和 encryptData，Android设备需连接"
+    },
+    {
+      "id": "b968a767-1349-4189-ac03-a662fe09e94e",
+      "memory": "Hermes配置: /opt/data/config.yaml，Qdrant MCP已配置连152.136.169.127:6333，reverse_engineering collection (512D, bge-small-zh-v1.5)"
+    },
+    {
+      "id": "d9180b72-3863-4893-9488-c1acf728febd",
+      "memory": "GitHub: https://github.com/70548887/reverse-ai-engine，PAT已配置可读写，本地路径/tmp/reverse-ai-engine/，文档docs/(01-09)，工具脚本tools/"
+    },
+    {
+      "id": "c31f4efa-b512-484d-94da-ff12c0101db2",
+      "memory": "用户服务器密码为daofang123，SSH端口为22"
+    },
+    {
+      "id": "03ac8d10-80f0-40af-9abf-6e1a8ceb6464",
+      "memory": "用户喜欢使用Python编写脚本"
+    },
+    {
+      "id": "19915d9a-45bb-486a-acfb-11e1528ece2d",
+      "memory": "User shared the email address test@example.com as part of a public network test on April 25, 2026"
+    },
+    {
+      "id": "f8df198b-1378-4a55-87d6-408fbee61b56",
+      "memory": "测试记忆 write"
+    }
+  ]
+}
