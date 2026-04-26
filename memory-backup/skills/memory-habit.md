@@ -7,6 +7,32 @@ description: 养成在对话中主动归档上下文的习惯 — 触发条件 +
 
 每次对话中或结束时，**主动**将关键上下文写入记忆层。
 
+## Session 启动恢复流程（重要！）
+
+新 session 开始时，按顺序执行以下命令，恢复上下文：
+
+```bash
+# 1. 读取当前主线状态
+cat /opt/data/home/.openclaw/workspace/SESSION-STATE.md
+
+# 2. 读取最近2天的每日记忆
+ls -t /opt/data/home/.openclaw/workspace/memory/2026-*.md | head -2 | xargs cat
+
+# 3. 读取项目记忆
+cat /opt/data/home/.openclaw/workspace/memory/projects/reverse-ai-engine.md
+
+# 4. 检查积压任务
+cat /opt/data/home/.openclaw/workspace/tasks/queue/*.jsonl 2>/dev/null || echo "无积压"
+```
+
+或者用一行脚本：
+```bash
+python3 /opt/data/home/.openclaw/workspace/memory/scripts/memory-sync.py restore
+```
+
+> ⚠️ 由于 Hermes 无 session-start-hook，每次新 session 都需要先跑以上命令恢复上下文。  
+> 这是当前架构限制，记忆已写入本地文件，但读取需要手动触发。
+
 ## 触发条件（符合任一即写）
 
 | 条件 | 行动 |
