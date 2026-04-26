@@ -90,13 +90,13 @@ browser:
     managed_persistence: false
 checkpoints:
   enabled: true
-  max_snapshots: 50
+prefill_messages_file: /opt/data/home/.hermes/prefill.md
 file_read_max_chars: 100000
 compression:
   enabled: true
   threshold: 0.5
   target_ratio: 0.2
-  protect_last_n: 20
+  protect_last_n: 30
 bedrock:
   region: ''
   discovery:
@@ -126,9 +126,9 @@ auxiliary:
     extra_body: {}
   compression:
     provider: openrouter
-    model: minimaxai/MiniMax-Text-01
+    model: minimaxai/MiniMax-Text-01-M2
     base_url: https://openrouter.ai/api/v1
-    api_key: sk-cp-OhMhItNUEUfjM86yqRVjcMOTDpgR805iLH4OEdfqqG4WVP_KPtDs_0g7AsDembjsMjSBQKHXES9Tvrnun_Wqkg8TW3UFI1wWK3lPDFSEaoaKsxR8jCTkOhg
+    api_key: sk-cp-...kOhg
     timeout: 120
     extra_body: {}
   session_search:
@@ -265,7 +265,6 @@ delegation:
   - terminal
   - file
   - web
-prefill_messages_file: ''
 skills:
   external_dirs: []
   template_vars: true
