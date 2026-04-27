@@ -1,6 +1,6 @@
 {
-  "backup_at": "2026-04-26 04:01:09",
-  "total": 100,
+  "backup_at": "2026-04-27 04:00:26",
+  "total": 410,
   "memories": [
     {
       "id": "48d6a4bf-1406-47ec-ae7d-8ec851956a6f",
@@ -501,6 +501,1556 @@
       "id": "a0bc2443-744c-4df6-820b-c2cbf397c86d",
       "memory": "The second_opinion phase for the bilibili-reverse task completed via 'opencode-m2.7' in the OpenClaw system around April 26, 2026",
       "hash": "d1cf900695f4899a89e1038b6dc5e2d1"
+    },
+    {
+      "id": "1f8b6cd4-c8f5-44f4-b7ea-2f9929ec2cd7",
+      "memory": "OpenClaw task bilibili-reverse has run 9592 times and is currently in_progress in phase dm_track_analysis_fallback, which was completed via opencode-m2.7",
+      "hash": "438e7f4c02de53490c007deb7a3c6ef6"
+    },
+    {
+      "id": "3d478f6b-9e7e-4b87-8317-755d0678dade",
+      "memory": "OpenClaw task bilibili-reverse is currently in_progress at phase 'postprocess_suite', with run count 9599, completed via controller-direct execution",
+      "hash": "86f49471b9877636a448dc00970401fc"
+    },
+    {
+      "id": "528743b9-a132-41df-8651-b651bcf827f9",
+      "memory": "Task bilibili-reverse postprocess_suite evidence files include: securecollect_bridge_postprocess_suite.json, securecollect-bridge-postprocess-suite.md analysis, and securecollect_bridge_cdp_probe_mainline_gate.json",
+      "hash": "468b8c80c26c2bd8214d02f637e87ba9"
+    },
+    {
+      "id": "05454dac-1932-4690-8bc0-0b19ca5d07bf",
+      "memory": "User maintains an OpenClaw automated task system for task memory synchronization with task_id 'bilibili-reverse', which has run 9603 times",
+      "hash": "baee230597cf9b4d0126dc370e28a0c6"
+    },
+    {
+      "id": "7802c9d9-b17c-4e00-9335-dceb309e5c23",
+      "memory": "The 'bilibili-reverse' task is currently in_progress in the second_opinion phase, with second_opinion completed via opencode-m2.7",
+      "hash": "0dbb623d887a67aff213f281c27aec73"
+    },
+    {
+      "id": "09d21b06-4069-41e7-8e1f-42829ffce99b",
+      "memory": "The dm_track_analysis phase for the bilibili-reverse task was completed using the opencode-m2.7 execution engine",
+      "hash": "6f742526654d6113d29334b4c04ffab5"
+    },
+    {
+      "id": "203d027c-159c-4090-a509-bb686c4b5a86",
+      "memory": "OpenClaw automated task 'bilibili-reverse' ran for the 9606th time on April 26, 2026, with status 'in_progress' in the 'sanity_check' phase, which was completed via opencode-m2.7",
+      "hash": "0fe6d0c76a674fbdfcd3d49ed3de9459"
+    },
+    {
+      "id": "60c507dc-dda2-481e-a167-1fb65512f7dc",
+      "memory": "User has an automated task system called OpenClaw running a task with task_id 'bilibili-reverse', which has executed 9615 times and is currently in_progress in the 'dm_track_analysis_fallback' phase, completed via opencode-m2.7",
+      "hash": "8fe169e401d6a4e36c0e7ddaf3560035"
+    },
+    {
+      "id": "164d9aa1-e595-4553-a3be-32dba46c8973",
+      "memory": "User maintains an OpenClaw automated task system that tracks task execution with a task named 'bilibili-reverse' at run count 9627 as of April 26, 2026",
+      "hash": "c84b6c80e58c16c699c5e0ef2038e631"
+    },
+    {
+      "id": "0f2d8cb9-fd3c-4fb3-91ba-a03e7b063e9f",
+      "memory": "The 'bilibili-reverse' task in OpenClaw is currently in 'second_opinion' phase, which was completed via 'opencode-m2.7' execution environment",
+      "hash": "0196b5f7d2601b7bc81fd37fe7e92642"
+    },
+    {
+      "id": "803a98a7-dc5e-413b-9545-07cfb477ad02",
+      "memory": "User has an automated task with ID 'bilibili-reverse' that has been run 9633 times",
+      "hash": "434c4bdbe831a798ee15ee04746fb102"
+    },
+    {
+      "id": "c3408a10-29bb-4a15-bdfc-80f77a4771e3",
+      "memory": "The bilibili-reverse task is currently in_progress at phase 'congling_response_shape', which was completed using 'opencode-m2.7'",
+      "hash": "c79dc8b49b87341d9652fc2ff8d153eb"
+    },
+    {
+      "id": "935be875-9bd9-430b-a6fb-9dd4f84091d8",
+      "memory": "User has an OpenClaw automated task named 'bilibili-reverse' that has run 9641 times and is currently in_progress, in the postprocess_suite phase, which completed via controller-direct",
+      "hash": "4f23d1fe09be8ac9dff6333d5e12a7cc"
+    },
+    {
+      "id": "edee152e-c1c1-4a5a-9d3e-98f1cc0c0ec9",
+      "memory": "The bilibili-reverse task operates on files within /home/ctyun/.openclaw/workspace/projects/bilibili-heartbeat-reverse/, specifically processing files under data/cleaned/ and analysis/ directories",
+      "hash": "8f5e067571a2b427501e2a053a86a5d5"
+    },
+    {
+      "id": "46c33ca1-2764-4f58-bc88-8c98c23c9216",
+      "memory": "Evidence files for the bilibili-reverse task's postprocess_suite include: securecollect_bridge_postprocess_suite.json, securecollect-bridge-postprocess-suite.md, and securecollect_bridge_cdp_probe_mainline_gate.json",
+      "hash": "4465e267e14ccd3297b510c19082e555"
+    },
+    {
+      "id": "47250baa-f8bc-405f-932a-a0ce6ee69b79",
+      "memory": "OpenClaw is an automated task system with memory synchronization capabilities, used for managing automated processes like the 'bilibili-reverse' task",
+      "hash": "a99a6fab6be340149fbb844d03748c3d"
+    },
+    {
+      "id": "b121de87-59e0-4d19-b5ac-0ce8f9dbce7d",
+      "memory": "The bilibili-reverse task (task_id: bilibili-reverse) has completed 9,650 runs and is currently in_progress, now in the 'dm_track_analysis' phase",
+      "hash": "47d16299815fd6536188d81d8bd06fb3"
+    },
+    {
+      "id": "7ee2069b-6619-4781-9aba-8bd45e0cc431",
+      "memory": "OpenClaw is an automated task system used to run and track system operations, with a workspace at /home/ctyun/.openclaw/",
+      "hash": "aa7f168bc6da9a6705f978c4edd26717"
+    },
+    {
+      "id": "341b29b2-8ae7-444b-92b0-e1313cd9a2c0",
+      "memory": "A task named 'bilibili-reverse' has been executed 9660 times in the OpenClaw system as of April 26, 2026",
+      "hash": "e30de4e1d1af01bcb3600bb8c3a066b0"
+    },
+    {
+      "id": "5b2ad8bb-9462-42ac-8f65-5a62f373c1d8",
+      "memory": "The bilibili-reverse task is currently in the 'postprocess_suite' phase as of April 26, 2026, and the phase completed via 'controller-direct' method",
+      "hash": "f0a9de569a3adcc539df09c97cc3669d"
+    },
+    {
+      "id": "4af22fe5-5e91-4353-89b6-ed63b5be86b5",
+      "memory": "The bilibili-reverse task produced evidence files including cleaned data at 'securecollect_bridge_postprocess_suite.json' and analysis at 'securecollect-bridge-postprocess-suite.md' in the project workspace",
+      "hash": "efa82827ff8852601257416233358e6e"
+    },
+    {
+      "id": "09b8c2ae-573b-425c-adab-589cbe652aec",
+      "memory": "User maintains an automated task tracking system called OpenClaw for syncing task memory, with task_id 'bilibili-reverse' showing 9,671 total run count",
+      "hash": "7761cf8fba48d5d8911fe0d9b76b605c"
+    },
+    {
+      "id": "d2aa40a0-614d-4e2c-834e-50ad532dee04",
+      "memory": "User's OpenClaw task 'bilibili-reverse' reached 'congling_response_ttl_semantics' phase with status 'in_progress' as of April 26, 2026, having completed the phase via opencode-m2.7",
+      "hash": "b4618a94f17b8b5c9f28713170d74c1a"
+    },
+    {
+      "id": "59953aaf-84f2-477e-9c0e-6fcbd7654a87",
+      "memory": "OpenClaw automatic task memory sync recorded a task run for 'bilibili-reverse' (run count 9681) with status in_progress, currently in the 'second_opinion' phase, with summary indicating second_opinion was completed via opencode-m2.7",
+      "hash": "4af6bf2908bf349d6fca7888276b732e"
+    },
+    {
+      "id": "b4dc2a5f-937c-4eaa-a6af-f0781a0dd15f",
+      "memory": "OpenClaw自动任务 'bilibili-reverse' 当前处于 in_progress 状态（第9687次运行），当前阶段为 congling_response_shape，刚刚通过 opencode-m2.7 完成了 congling_response_shape 阶段",
+      "hash": "edd48629dfa610c9e9d1d6ea1a807abf"
+    },
+    {
+      "id": "22544ae3-51bc-4ae2-93d9-3130b52b958c",
+      "memory": "OpenClaw task bilibili-reverse is currently in_progress, running its 9695th execution as of April 26, 2026",
+      "hash": "4ceacbb462a60b67f4493005d2247db9"
+    },
+    {
+      "id": "c1cee28a-9ba5-4981-9459-06372f7443c5",
+      "memory": "OpenClaw task bilibili-reverse completed the dm_track_analysis_fallback phase using opencode-m2.7 on April 26, 2026",
+      "hash": "c94772bc2a4cd9645fb7787c3047ed82"
+    },
+    {
+      "id": "b76784b5-db68-4820-b998-1852d2498ec0",
+      "memory": "User operates an OpenClaw system that runs automated tasks with memory synchronization capability",
+      "hash": "29bf3514eb412880d68b6c53a93ef0a3"
+    },
+    {
+      "id": "ef3ccc00-ef86-47cb-95df-0c990be28778",
+      "memory": "User has a task configured with task_id 'bilibili-reverse' that has executed 9702 times as of April 26, 2026",
+      "hash": "6515f506aadd63f01b1c8e53b0ce41c5"
+    },
+    {
+      "id": "3b9f8a52-a8f4-48b8-8303-2804ba91f5e1",
+      "memory": "The 'bilibili-reverse' task on OpenClaw is currently in_progress with phase dm_track_analysis, which was completed via opencode-m2.7",
+      "hash": "d6675415f1e89604604a82ea40e61091"
+    },
+    {
+      "id": "a59d2647-f6a7-4687-94d4-157749e98e96",
+      "memory": "User has an automated task tracked in OpenClaw named 'bilibili-reverse' that has run 9711 times, currently in_progress status in the 'doc_synthesis' phase, which was completed via opencode-m2.7",
+      "hash": "fb1e7868df99399e5f13b1a5d2bbe308"
+    },
+    {
+      "id": "8f2211f6-e6c6-40a7-9a22-18738c355ce5",
+      "memory": "User has an automated task with task_id 'bilibili-reverse' in their OpenClaw memory synchronization system",
+      "hash": "ab4c8f4e41b4ea7da5c6cefd12a91599"
+    },
+    {
+      "id": "2e93bea0-bc95-4ca3-9687-1a9577edc138",
+      "memory": "The bilibili-reverse task in OpenClaw has a run_count of 9718, indicating it has been executed nearly 10,000 times",
+      "hash": "10f8fa7027f8092203a4cfda9fb3b4bc"
+    },
+    {
+      "id": "5e135225-e825-462c-8b12-446585522fcc",
+      "memory": "The bilibili-reverse task is currently in_progress with phase set to 'dm_track_analysis_fallback' according to OpenClaw synchronization data",
+      "hash": "fd4e17550b867351db706af308e1e294"
+    },
+    {
+      "id": "576c74e0-3fc7-472c-b697-3375888267b3",
+      "memory": "The dm_track_analysis_fallback phase of bilibili-reverse was completed via 'opencode-m2.7' as recorded in the OpenClaw task synchronization",
+      "hash": "79156a92880134946f5ce4c149ce06da"
+    },
+    {
+      "id": "bbc95e96-7227-4657-b09b-f93dcb0e1cc5",
+      "memory": "User is monitoring an automated task with ID 'bilibili-reverse' that has run 9728 times and is currently in_progress in the 'congling_response_nonempty_data_probe' phase, which was completed via opencode-m2.7",
+      "hash": "6a689f04ac1048feb952fdee5cb96995"
+    },
+    {
+      "id": "f8488a9d-6c0a-4bd8-9655-3bb17441f7ef",
+      "memory": "OpenClaw task bilibili-reverse has been executed 9733 times",
+      "hash": "b650035aec029cc022eb716e5fabbbda"
+    },
+    {
+      "id": "ec3045de-8ad3-45a8-8294-2624bf9ec6ba",
+      "memory": "OpenClaw task bilibili-reverse is currently in_progress in the payload_header_analysis phase",
+      "hash": "64f46d2837fdee4bf8cac291503ffeed"
+    },
+    {
+      "id": "1ad5701f-400e-4552-aa82-0c23ba0a9bdf",
+      "memory": "The payload_header_analysis phase of OpenClaw task bilibili-reverse was completed via opencode-m2.7",
+      "hash": "145bc845fb7057933b6cd70d137bfbd1"
+    },
+    {
+      "id": "053dbee8-17fa-4f3c-b035-28e1a4b05b75",
+      "memory": "User is tracking a task with ID 'bilibili-reverse' which has been run 9744 times and is currently in progress",
+      "hash": "d16655b8736cb7844ceb0c0642c5c8ed"
+    },
+    {
+      "id": "1e5340a7-0984-4b0d-99be-d764bd3c8a82",
+      "memory": "The 'bilibili-reverse' task is currently in the 'congling_response_observation_probe' phase, which was completed via 'opencode-m2.7' according to the task summary",
+      "hash": "29312c5afaa0d74e531693536c3384c1"
+    },
+    {
+      "id": "31d596ea-0dd2-45d6-a728-12440c96e269",
+      "memory": "User is tracking an OpenClaw automatic task with task_id 'bilibili-reverse' which has run 9750 times and is currently in progress at phase 'doc_synthesis'",
+      "hash": "9dab1fbdb38dd039e13afcbd65d423b8"
+    },
+    {
+      "id": "dd82e35a-822e-4dbb-a61f-ddfa6af0fa61",
+      "memory": "The doc_synthesis phase for the bilibili-reverse task was completed via opencode-m2.7",
+      "hash": "631404e7be38a1b1a1a643a928f458f9"
+    },
+    {
+      "id": "2e4d3e08-bfa0-4fdb-a7b5-9dda7cb87a1b",
+      "memory": "User runs an OpenClaw automated task with task_id 'bilibili-reverse' that has executed 9760 times, currently in_progress at phase 'congling_response_nonempty_data_probe' which was completed via opencode-m2.7",
+      "hash": "01e7c8d59063dd9acbb6c36c3cd50b06"
+    },
+    {
+      "id": "02f290dd-7b4c-4255-80c3-c12f84c8fdfc",
+      "memory": "User has an OpenClaw automated task named 'bilibili-reverse' which has run 9,767 times and is currently in_progress with phase set to 'postprocess_suite'",
+      "hash": "4cb77279733a64fdc7431d6fc12ab439"
+    },
+    {
+      "id": "5c0c91fe-eb00-4eba-bdfd-b93235d24c7d",
+      "memory": "The bilibili-reverse task completed postprocess_suite via controller-direct, as evidenced by output files in /home/ctyun/.openclaw/workspace/projects/bilibili-heartbeat-reverse/ including cleaned JSON data and analysis documentation",
+      "hash": "777858ef89f410775a788f732893b009"
+    },
+    {
+      "id": "dd1d135d-9c30-47e8-b37f-bc4c2e81b3ed",
+      "memory": "OpenClaw is an automated task system used for memory synchronization, currently tracking a task with ID 'bilibili-reverse' that has run 9776 times",
+      "hash": "5619bfd48b85822675da420537a34faf"
+    },
+    {
+      "id": "8266dcfd-afd7-41e2-8cc2-24485563c379",
+      "memory": "The bilibili-reverse task in OpenClaw is currently in_progress with the phase 'congling_response_observation_probe', which was completed via opencode-m2.7",
+      "hash": "72068d6cdc52e539e1f0e4956b12a95c"
+    },
+    {
+      "id": "e0b9e659-634d-4107-b90f-adc44275e8c3",
+      "memory": "User operates an automated task system called 'OpenClaw' with a task labeled 'bilibili-reverse' (task_id: bilibili-reverse), which has executed 9787 runs",
+      "hash": "bdcf38fdc9f0d126dbc1859ec751eb69"
+    },
+    {
+      "id": "158c4ac4-72ba-402d-9e40-c788a43750fb",
+      "memory": "The bilibili-reverse task is currently in_progress, in the 'dm_track_analysis' phase, which was completed via the 'opencode-m2.7' tool or component",
+      "hash": "929e9c908015896fa3e5d0b247483b62"
+    },
+    {
+      "id": "0943adb3-0a26-48be-a537-12200f2500f0",
+      "memory": "OpenClaw 自动任务记忆同步 system is tracking an automated task (task_id: bilibili-reverse) with a run count of 9826",
+      "hash": "22e876816c495daf85ae14bf7153cb7c"
+    },
+    {
+      "id": "f31053dd-a4a7-46a1-a295-25d08f30800d",
+      "memory": "The bilibili-reverse task is currently in_progress, working on phase 'congling_response_ttl_semantics', which was completed using opencode-m2.7",
+      "hash": "1d4417319204cb0c48b1477b200d8fe7"
+    },
+    {
+      "id": "38c607c2-ee0f-4eb6-89c1-9a4dfb6f8ec5",
+      "memory": "OpenClaw is an automated task system that performs automatic task memory synchronization, tracking tasks like bilibili-reverse with run counts and phase progression",
+      "hash": "d974545cdd30289587f836470d983898"
+    },
+    {
+      "id": "8634e4ef-7aff-410c-aaaa-ff692c0b79a4",
+      "memory": "The bilibili-reverse task in OpenClaw has completed 9,861 runs and is currently in_progress in the sanity_check phase",
+      "hash": "f95aba7d5d47ad380e265957fcf967ab"
+    },
+    {
+      "id": "219a914e-51c5-4cf6-bbdf-cd70f1a84a10",
+      "memory": "The bilibili-reverse task completed its sanity_check phase using opencode-m2.7",
+      "hash": "abdaa0ed43de3f5c7a23bc81d62fbc31"
+    },
+    {
+      "id": "70f898d8-8891-4f0f-ac73-8b005c384f50",
+      "memory": "项目Alpha使用AES-256-GCM加密，密钥长度256位，IV使用96位随机数",
+      "hash": "759c08cba86a18a04c100494b93a829a"
+    },
+    {
+      "id": "6bda035b-569b-4936-916f-c94ceab343a6",
+      "memory": "项目Beta使用RSA-2048进行密钥交换，ECDSA-P256用于数字签名",
+      "hash": "8bc18d21209428b9460eee72b619ff43"
+    },
+    {
+      "id": "08d1c5be-2019-4faa-8fc0-26a3a54b3893",
+      "memory": "用户在进行超时修复测试，使用RSA-4096密钥对用于签名验证，私钥存储在HSM（硬件安全模块）中",
+      "hash": "4f68b21fab291feccbd645b9ee0f9e40"
+    },
+    {
+      "id": "a9ee87cb-4a25-4f33-a2dc-ef8bd5700de5",
+      "memory": "用户服务器密码已更新为test123，SSH端口仍为22",
+      "hash": "399e9a062700291a3a9b2876fe618311"
+    },
+    {
+      "id": "726718ce-3dc2-44d5-842b-91ce2dc2c7d0",
+      "memory": "用户正在进行迁移测试，验证从 reverse_engineering collection 到 mem0 的数据迁移",
+      "hash": "c3204014380771292964c15595b2ae75"
+    },
+    {
+      "id": "35200c06-ef8c-46bb-9bbb-b8c15ef6d784",
+      "memory": "reverse_engineering/01-系统架构 1.1 设计原则：1) 控制器驱动：AI Controller 是唯一决策节点，所有执行器从控制器获取指令；2) 事件替代轮询：样本落地触发，timer仅作保底；3) 工单判重：同一(stage, fingerprint)只能存在一个未完成job；4) 记忆持久化：热记忆→每日→项目→Raw→History层层归档；5) 可追溯：每个结果附带SHA256可验证文件和时间",
+      "hash": "241b9e274b9dae4e76f827e25f7f0124"
+    },
+    {
+      "id": "93b89b76-f01c-4387-9cf5-65f04b9b4472",
+      "memory": "reverse_engineering/01-系统架构 1.2 模块关系图：文档定义了模块间的层级关系，用户/管理员位于顶层，通过控制器驱动的架构向下交互",
+      "hash": "f3ecfbff92df556af77dd89a2d62b70f"
+    },
+    {
+      "id": "1f1ad092-9418-4457-b5d3-494e7678b85e",
+      "memory": "reverse_engineering/01-系统架构 1.3 数据流：任务下发 → 写入intake → 控制器决策 → 执行器执行 → 结果归档 → 记忆同步 → Git提交，形成完整的闭环流程",
+      "hash": "09e26e3592ad657e966e42ca4dab8806"
+    },
+    {
+      "id": "bbcd7c94-7564-4769-a30b-9f656527abfa",
+      "memory": "reverse_engineering/01-系统架构 1.2 模块关系图的五层结构：用户/管理员 → 任务入口层(Intake) → AI控制器层(Brain) → 执行器层(Codex/M2.7/专用工具) → 记忆层归档",
+      "hash": "efd6ff0e9b36256bdbcefeee032aa6df"
+    },
+    {
+      "id": "77e7f3f4-227b-4344-9dc6-9e99f1cc3675",
+      "memory": "用户进行了超时修复测试，使用RSA-4096密钥对进行签名验证，私钥存储在HSM（硬件安全模块）中",
+      "hash": "efe7ed02d9c29c4f7b0c115689f6ebbc"
+    },
+    {
+      "id": "2a2c1238-b47b-4369-95b5-69f049822817",
+      "memory": "用户的服务器密码为test123，SSH端口为22",
+      "hash": "68804bbee92cf31fe64cf4995798baca"
+    },
+    {
+      "id": "0e10ff13-34ae-4d67-bfc8-a070031c5a2d",
+      "memory": "reverse_engineering/01-系统架构 1.4 核心状态文件包括：SESSION-STATE.md(热记忆)、<stage>.jobs.jsonl(工单队列)、*.latest.json(执行结果)、memory-sync.json(同步状态)",
+      "hash": "af567138f9136bdd6627bcf3b7ac4316"
+    },
+    {
+      "id": "508e86c0-5bb4-4e0c-a562-e1cd5dfe913a",
+      "memory": "reverse_engineering/01-系统架构 1.5 与bilibili-reverse关系：系统继承自bilibili-reverse的工单判重、控制器、事件驱动、双执行器、五层记忆、LanceDB和Git审计机制；同时新增逆向专项工具生态、Web/APP完整流程、凭证管理三项能力",
+      "hash": "d0ad005c38e541acdc6d380930e305e7"
+    },
+    {
+      "id": "13eafe70-5510-4e5a-b97c-f33ba2c233d0",
+      "memory": "reverse_engineering/02-任务类型定义 2.1 任务分类体系：逆向任务分为三类——web(JS签名/API协议/登录态)、app(Android APK/iOS IPA/Java层/SO层/SSL Pinning)、protocol(通讯协议)",
+      "hash": "1bc2e344d72c156bb7825fb4100e5fa6"
+    },
+    {
+      "id": "93cbd5f9-4b56-41e7-9f45-5c35109162c0",
+      "memory": "reverse_engineering/02-任务类型定义 2.2 工单格式(Job)：Job字段包括job_id/task_id/stage/type/executor_type/status/priority/input_fingerprint/result_paths；状态机流转：pending → running → verified/failed/blocked/skipped",
+      "hash": "8e7e9378555c1188dd49fbe82a71eb64"
+    },
+    {
+      "id": "1e81ef35-775b-4fce-9cf6-1903aa62cc30",
+      "memory": "reverse_engineering/02-任务类型定义 2.3 任务下发格式：Web任务格式包含字段task_id, type, priority, target(内含url,method,body_pattern,known_params), actions, constraints；APP任务格式包含字段task_id, type, priority, target(内含package,apk_path,target_api,hook_targets)",
+      "hash": "3efb90ad9eff73417be9dbacbe11d61e"
+    },
+    {
+      "id": "afb4c644-2a79-49e7-b01b-673250d0b162",
+      "memory": "reverse_engineering/02-任务类型定义 2.4 任务优先级定义了四个等级：critical=0用于Blocker修复，high=1用于主线项目，normal=2用于一般任务，low=3用于试探研究",
+      "hash": "9ab4962afad387e65d3ccb47470216f9"
+    },
+    {
+      "id": "cf6a4554-ab09-479a-a512-f87afb7a4180",
+      "memory": "逆向工程系统的工单队列文件按stage分流，队列文件包括：web-recon.jobs.jsonl（Web侦查）、web-capture.jobs.jsonl（Web抓包）、web-reverse.jobs.jsonl（Web逆向）、app-apk.jobs.jsonl（APP解析）、app-frida.jobs.jonl（APP Hook）等",
+      "hash": "9b8446942708290623f0f7b86dbcfc1f"
+    },
+    {
+      "id": "86ebd1f5-21f9-4831-9e79-7759bee3a082",
+      "memory": "reverse_engineering/03-控制器设计 3.1 控制器职责：reverse-controller.py的职责包括理解任务意图、拆解DAG步骤、每步决策（继续/blocked/skip/done）、分配执行器、归档结果",
+      "hash": "61f64edf8253ef59adc72e69b958ef95"
+    },
+    {
+      "id": "3a1d4096-4e11-4ea2-8147-c397b117e1df",
+      "memory": "reverse_engineering/03-控制器设计 3.2 Web逆向控制器流程定义了10个步骤：recon(信息收集)→capture(抓包)→browser_probe(浏览器指纹)→js_locate(JS定位)→deobfuscate(反混淆)→reverse(逆向)→implement(实现)→verify(验证)→second_opinion(二验)→archive(归档)",
+      "hash": "78d9c6c7b65f224b4358381c98cd1692"
+    },
+    {
+      "id": "10f96951-460c-49e9-8a56-39a151459ef4",
+      "memory": "reverse_engineering/03-控制器设计 3.3 APP逆向控制器流程定义了8个步骤：apk_fetch(APK获取+分析)→mitm_capture(抓包)→frida_hook(动态Hook)→so_analyze(SO层分析)→implement→verify→second_opinion→archive，与Web流程(10步)相比更精简但保留了verify、second_opinion、archive三个共同节点",
+      "hash": "1cfa950c00a38769d454ec0b16fdb7ad"
+    },
+    {
+      "id": "841a745b-e597-4868-a197-631fcf87104e",
+      "memory": "reverse_engineering/01-系统架构 1.4 核心状态文件：SESSION-STATE.md(热记忆)存储当前会话状态、<stage>.jobs.jsonl(工单队列)记录待执行任务、*.latest.json(执行结果)保存最新结果、memory-sync.json(同步状态)追踪记忆同步状态",
+      "hash": "00f8dca298e6e8f27cc31a0444c6ed88"
+    },
+    {
+      "id": "43bbafae-7f30-484e-88a5-30e7150a2ec7",
+      "memory": "reverse_engineering/02-任务类型定义 2.2 Job工单格式：包含job_id/task_id/stage/type/executor_type/status/priority/input_fingerprint/result_paths字段，状态机流转为pending→running→verified/failed/blocked/skipped",
+      "hash": "9cdb7b26a0e700a823297eb642c84ecd"
+    },
+    {
+      "id": "8b43d50b-1e18-4ed6-a6c4-e3381eb1536a",
+      "memory": "reverse_engineering/02-任务类型定义 2.4 任务优先级：critical=0(Blocker修复)、high=1(主线项目)、normal=2(一般任务)、low=3(试探研究)，数值越低优先级越高",
+      "hash": "27fdd3a6a779b9a4c159759dda0cefba"
+    },
+    {
+      "id": "f330237e-4db5-416c-9672-90a9cc5d7b80",
+      "memory": "reverse_engineering/03-控制器设计 3.4 控制器决策伪代码定义了核心决策循环：遍历pipeline中的每个step，若blocked则break，若should_skip则continue，执行job后根据结果判断：verified则archive，can_retry则重试，否则标记blocked",
+      "hash": "287f7825d4102bb59658518aeb564bcc"
+    },
+    {
+      "id": "4c4ddf63-b315-448a-96d1-94d25c45c82c",
+      "memory": "反向工程系统的状态机设计定义了完整的任务处理流程：intake → analyzing/waiting_tools/waiting_capture → reversing → verified(✅)/failed → blocked(⏸) → can_retry? → retry或done",
+      "hash": "f8c3f105b3888dd4938075dc2d94d313"
+    },
+    {
+      "id": "a26796a8-fc7e-4a4c-9cf0-501c18e47e51",
+      "memory": "Blocker处理机制：当任务进入blocked状态时，系统会写入SESSION-STATE.md的blocker段，任务进入等待态，定时器每6小时扫描一次，发现新方案时自动续跑",
+      "hash": "7b774639ea2626d6f6675c03d30a0b9c"
+    },
+    {
+      "id": "46197500-1bb8-42a8-8f14-e1d7647f951d",
+      "memory": "reverse_engineering/04-执行器分工 4.1 定义了三类执行器：Codex作为主推进器适用于JS逆向/算法提取/脚本生成；M2.7用于二验/审查/备选；专用工具（mitmproxy/Frida/Chrome/Jadx/APKTool）负责纯执行任务",
+      "hash": "233f98736ae60770028171548b3c2a17"
+    },
+    {
+      "id": "d7beddb7-8000-493f-88ce-1c64250b3ed9",
+      "memory": "Codex执行器适用场景包括：Web JS逆向(签名提取)、混淆还原、API协议分析、Python脚本生成、APP Java层分析、签名定位；其核心优势为长上下文200K、代码生成能力强、擅长处理复杂混淆代码",
+      "hash": "140d3a69fb88ca796e6efb3ddd097465"
+    },
+    {
+      "id": "5f221d1a-f595-4603-b23f-172ea3b8dd79",
+      "memory": "系统任务优先级分为4级：critical=0(Blocker修复)、high=1(主线项目)、normal=2(一般任务)、low=3(试探研究)，数值越低优先级越高",
+      "hash": "19d125b1f44dc26cc610eea5e7225336"
+    },
+    {
+      "id": "eaaac413-5021-4155-a69b-27706ff28439",
+      "memory": "工单队列文件按stage分流，包括：web-recon.jobs.jsonl、web-capture.jobs.jsonl、web-reverse.jobs.jsonl、app-apk.jobs.jsonl、app-frida.jobs.jsonl等专用队列文件",
+      "hash": "e8c85789000f5054352f6acd11de8884"
+    },
+    {
+      "id": "fe857a78-b918-4d87-a266-3ccc47a55628",
+      "memory": "系统Blocker处理机制：当任务进入blocked状态时，写入SESSION-STATE.md的blocker段，任务进入等待态，定时器每6小时扫描一次，发现新方案后自动续跑",
+      "hash": "70784085a099a736193ebc70e79e7ad3"
+    },
+    {
+      "id": "a95173a0-ebc0-45c6-bf0b-da59c23d475b",
+      "memory": "M2.7执行器适用场景包括：second_opinion(最重要)、doc_synthesis(文档合成)、alt_analysis(方案对比)、sanity_check(合理性检查)、quick_fix(快速修复)、app_web_concat(APP与Web连接分析)，其中second_opinion被标记为最重要场景",
+      "hash": "af42500e2bef4e985d6268f919412347"
+    },
+    {
+      "id": "ef632801-be17-4eac-b7ad-5581f09137f1",
+      "memory": "reverse_engineering/04-执行器分工 4.4 详细定义了6类专用工具执行器及其功能：mitmproxy(抓包)、Chrome Headless(浏览器自动化)、Frida(动态Hook)、APKTool(APK反编译)、JADX(Java反编译)、Charles(备选抓包)",
+      "hash": "707828b1d3f4f764a3436f00e8c88a9a"
+    },
+    {
+      "id": "fccaa307-15c7-4c62-a952-1f0e8cfef051",
+      "memory": "EXECUTOR_MAP定义了工作流阶段到执行器的精确路由规则：web.recon→browser、web.capture→mitmproxy、web.reverse→codex、web.verify→tool:verify、web.second_opinion→m27、app.apk_fetch→apktool_jadx、app.frida_hook→tool:frida",
+      "hash": "31fa93ca6267aba0767179c4c1f5623d"
+    },
+    {
+      "id": "39939e01-58d5-456e-9edc-77a2abd7df7d",
+      "memory": "The claim mechanism (claim防重) requires each job to be claimed by creating a lock file before execution, ensuring only one running job per stage+fingerprint combination; locks are released upon completion or failure",
+      "hash": "9e91b61ee65bd330761c3ec4f94e7c6b"
+    },
+    {
+      "id": "cae6e8d2-7b51-49ad-bd13-eada042a71f8",
+      "memory": "双执行器协同示例展示了完整的验证-修复流程：Step1 Codex主逆向 → Step2 M2.7二验 → Step3 Codex修复 → Step4 归档，其中二验曾发现时间戳毫秒精度问题，修复后10/10测试全部通过",
+      "hash": "a7f5f9604ac52082d1ee99506ae2356d"
+    },
+    {
+      "id": "7ac8611d-4d88-46dc-9ac2-241f85728efa",
+      "memory": "记忆分层体系共7层：L0 HOT(SESSION-STATE.md存储当前主线和blocker) → L1 daily memory(当日增量) → L2 project memory(专题归档) → L3 raw results(完整结果) → L4 history(轨迹镜像) → L5 LanceDB向量库 → L6 Git审计",
+      "hash": "1c43c052bd000b6ba84c43c9ad497183"
+    },
+    {
+      "id": "ba865ebc-bc4a-4726-936a-76d3c7672650",
+      "memory": "reverse_engineering/05-记忆层设计 5.1 定义了七层记忆体系：L0 HOT SESSION-STATE.md(当前主线/blocker) | L1 daily memory(当日增量) | L2 project memory(专题归档) | L3 raw results(完整结果) | L4 history(轨迹镜像) | L5 LanceDB向量库 | L6 Git审计",
+      "hash": "9265e3e55bd2b9f8cad9165a4a015684"
+    },
+    {
+      "id": "ae1a4f3e-ca52-49f7-81ca-1eb7d8c5b83e",
+      "memory": "reverse_engineering/05-记忆层设计 示例展示了Web逆向的7步流程：Step1-3(抓包确认sig位置→mitmproxy导出HAR→确认crypto-js AES)全部成功✅；Step4-7(Puppeteer debugger绕过→Hook console.debug→提取AES key/iv→Python重写验证)全部失败❌，说明卡在关键步骤提取阶段",
+      "hash": "21827028f147aae4f3378b147c2d63f2"
+    },
+    {
+      "id": "93d34720-a3c5-4ddd-bd7e-9bc7fc805d69",
+      "memory": "reverse_engineering/05-记忆层设计 定义了工具状态监控示例：mitmproxy运行中(PID 12345)、Chrome 78.0 headless模式、Frida已连接(127.0.0.1:27042)，用于实时追踪执行器进程状态",
+      "hash": "64dac044571de52b0684cf1dddd1438c"
+    },
+    {
+      "id": "80f2a436-8f22-43e9-9a4c-f0d0f62d0ed6",
+      "memory": "reverse_engineering/05-记忆层设计 定义了凭证(Keyring)管理规范：禁止硬编码凭证；必须使用keyring或环境变量存储凭证；凭证路径需写入SESSION-STATE.md的Keyring段",
+      "hash": "b751594ac5d9cc7e701d3a942dcc2536"
+    },
+    {
+      "id": "aa0fd482-30c7-481c-a85f-8bb8d0272001",
+      "memory": "双执行器协同示例采用四步流程：Step1 Codex主逆向→Step2 M2.7二验→Step3 Codex修复→Step4归档；二验阶段发现时间戳毫秒精度问题，修复后全部10项测试通过",
+      "hash": "6650b20980aa1711db2d0da307aa4698"
+    },
+    {
+      "id": "25faf102-6b51-4608-95db-7aeb14cef956",
+      "memory": "EXECUTOR_MAP定义分流规则：web.recon→browser | web.capture→mitmproxy | web.reverse→codex | web.verify→tool:verify | web.second_opinion→m27 | app.apk_fetch→apktool_jadx | app.frida_hook→tool:frida",
+      "hash": "d62bda26154edede0dcee46411dcffe1"
+    },
+    {
+      "id": "6345f4ac-7be5-4fe9-853d-6ea0d967bf55",
+      "memory": "claim机制用于防重：每个job执行前必须claim(创建lock文件)；同一stage+fingerprint只能有一个running job；完成或失败时释放lock",
+      "hash": "02d84389b203de481ae2654705aa62c3"
+    },
+    {
+      "id": "a7a77f6f-1c89-4e78-9543-a79f9d1bf056",
+      "memory": "三项关键逆向技术：Puppeteer+stealth.min.js用于过反调试；Hook CryptoJS.AES.encrypt用于AES签名提取；Chrome Console直接执行用于JSFuck混淆还原",
+      "hash": "6fd10e3e0b5de24db43cddadcbdc5ba6"
+    },
+    {
+      "id": "ee59ba89-83e8-41ab-87f7-fd47ec4040f7",
+      "memory": "已验证技术状态更新：过反调试(Puppeteer+stealth)已验证✅；AES签名提取改用Frida Hook方案并已验证✅；JSFuck还原仍为部分成功状态⚠️（此前是Chrome Console直接执行方案）",
+      "hash": "aa9132cf455983194af3d57656ba53fb"
+    },
+    {
+      "id": "8924257b-4596-46f9-87d8-0438cea8e503",
+      "memory": "reverse_engineering/05-记忆层设计 5.5 Raw Results归档格式：文件路径为memory/projects/<task_id>-auto-results.md，包含任务元数据(executor/timestamp/status)、原始Result.json内容、执行日志摘要、以及文件SHA256用于验证完整性",
+      "hash": "ab18ef8dadfa03b1d6f6baf842a0b776"
+    },
+    {
+      "id": "ab4b17ac-7afe-43c7-9ed0-a8f77d0bb268",
+      "memory": "reverse_engineering/05-记忆层设计 定义了任务元数据示例格式：task_id格式为<type>-<target>-<date>(如web-sig-taobao-20260422)、stage字段(如reverse)、executor(如Codex)、started_at/finished_at时间戳、以及status状态(如verified)",
+      "hash": "6f695a90ea3f0d41abc08680e68aa02f"
+    },
+    {
+      "id": "c3bcbb34-a2b7-442a-8256-7b13b46b70ec",
+      "memory": "reverse_engineering/05-记忆层设计 定义了Result.json内部结构示例：包含job_id、algorithm、key(来自keyring)、iv_source、verified字段，以及test_results数组(每项含sample/expected/got/diff_ms)，用于验证逆向算法输出的准确性",
+      "hash": "bfb89a2c7320ffcc0ece865cd60b4030"
+    },
+    {
+      "id": "f850aac8-ed12-4ed3-b55f-938228e348f5",
+      "memory": "reverse_engineering/05-记忆层设计 定义了Result.json的完整字段结构：job_id(工单ID)、algorithm(算法类型)、key(从keyring获取的密钥)、iv_source(IV来源)、verified(验证状态)、test_results(测试结果数组，每个包含sample/expected/got/diff_ms字段)",
+      "hash": "4f053cfe86c398bb1d15c8ed7bc9191a"
+    },
+    {
+      "id": "2d81ca3e-4ecb-4b74-ae46-ae055244542e",
+      "memory": "执行日志摘要示例(记忆层设计)：分析JS文件23个 | 找到加密入口1个(encrypt.js:142) | 提取耗时45秒 | 验证通过率10/10，展示了日志摘要应包含的具体字段和典型数值",
+      "hash": "d097b2e9ac7bd7d09811ba8cef0cac4d"
+    },
+    {
+      "id": "37c7573e-3979-4738-ac66-9f059ffd36ad",
+      "memory": "reverse_engineering/05-记忆层设计 定义了执行日志摘要示例格式：包含分析JS文件数量(如23个)、找到加密入口及文件位置(如encrypt.js:142)、提取耗时(如45秒)、验证通过率(如10/10)，用于归档Raw Results中的执行过程概述",
+      "hash": "5ab9b6c56c5222278c9e685b2677c095"
+    },
+    {
+      "id": "f7bb2491-0bf3-4e7a-b778-dc624ce844e5",
+      "memory": "reverse_engineering/05-记忆层设计 SHA256审计规范：每个归档文件附带SHA256哈希，采用sha256:abc123...格式，用于确保文件可追溯和验证完整性",
+      "hash": "143f4b2ae92c3eaade3b4c8909c7132d"
+    },
+    {
+      "id": "d7c6f15e-44f1-4067-b429-b22772488873",
+      "memory": "reverse_engineering/05-记忆层设计 定义了SHA256审计格式：每个归档文件附带SHA256哈希，格式为sha256:abc123...，用于确保Raw Results归档的可追溯性和完整性验证",
+      "hash": "922c70e7679d8b2b8e6a78ae3d426682"
+    },
+    {
+      "id": "f06bf57d-5157-4dd0-b28c-8917061be992",
+      "memory": "reverse_engineering/05-记忆层设计 5.6 向量召回使用import-memory-to-lancedb.mjs脚本：读取文件→推断类型(technique/signature/target/blocker)→stable_hash生成id→插入LanceDB向量库",
+      "hash": "a94c877710e1278579b165161b7e42e0"
+    },
+    {
+      "id": "b548cd25-b16b-4896-b71c-92c5b9bffb5b",
+      "memory": "reverse_engineering/05-记忆层设计 向量召回查询示例包括'AES signature extraction'和'Frida SSL pinning bypass'等关键词，用于从LanceDB中检索相关记忆",
+      "hash": "aeef65a67c54a1f0b92dbe43c1adf528"
+    },
+    {
+      "id": "f2e57c0d-a8fa-4e42-8e23-6b53f8cf68c7",
+      "memory": "reverse_engineering/05-记忆层设计 5.6 向量召回使用import-memory-to-lancedb.mjs脚本完成，流程为：读取文件→推断类型(technique/signature/target/blocker)→stable_hash生成id→插入LanceDB向量库",
+      "hash": "eb795d299c60aeed48eae14eaf9d8ea5"
+    },
+    {
+      "id": "e330d2e3-3781-4c17-96c2-6d4ad32e85e8",
+      "memory": "reverse_engineering/05-记忆层设计 向量召回查询示例包括：'AES signature extraction'（AES签名提取）和'Frida SSL pinning bypass'（Frida SSL pinning绕过），用于从LanceDB中检索相关记忆",
+      "hash": "1f620d9d44439e8d55204e1a32f4d2ea"
+    },
+    {
+      "id": "5c22b23e-40df-43b4-9c04-36c7378a3967",
+      "memory": "reverse_engineering/05-记忆层设计 5.7 定义了auto-task-runner.py的记忆同步机制：每轮同步将result.json写入tasks/status、镜像到daily/project/raw/history memory、触发LanceDB导入、写memory-sync.json、并在每天凌晨3点执行Git提交",
+      "hash": "7373e5e13809ff9c6619ca01c2dae51a"
+    },
+    {
+      "id": "b9e8f989-7333-40f5-a1d9-bbdb517b7d24",
+      "memory": "reverse_engineering/05-记忆层设计 5.7 定义了记忆同步机制：auto-task-runner.py每轮执行同步流程：result.json→tasks/status→镜像到daily/project/raw/history四层memory→触发LanceDB导入→写入memory-sync.json→Git提交(每日凌晨3点自动执行)",
+      "hash": "8197bd6e532f841678ee847741efc928"
+    },
+    {
+      "id": "4b500bbd-3d4d-4d52-993a-b00f732ec858",
+      "memory": "reverse_engineering/05-记忆层设计 5.8定义了多端风险控制机制：SESSION-STATE.md高风险（单写原则）| daily memory中风险（去重标记）| project memory低风险（项目隔离）| raw results低风险（追加不覆盖）| LanceDB中风险（stable_hash去重）| Git低风险（可见可回滚）",
+      "hash": "9e95dceb7e27da8e189676655610454d"
+    },
+    {
+      "id": "b19b46d2-b45b-472f-9177-e37de350c0de",
+      "memory": "反向工程系统定义了4种触发方式，优先级从高到低为：0=人工下发(最高)、1=事件驱动(样本落地即触发)、2=API webhook、3=定时自动发现(每6小时保底)",
+      "hash": "cafc4f3663059a5d30a06676787b013a"
+    },
+    {
+      "id": "c970ad9e-50d0-427b-a357-aac7cbb61cb4",
+      "memory": "reverse_engineering/06-触发机制 定义了四种触发方式及优先级：0=人工下发(最高优先级)、1=事件驱动(样本落地即触发)、2=API webhook、3=定时自动发现(每6小时保底)",
+      "hash": "a11abc8ab306651634c85cacc7d2036d"
+    },
+    {
+      "id": "ec60c4d7-4373-4a74-b09a-46ef44fa72c2",
+      "memory": "人工下发支持两种方式：CLI方式为python3 scripts/reverse-controller.py web --target URL，Telegram方式为/reverse web URL",
+      "hash": "8ed14f638d5f888c54cae1a8f4d55821"
+    },
+    {
+      "id": "08293108-67e1-4979-9f62-f0215bdce325",
+      "memory": "逆向工程系统支持两种人工下发方式：CLI命令为 python3 scripts/reverse-controller.py web --target URL，Telegram命令为 /reverse web URL",
+      "hash": "5da603fe6bb8f087397ca47f62f89629"
+    },
+    {
+      "id": "2fa4d2cc-3e25-4295-953a-d0597646ab68",
+      "memory": "反向工程系统的事件驱动触发机制(6.3)采用样本落地→systemd path触发→控制器接手的流程，timer仅作保底(每30分钟)，替代旧模式的高频轮询以减少空转",
+      "hash": "3cc898f199b69ded6f869ff6e02b3ed1"
+    },
+    {
+      "id": "5368f6fa-4ca7-4b8f-9101-123738a0dfcc",
+      "memory": "逆向工程系统的事件驱动触发是主要触发方式，核心流程为：样本落地→systemd path触发→控制器接手，timer仅作保底每30分钟扫描一次，替代旧模式的高频轮询以减少空转",
+      "hash": "3ab86f726e8b15a7dfec6be9fea27e72"
+    },
+    {
+      "id": "2418d94c-5131-4c36-89ca-9d336686c7b3",
+      "memory": "reverse_engineering/06-触发机制 6.4 定时自动发现：定时器每6小时扫描target列表，检测到新版本时自动创建逆向任务",
+      "hash": "ab866f0a2da08993da25feafbe5e1e2a"
+    },
+    {
+      "id": "d6922621-accb-48e9-81d6-438830c8f64a",
+      "memory": "reverse_engineering/06-触发机制 6.4 定时自动发现：定时器每6小时扫描target列表，发现新版本后自动创建逆向任务",
+      "hash": "d639a6a19f139440eb8d934d8bc9cf06"
+    },
+    {
+      "id": "eae2d56b-0dbc-4a62-baa5-6c47e71c4b41",
+      "memory": "reverse_engineering/06-触发机制 6.5 API触发：API server使用Flask框架，监听/intake POST端点，接收第三方webhook触发后立即响应task_id",
+      "hash": "9f2ca73224026e3e8bb7194ff39d7d82"
+    },
+    {
+      "id": "05a2c2f6-b041-436e-ab6a-95c37e0d4d3d",
+      "memory": "reverse_engineering/06-触发机制 6.5 API触发：API server基于Flask，监听/intake POST端点，由第三方webhook触发后立即返回task_id",
+      "hash": "72ac1f222c7dadec1577e990644351f5"
+    },
+    {
+      "id": "a49b43de-751a-4a3e-a1f4-47645747800d",
+      "memory": "反向工程系统使用systemd管理启停：reverse-intake.path负责事件驱动触发，reverse-sweep.timer负责定时任务；查看日志命令为 journalctl -u reverse-brain -f",
+      "hash": "763e559ac6ac99e51ebcb19cace9e099"
+    },
+    {
+      "id": "97f77012-85ce-410d-8317-27551898bd4b",
+      "memory": "逆向工程系统的启停管理通过systemd实现：reverse-intake.path负责事件驱动触发，reverse-sweep.timer负责定时任务，可通过 journalctl -u reverse-brain -f 查看日志",
+      "hash": "6f7d6b014376b6ae0a817f815ffe53a3"
+    },
+    {
+      "id": "7221cc19-bc67-4db7-a3e4-cbee98780c1a",
+      "memory": "逆向工程系统6.7触发优先级示例：当某目标发布新版本时，Telegram通知触发事件驱动机制，控制器在30秒内开始处理，而定时机制需6小时后才可能发现新版本",
+      "hash": "9f5e09a82703ffbf11090614419fc9c9"
+    },
+    {
+      "id": "8325eba2-a219-4380-8998-896fb7c04359",
+      "memory": "逆向工程系统的触发优先级使用场景：人工下发和事件驱动适用于紧急任务，定时自动发现适用于持续跟踪场景",
+      "hash": "bb3ece1ff2ffb4de84e42f6191ab0249"
+    },
+    {
+      "id": "1b1f9ed2-2112-483a-93a2-be0c812b9252",
+      "memory": "reverse_engineering/06-触发机制 6.7 触发优先级示例：事件驱动可在目标发布新版本后30秒内启动控制器，定时自动发现则需等待6小时；人工/事件驱动适用于紧急任务，定时发现适用于持续跟踪场景",
+      "hash": "9bfaddb638bc2897c502efabccdaa523"
+    },
+    {
+      "id": "b9911fa2-1c0b-4c6c-a1b1-8f3c2f15eb7b",
+      "memory": "reverse_engineering/07-逆向工具链 7.1定义了逆向工程系统的工具链版本要求：Python 3.10+、Node.js 18+、mitmproxy 8.0+、Frida 16+、APKTool 2.7+、JADX 1.4+、Charles 4.6+",
+      "hash": "9b6fdb3dca2f0458a72bb30ce1043e47"
+    },
+    {
+      "id": "be234ce3-84ba-44b7-bc77-e3a387b40c12",
+      "memory": "The reverse engineering system's triggering mechanism (6.3 Event-Driven) uses systemd path units to detect sample landing and hand off to the controller; timer units serve as fallback, running every 30 minutes, replacing the legacy high-frequency polling approach",
+      "hash": "42b7cd72b1d3fa5f9825d0b4cab331c4"
+    },
+    {
+      "id": "beebced3-3315-4dca-a411-f2c4ab475698",
+      "memory": "The reverse engineering system's scheduled auto-discovery (6.4) runs a timer every 6 hours to scan the target list and automatically creates reverse tasks upon detecting new versions",
+      "hash": "1837d9ed58fc17b19fc61305af909a64"
+    },
+    {
+      "id": "01035d5a-915b-4dd1-a3af-356d96f36b80",
+      "memory": "The reverse engineering system's API trigger (6.5) uses a Flask API server at /intake POST endpoint, accepting third-party webhook triggers and immediately responding with a task_id",
+      "hash": "5fa935a4551f294da429f86387486189"
+    },
+    {
+      "id": "4ec3e21e-1ed7-499d-92c9-bdc384c74e9a",
+      "memory": "用户归档了p2b-pipeline-verify-20260424原始结果，job_id为web-js-signature-8802a53f，执行器为Hermes，包含各步骤原始Result.json文件",
+      "hash": "e76e3950883eaf1ae0ecc8b54cc8bc29"
+    },
+    {
+      "id": "b487d9b2-ab18-4c06-98f2-bf1dc975f7d7",
+      "memory": "The reverse engineering system's start/stop management (6.6) uses systemd with reverse-intake.path for event-driven triggering and reverse-sweep.timer for scheduled tasks; logs viewed via journalctl -u reverse-brain -f",
+      "hash": "ff0a1c53f31b24b9c7e41a3af445144a"
+    },
+    {
+      "id": "db833c17-9239-426c-a4c9-55f72c8b5d7d",
+      "memory": "In the trigger priority example (6.7), when a target releases a new version, event-driven triggers activate the controller within 30 seconds while scheduled discovery takes up to 6 hours; event-driven/manual modes are preferred for urgent tasks, scheduled for continuous tracking",
+      "hash": "857d3a79df951a5feb564019629e8b16"
+    },
+    {
+      "id": "2688a128-95fc-4cb1-b437-6ecce1aba777",
+      "memory": "reverse_engineering/07-逆向工具链 defines the required toolchain versions: Python 3.10+, Node.js 18+, mitmproxy 8.0+, Frida 16+, APKTool 2.7+, JADX 1.4+, Charles 4.6+",
+      "hash": "4785be6f381834a886762ef0bb3b4f75"
+    },
+    {
+      "id": "0d6cbb75-0ebe-410a-b330-7162e72a8167",
+      "memory": "reverse_engineering/07-逆向工具链 7.2定义了tools/install-tools.sh安装脚本：通过pip安装mitmproxy、frida-tools、playwright；通过npm安装@anthropic-ai/sdk；并下载APKTool、JADX、Frida Server二进制文件",
+      "hash": "2af77b5c256f219768d5000a7519a82e"
+    },
+    {
+      "id": "a2dc19e3-a383-4fc3-bfd7-823969c02b76",
+      "memory": "reverse_engineering/07-逆向工具链 7.2定义了工具安装脚本tools/install-tools.sh：使用pip安装mitmproxy/frida-tools/playwright，使用npm安装@anthropic-ai/SDK，并下载APKTool/JADX/Frida Server",
+      "hash": "0bd79d60da5c64ff86e4155087a18ccb"
+    },
+    {
+      "id": "bf3d4ea3-dc76-4c72-bd32-841c38406b5a",
+      "memory": "reverse_engineering/07-逆向工具链 7.3定义了browser-control.py中的ReverseBrowser类，包含4个核心方法：launch(启动反检测浏览器并注入stealth脚本)、hook_console_debug、inject_js、capture_har",
+      "hash": "9b52958a0dc96bbe76831df1bc5edda9"
+    },
+    {
+      "id": "b687f3cb-4430-431c-afc9-e70f1ef60cc3",
+      "memory": "reverse_engineering/07-逆向工具链 7.3定义了browser-control.py模块中的ReverseBrowser类，包含四个核心方法：launch(启动反检测浏览器并注入stealth脚本)、hook_console_debug、inject_js、capture_hAR",
+      "hash": "2ca58faf1dcab5cdbb9f4e189535d3c3"
+    },
+    {
+      "id": "8f9e1d84-0211-420f-9d5f-53f7a58b35fe",
+      "memory": "reverse_engineering/07-逆向工具链 7.4定义了mitm-script.py中的ReverseCapture类，包含request方法(记录URL/headers/content)、response方法(记录body)、以及导出capture.har供后续分析",
+      "hash": "b31c877084cc632bade37a1035dbf403"
+    },
+    {
+      "id": "cfe77002-6d99-47ea-9ad1-e4e2b14b3e7b",
+      "memory": "reverse_engineering/06-触发机制 6.5定义了API触发机制：API server使用Flask框架，监听/intake POST接口，由第三方webhook触发，立即返回task_id",
+      "hash": "51c29bf991f6d92675f983753b03ea67"
+    },
+    {
+      "id": "fa62a14a-35c5-4bc6-babe-a7d210bcbab4",
+      "memory": "reverse_engineering/06-触发机制 6.6定义了启停管理：systemd管理中reverse-intake.path用于事件驱动，reverse-sweep.timer用于定时任务，查看日志命令为journalctl -u reverse-brain -f",
+      "hash": "4aa7ad3327b66cf58c908265558945bd"
+    },
+    {
+      "id": "76589d85-6faf-4972-be6c-48b4efd66c65",
+      "memory": "reverse_engineering/06-触发机制 6.7定义了触发优先级示例：某目标发布新版本时，Telegram通知可使控制器在30秒内启动(事件驱动)，而定时任务可能6小时后才检测到，定时扫描适合持续跟踪但优先级较低",
+      "hash": "e7a923ee6163af6fbdb873196d921cab"
+    },
+    {
+      "id": "1e2b962c-ce66-4de4-9347-e406bdaf2e5e",
+      "memory": "reverse_engineering/07-逆向工具链 7.4定义了mitmproxy抓包模块mitm-script.py中的ReverseCapture类：request方法记录URL/headers/content，response方法记录body，并导出capture.har文件供后续分析",
+      "hash": "e6d1af919d8c742099d2c5c1c7e1c39c"
+    },
+    {
+      "id": "13734d83-c944-439b-ae63-c10a210e30f9",
+      "memory": "reverse_engineering/07-逆向工具链 7.5定义了Frida脚本库frida-scripts/：包含ssl-unpinning.js(绕过Android SSL Pinning并Hook RequestUtil.getSign)和cryptojs-aes-hook.js(Hook CryptoJS.AES.encrypt捕获key/iv/plaintext)",
+      "hash": "9a59106b229be486556558b6ec78f98b"
+    },
+    {
+      "id": "adac3e78-c26a-4fcc-ac5b-0689d82e148d",
+      "memory": "reverse_engineering/07-逆向工具链 7.5定义了Frida脚本库存放于frida-scripts/目录，包含两个核心脚本：ssl-unpinning.js用于绕过Android SSL Pinning并Hook RequestUtil.getSign；cryptojs-aes-hook.js用于Hook CryptoJS.AES.encrypt捕获key/iv/plaintext",
+      "hash": "fb228352dfd27b1b2cbbb1ad49ad73db"
+    },
+    {
+      "id": "96e508fa-a528-4cd1-b423-a176336e149a",
+      "memory": "reverse_engineering/07-逆向工具链 7.6定义了Python工具库crypto_common.py，包含ALGORITHMS字典(支持aes-256-cbc/ecb、des、3des、rsa、hmac-sha256、md5)和detect_algorithm函数(用于启发式自动检测加密算法)",
+      "hash": "f6b4997f4116776b25e06666b4f149fe"
+    },
+    {
+      "id": "7627d7ec-f5de-4e4f-a82a-65723ed8b348",
+      "memory": "reverse_engineering/07-逆向工具链 7.6定义了crypto_common.py模块，包含ALGORITHMS字典支持aes-256-cbc/ecb、des、3des、rsa、hmac-sha256、md5等加密算法，以及detect_algorithm函数用于启发式自动检测加密算法",
+      "hash": "4ef159fbd0b3c89b36587f301b886735"
+    },
+    {
+      "id": "af0fd1d2-8cd1-4daa-aa9a-09a6ab168d58",
+      "memory": "reverse_engineering/07-逆向工具链 7.7定义了工具状态检查脚本check-tools.py：check_all()函数遍历TOOLS字典，测试python/node/mitmproxy/frida/frida-server/apktool/jadx/chrome等工具可用性，输出结果格式为{ok, version/error}",
+      "hash": "2d4257c2bc3b56e3a6c82c9ef9367f36"
+    },
+    {
+      "id": "8aec3b7a-0812-4360-933e-b5eb65717663",
+      "memory": "reverse_engineering/07-逆向工具链 7.7定义了check-tools.py工具状态检查脚本：check_all()函数遍历TOOLS字典，测试python/node/mitmproxy/frida/frida-server/apktool/jadx/chrome，输出{ok, version/error}格式的状态信息",
+      "hash": "a1ea08f268b2571ef0b2bf8f25c2afeb"
+    },
+    {
+      "id": "30ad8572-9a49-4f88-952e-cbe201e509ef",
+      "memory": "reverse_engineering/08-交付标准 8.1定义了逆向任务的交付物要求：必须交付签名脚本<target>-signature.py(可运行)、逆向文档<target>-report.md、验证结果verify-result.json、元数据task-meta.json；可选交付中间产物如har抓包文件和frida-log日志",
+      "hash": "3571c6a833f03dd234f8f853bc939f25"
+    },
+    {
+      "id": "9c49c074-bbe3-4ef5-98d8-e16c98000143",
+      "memory": "reverse_engineering/08-交付标准 8.1定义了逆向任务的交付物标准：必须交付签名脚本<target>-signature.py(可运行)、逆向文档<target>-report.md、验证结果verify-result.json；可选交付中间产物(har/frida-log)；另需提供元数据task-meta.json",
+      "hash": "a08afe802f6931ddfa7f54e9dfd9bf66"
+    },
+    {
+      "id": "933ac02b-7cab-402c-9d17-366d5788812a",
+      "memory": "reverse_engineering/08-交付标准 8.2定义了签名脚本标准：必须独立运行(纯Python)、可复现、带中文注释、内置≥3个测试用例、版本号头部注明；示例结构包含docstring(含算法/版本/验证说明)、make_sign()主函数、verify()内置测试",
+      "hash": "9f6501c63d734ec2f6b5f5a9e633f70c"
+    },
+    {
+      "id": "25323fd6-9ec0-44d2-ab69-ddb8efc5d1b2",
+      "memory": "reverse_engineering/08-交付标准 8.2定义了签名脚本标准：必须独立运行(纯Python)、可复现、带中文注释、内置≥3个测试用例、版本号头部注明，示例结构包含docstring(含算法/版本/验证)、make_sign()主函数、verify()内置测试",
+      "hash": "1698a808c421b1dd0718635d1fa741cb"
+    },
+    {
+      "id": "acaf4e4f-4805-43c4-845f-b4db7f291acd",
+      "memory": "reverse_engineering/08-交付标准示例报告模板定义了目标信息字段：站点(目标域名)、目标接口(如/api/*)、日期(如2026-04-22)、API版本(如v2.3)、状态(完成/进行中等标记)",
+      "hash": "ac750ee3c025b01547499d4cf31e9e0c"
+    },
+    {
+      "id": "5005e1e1-2f37-4ee8-91a7-34c7c00b0f5b",
+      "memory": "reverse_engineering/08-交付标准 定义了报告示例中的目标信息格式：包含站点(site)、目标接口(/api/*)、日期(如2026-04-22)、API版本(v2.3)、状态(✅完成)",
+      "hash": "03738ad76189ffbf73db4055337aaa1d"
+    },
+    {
+      "id": "1d2ec823-e9d4-4f7b-af9e-44cdd6229bf7",
+      "memory": "reverse_engineering/08-交付标准 8.3定义了报告中的算法分析示例格式：sign参数使用AES-256-CBC(MD5摘要)加密，token header使用RSA(动态)加密，加密入口位于encrypt.js:142行，Key定义位于config.js:23行",
+      "hash": "e7ebdc59ee209e1b5d6c1af2f91d4230"
+    },
+    {
+      "id": "9cef5032-0772-43c3-92a7-55619d78e073",
+      "memory": "reverse_engineering/08-交付标准示例报告中的算法分析部分包含：sign参数使用AES-256-CBC(MD5摘要)、token header使用RSA(动态)、加密入口位于encrypt.js:142行、Key定义位于config.js:23行",
+      "hash": "03769cbd999f57491b09a9d7af4b905f"
+    },
+    {
+      "id": "766ff937-4506-483b-8f59-67c7e5bb72f1",
+      "memory": "项目定义了9.7测试规范：tests/test_signature.py使用pytest，包含test_aes_signature(精确匹配)、test_timestamp_tolerance(容差±50ms)、test_invalid_params(错误参数)",
+      "hash": "5e5dbd1998f5c8b82c79dc72acac3dc7"
+    },
+    {
+      "id": "c0c0bbe7-3526-4602-bc13-0d802558c275",
+      "memory": "reverse_engineering/08-交付标准 定义了踩坑记录示例格式：日期+问题+解决方案，如2026-04-20站点加反调试→注入stealth.js绕过、2026-04-21 Key每天更换→改为运行时Hook获取，用于归档逆向过程中的关键障碍和对应解决方案",
+      "hash": "00e4904d3994094039a87436de7868ec"
+    },
+    {
+      "id": "6463970b-16d6-478a-8886-f98f7d63b9c3",
+      "memory": "reverse_engineering/08-交付标准 踩坑记录示例：2026-04-20站点加反调试，通过注入stealth.js绕过；2026-04-21 Key每天更换，改为运行时Hook获取",
+      "hash": "7a7ed85fcf8cdfc22ee2b8901c389612"
+    },
+    {
+      "id": "85122f29-3b5d-4283-ad08-616b8faefc90",
+      "memory": "reverse_engineering/08-交付标准 8.3定义了验证结果格式示例：包含样本总数(如10)、通过率(如10/10通过✅)、平均误差(如<3ms)、每个样本的详细记录(预期值/实际值/误差/状态)",
+      "hash": "790f3424e07153a657216b29a49b2e00"
+    },
+    {
+      "id": "e903bf51-b163-4c55-9c44-66896ae00a4a",
+      "memory": "reverse_engineering/08-交付标准 定义了验证结果示例格式：10样本总计、10/10通过率(✅)、平均误差<3ms，需包含sample_1/2等详细记录，每条记录包含预期值、实际值、误差、状态四个字段",
+      "hash": "1444c19799bf60e934b3a5fff2659098"
+    },
+    {
+      "id": "069ec795-6ae4-419b-a588-a97afd12a33b",
+      "memory": "reverse_engineering/08-交付标准 8.4定义了报告中的使用说明示例格式：使用示例为`from xxx-signature import make_sign`导入模块，然后通过`sign = make_sign({'keyword': '手机'})`调用签名函数并传入参数字典",
+      "hash": "d0d55ec965625fd093b9fc6ee7186454"
+    },
+    {
+      "id": "fe51a8d9-6aef-47a7-983a-c63674be1f70",
+      "memory": "reverse_engineering/08-交付标准示例报告中的使用说明部分定义了签名模块的调用方式：from xxx-signature import make_sign，调用示例为sign = make_sign({'keyword': '手机'})，参数以字典形式传入",
+      "hash": "e1dae3810ee121faccec690ad2204933"
+    },
+    {
+      "id": "424b14bd-23db-4afb-bb6a-7682482eaae0",
+      "memory": "reverse_engineering/08-交付标准 报告示例中的参考资料部分列出了中间产物文件：capture-20260422.har（HAR抓包文件）和frida-log-20260422.txt（Frida日志文件），用于记录逆向分析过程",
+      "hash": "9a2865034e6de7f04e15e786ae08e05c"
+    },
+    {
+      "id": "32a092c7-eefe-453e-81f9-489eba997006",
+      "memory": "reverse_engineering/08-交付标准 定义了报告中的参考资料示例格式：包含capture-20260422.har（抓包HAR文件）和frida-log-20260422.txt（Frida日志文件），文件名采用日期后缀便于归档关联",
+      "hash": "888f92a2186f7b38829d21474c31e914"
+    },
+    {
+      "id": "1f35c1d6-73e8-4929-bd6b-64d82ec7efd0",
+      "memory": "reverse_engineering/08-交付标准 8.4定义了验证标准：Web签名需≥5样本100%通过且误差<50ms；APP签名需≥5样本≥90%通过且误差<100ms；报告格式包含task_id、stage、verified_at、status、pass_rate、avg_time_ms、details字段",
+      "hash": "a470b003083a1ceadfb35fc6ebacb223"
+    },
+    {
+      "id": "eac52227-8aa0-47a6-b7c6-c31a8050ab3d",
+      "memory": "reverse_engineering/08-交付标准 8.5定义了结果归档标准：归档内容包含result.json、log.txt、SHA256、memory-sync.json四个文件，并需镜像到daily/project memory层、触发LanceDB导入、执行Git提交",
+      "hash": "70d52a244156805d9aa23c3945d781ff"
+    },
+    {
+      "id": "ae1a0455-149d-41f6-bfae-cb2c906dd385",
+      "memory": "reverse_engineering/08-交付标准 8.6定义了交付检查表：签名脚本存在且可运行、≥5样本100%通过、文档含算法/流程/踩坑、verify-result.json存在、SHA256记录、memory层同步、LanceDB导入、Git提交、SESSION-STATE更新，全部打勾为完整交付",
+      "hash": "2307a4f5d0a3ef2c73cddd514c2dabd0"
+    },
+    {
+      "id": "b24600ab-f1c3-4639-aff6-a8293c6d20ce",
+      "memory": "reverse_engineering/08-交付标准 8.4节定义了验证通过条件：Web签名需≥5样本、100%通过率、<50ms误差；APP签名需≥5样本、≥90%通过率、<100ms误差；报告格式需包含task_id、stage、verified_at、status、pass_rate、avg_time_ms、details字段",
+      "hash": "b107fb7246b1cb06530e861a0b0fb949"
+    },
+    {
+      "id": "d2084fb1-b2f5-4b82-9670-6944f2f71bf2",
+      "memory": "reverse_engineering/08-交付标准 示例报告中的使用说明部分：from xxx-signature import make_sign | sign = make_sign({'keyword': '手机'})",
+      "hash": "40b4b352bed00f398b9cfe12e4420e64"
+    },
+    {
+      "id": "fd5cd62b-09c2-4da6-bc6d-bbb3b251a076",
+      "memory": "reverse_engineering/08-交付标准 示例报告中的参考资料：capture-20260422.har和frida-log-20260422.txt",
+      "hash": "73cdf24e11266fa4af88f5fb53a2e513"
+    },
+    {
+      "id": "9d67f42b-ce91-44bf-aa93-4e3427a0b3cb",
+      "memory": "reverse_engineering/09-开发规范 9.1定义了代码风格标准：Python须遵循PEP 8规范、添加type hints类型注解、使用loguru日志库、pathlib路径处理、中文docstring文档；Shell脚本需set -e开头保证错误终止、函数添加注释、包含错误处理机制",
+      "hash": "09a719d6fb8df37eccddc5bd771da970"
+    },
+    {
+      "id": "2ff7289c-25cb-4c96-9b07-5615ac586f57",
+      "memory": "reverse_engineering/09-开发规范 9.2定义了Git提交规范：格式为<type>(<scope>): <desc>，类型包括feat/fix/docs/style/refactor/perf/test/chore，示例为feat(web): 新增AES-256-CBC签名提取流程",
+      "hash": "03d8f07e53d3bdbd5fd6cb1e0149cb69"
+    },
+    {
+      "id": "857746d4-a7df-4e2f-b773-ffb6954ccaa5",
+      "memory": "reverse_engineering/09-开发规范 9.3定义了分支管理策略：main(稳定)←develop(开发)←feature/*(功能分支)、hotfix/*(紧急修复从main切出)；标准工作流为develop→feature→PR→review→merge→删除分支",
+      "hash": "c2d3e2203b3377aeb25d9089f2f2af3b"
+    },
+    {
+      "id": "f273760e-b1cc-497a-ba59-dd6aad0a6e98",
+      "memory": "reverse_engineering/09-开发规范 9.4定义了PR审查清单：PEP8/ESLint✅、type hints类型注解✅、单元测试✅、无硬编码密钥✅、文档更新✅、向量召回健康检查✅、签名验证✅、无新blocker阻塞项✅",
+      "hash": "a4bfbb7c575b5381bc6b3772e9974ad9"
+    },
+    {
+      "id": "3ce117c1-8854-40fb-bbdb-996f19057659",
+      "memory": "reverse_engineering/09-开发规范 9.5定义了文件命名规范：目录使用小写+连字符(memory/projects)、Python文件用snake_case(reverse_controller.py)、Shell脚本用kebab-case(frida-task-executor.sh)、Markdown文件用kebab-case(01-系统架构.md)、JSON文件用snake_case(pipeline_state.json)",
+      "hash": "ff35f6b9d4c2b6a5799ed6019b96a718"
+    },
+    {
+      "id": "6ab6e69a-630e-4308-a39c-ab71db566ad8",
+      "memory": "reverse_engineering/09-开发规范 9.6定义了密钥/凭证管理的规范：禁止硬编码凭证，批准的存储方式包括环境变量(os.environ.get)、keyring、.env.example模板，凭证路径需写入SESSION-STATE.md的Keyring段",
+      "hash": "96832d5cb59af8f611fb724065b8a741"
+    },
+    {
+      "id": "248b2539-eb1f-4b5a-b80e-42cd00cd6ae1",
+      "memory": "reverse_engineering/09-开发规范 9.7定义了测试规范：测试文件位于tests/test_signature.py，使用pytest框架，包含三个标准测试用例：test_aes_signature（精确匹配）、test_timestamp_tolerance（容差±50ms）、test_invalid_params（错误参数处理）",
+      "hash": "3dd77797fe3fa6e210196ea51e87f7bf"
+    },
+    {
+      "id": "391e293b-bb56-4546-8eba-10481de6ffbf",
+      "memory": "reverse_engineering/09-开发规范 9.8定义了loguru日志规范：使用logger.info/debug/success/warning/error方法，记录task_id/target等上下文信息；日志级别语义为DEBUG记录详细、INFO记录流程节点、SUCCESS记录关键成功、WARNING记录异常、ERROR记录失败",
+      "hash": "0e189af51078cf891cb8579f540fc9ac"
+    },
+    {
+      "id": "c8aeb81e-a516-4943-8842-0ed8f9612eca",
+      "memory": "项目定义了9.2 Git提交规范：格式为<type>(<scope>): <desc>，类型包括feat/fix/docs/style/refactor/perf/test/chore，示例：feat(web): 新增AES-256-CBC签名提取流程",
+      "hash": "391b94afdaca7d1b34388403871dfd5b"
+    },
+    {
+      "id": "2c04d03e-a0f3-4ca2-aca1-159af7500a13",
+      "memory": "项目定义了9.3分支管理策略：main(稳定)←develop(开发)←feature/*(功能分支) | hotfix/*(紧急修复从main切出)，工作流为develop→feature→PR→review→merge→删除分支",
+      "hash": "973eb9cb3f5e0188735755538363ee65"
+    },
+    {
+      "id": "2d28f795-0fe4-4767-89e2-236c1ef3efb6",
+      "memory": "项目定义了9.4 PR审查清单：PEP8/ESLint、type hints、单元测试、无硬编码密钥、文档更新、向量召回健康检查、签名验证、无新blocker",
+      "hash": "4f8333d3c039953d013142cfe8c6afbb"
+    },
+    {
+      "id": "1cc1ec0b-c2c4-422b-8f78-00a5c5471bab",
+      "memory": "项目定义了9.5目录/文件命名规范：目录小写+连字符 | Python snake_case | Shell kebab-case | Markdown kebab-case | JSON snake_case",
+      "hash": "02971f7f9f5f060378e90eedacc2d0a5"
+    },
+    {
+      "id": "5e283904-f513-4ab0-b466-3cb18f5e3e33",
+      "memory": "项目定义了9.6密钥/凭证管理规范：禁止硬编码凭证，使用os.environ.get或keyring，.env.example模板，凭证路径写入SESSION-STATE.md",
+      "hash": "383b3f6ac697ae9fa9f6d45044bab86d"
+    },
+    {
+      "id": "79eb0972-76a7-478d-80e5-389a2df5dc88",
+      "memory": "项目定义了9.8错误日志规范：使用loguru库，记录级别为info/debug/success/warning/error，需记录task_id/target等上下文，DEBUG详细/INFO流程节点/SUCCESS关键成功/WARNING异常/ERROR失败",
+      "hash": "db1e6732f1bade85fb3144e291ade6bf"
+    },
+    {
+      "id": "cad80ffd-3f79-4709-8a2a-91525bf3b9a4",
+      "memory": "当前主线为项目reverse-ai-engine(GitHub 70548887)，目标为逆向工程自动化系统(Web+APP)，当前阶段为P1控制器完成，开始daily/project memory建设",
+      "hash": "1dc4bdb678f2853bb5524ed8bf2ef306"
+    },
+    {
+      "id": "805d6458-e213-48d8-b8c6-f88335ad5340",
+      "memory": "reverse_engineering/09-开发规范 9.3 定义了分支管理策略：main(稳定版本)←develop(开发分支)←feature/*(功能分支)，hotfix/*(紧急修复从main切出)，工作流为develop→feature→PR→review→merge→删除分支",
+      "hash": "19634e72daf9d2909abd8060ff9d4f80"
+    },
+    {
+      "id": "1989d98f-d640-420f-b1d3-e3da90f11cf5",
+      "memory": "reverse_engineering/09-开发规范 9.4 定义了PR审查清单：PEP8/ESLint✅ | type hints✅ | 单元测试✅ | 无硬编码密钥✅ | 文档更新✅ | 向量召回健康检查✅ | 签名验证✅ | 无新blocker✅",
+      "hash": "5ccca594c64e1fe91da9142d1f8d9717"
+    },
+    {
+      "id": "68882772-a7cc-479f-a7d2-44bbadbfe3e3",
+      "memory": "reverse_engineering/09-开发规范 9.5 定义了目录/文件命名规范：目录小写+连字符(memory/projects) | Python snake_case(reverse_controller.py) | Shell/JSON kebab-case(frida-task-executor.sh) | Markdown kebab-case(01-系统架构.md) | JSON snake_case(pipeline_state.json)",
+      "hash": "3a2959c48325a20e2692a961e898d966"
+    },
+    {
+      "id": "f2128ad8-0432-4c72-933a-35d721cc14dc",
+      "memory": "reverse_engineering/09-开发规范 9.6 密钥/凭证管理规范：禁止硬编码 | 使用环境变量os.environ.get或keyring | 提供.env.example模板 | 凭证路径写入SESSION-STATE.md",
+      "hash": "735a1e3d036fd99289d44ab7394d30ea"
+    },
+    {
+      "id": "5d68ecb0-39cd-4653-b7f4-80b42a9d7c66",
+      "memory": "reverse_engineering/09-开发规范 9.7 定义了测试规范：使用pytest | 测试文件tests/test_signature.py | 包含test_aes_signature(精确匹配) | test_timestamp_tolerance(容差±50ms) | test_invalid_params(错误参数)",
+      "hash": "ded77b7a1ccee63e4ee90172c530dabd"
+    },
+    {
+      "id": "0e902788-81b0-410a-bc08-1080ffdb8d2d",
+      "memory": "reverse_engineering/09-开发规范 9.8 错误日志规范：使用loguru库 | logger.info/debug/success/warning/error分级 | 记录task_id/target等上下文 | DEBUG详细/INFO流程节点/SUCCESS关键成功/WARNING异常/ERROR失败",
+      "hash": "0a58dce973915b49783784ce2c8c5062"
+    },
+    {
+      "id": "0e71186f-2e28-4ec0-8088-f605f78e5520",
+      "memory": "截至2026年4月26日，reverse-ai-engine项目状态：P1控制器已完成，正在开始daily memory和project memory建设",
+      "hash": "0224aafd5cb4f3011081320c6b89828d"
+    },
+    {
+      "id": "8d821040-cd64-4311-a3c9-3c8cf7c036bb",
+      "memory": "reverse_engineering/09-开发规范 9.3定义了分支管理策略：main(稳定)←develop(开发)←feature/*(功能分支)和hotfix/*(紧急修复从main切出)；工作流为develop→feature→PR→review→merge→删除分支",
+      "hash": "c24add4d2869d8a3912fd4377a68c14b"
+    },
+    {
+      "id": "cbfa4fc0-c306-4722-bd87-e95d74bbb214",
+      "memory": "reverse_engineering/09-开发规范 9.4定义了PR审查清单：需通过PEP8/ESLint检查、有type hints、有单元测试、无硬编码密钥、文档更新、向量召回健康检查、签名验证、无新blocker",
+      "hash": "61968d2998d66bc985c0d67ad8de6c99"
+    },
+    {
+      "id": "c3468969-e8b7-423d-a4d5-d99ada88f0d1",
+      "memory": "reverse_engineering/09-开发规范 9.5定义了目录/文件命名规范：目录小写+连字符(memory/projects) | Python snake_case(reverse_controller.py) | Shell kebab-case(frida-task-executor.sh) | Markdown kebab-case(01-系统架构.md) | JSON snake_case(pipeline_state.json)",
+      "hash": "4d038626a6bf0485aee29054f21f2050"
+    },
+    {
+      "id": "81a917da-187a-4663-b0be-56b83bb34560",
+      "memory": "reverse_engineering/09-开发规范 9.6定义了密钥/凭证管理规范：禁止硬编码凭证，需使用环境变量os.environ.get、keyring、.env.example模板，凭证路径需写入SESSION-STATE.md",
+      "hash": "9b329b5de134d9ca669e159747eb7554"
+    },
+    {
+      "id": "42bfccf2-5927-4e33-9778-539d91ab5310",
+      "memory": "reverse_engineering/09-开发规范 9.7定义了测试规范：测试文件位于tests/test_signature.py，使用pytest框架，包含test_aes_signature(精确匹配)、test_timestamp_tolerance(容差±50ms)、test_invalid_params(错误参数)等测试用例",
+      "hash": "80cdfd2602dbad2072f9618d67a7e35b"
+    },
+    {
+      "id": "4e098b59-e20d-48b2-b087-a48d95fe2e62",
+      "memory": "reverse_engineering/09-开发规范 9.8定义了错误日志规范：使用loguru库，记录级别包括logger.info/debug/success/warning/error，需记录task_id/target等上下文；DEBUG用于详细日志、INFO流程节点、SUCCESS关键成功、WARNING异常、ERROR失败",
+      "hash": "d6e2ce75baf876d11fd5289daf3b15c6"
+    },
+    {
+      "id": "a410813d-5bfb-4782-9526-45b5b4c685e0",
+      "memory": "reverse-ai-engine项目(70548887)当前进度：已完成GitHub仓库建立、逆向工具链安装、记忆能力修复(Qdrant MCP)、热记忆层建立、本地目录结构、记忆持久化、P1控制器开发；进行中为daily/project memory建设、向量层文档同步、systemd配置",
+      "hash": "baf5598fa6677b1d2de8592dd39912fd"
+    },
+    {
+      "id": "4492f681-575f-44c1-a826-60b85857bdeb",
+      "memory": "截至2026年4月26日，项目已完成：GitHub仓库建立、逆向工具链安装、记忆能力修复(Qdrant MCP)、热记忆层建立、本地目录结构、记忆持久化、P1控制器开发",
+      "hash": "12bd0be6cd521217952307b96dd16243"
+    },
+    {
+      "id": "02409f03-b407-45d9-8f2f-0948c45725a1",
+      "memory": "截至2026年4月26日，项目reverse-ai-engine进行中任务：daily/project memory建设、向量层文档同步、systemd配置",
+      "hash": "3eeac137cd5c129c4471682486cb7612"
+    },
+    {
+      "id": "171357c1-51ca-4df1-b8ec-69d5eff7f8da",
+      "memory": "项目开发规范9.4 PR审查清单要求：PEP8/ESLint、type hints、单元测试、无硬编码密钥、文档更新、向量召回健康检查、签名验证、无新blocker",
+      "hash": "afbf64f213200c5e3b5a6d2c207b5d9f"
+    },
+    {
+      "id": "e567362c-10f1-40fb-b82c-be191da12710",
+      "memory": "项目开发规范9.5目录/文件命名规范：目录小写+连字符(memory/projects)、Python snake_case(reverse_controller.py)、Shell kebab-case(frida-task-executor.sh)、Markdown kebab-case(01-系统架构.md)、JSON snake_case(pipeline_state.json)",
+      "hash": "02c34b702758e1d3e269e7fde128c48b"
+    },
+    {
+      "id": "18e51f93-1a15-4bb3-9754-ecdfcbff7500",
+      "memory": "项目开发规范9.7测试规范：测试文件位于tests/test_signature.py，使用pytest框架，包含test_aes_signature精确匹配、test_timestamp_tolerance容差±50ms、test_invalid_params错误参数等用例",
+      "hash": "049089c3d1f9aabe78212530fbce8fe8"
+    },
+    {
+      "id": "915c39dd-4b94-4481-b5df-d85bce22fa79",
+      "memory": "项目开发规范9.8错误日志规范：使用loguru库，记录级别为logger.info/debug/success/warning/error，需记录task_id/target等上下文，DEBUG用于详细/INFO流程节点/SUCCESS关键成功/WARNING异常/ERROR失败",
+      "hash": "9bc43728961e276a8359d426c4a288a4"
+    },
+    {
+      "id": "9dd187c2-ded1-415d-8090-c22ea40d304d",
+      "memory": "User's reverse-ai-engine system currently has installed versions: Node.js v22.14.0, Python 3.13, mitmproxy 12.2.2, frida-tools 17.9.1, jadx 1.4.7, apktool 2.7.0, and Java Temurin 17 — all exceeding the minimum requirements defined in the toolchain specification",
+      "hash": "ce7b0065bb3d9792205b8e0e1071ecbb"
+    },
+    {
+      "id": "c4f503cd-c242-46da-b3f7-3d263d0b1b5d",
+      "memory": "Qdrant向量库(Qdrant MCP)在User的reverse-ai-engine系统中不稳定，collection丢失需要重建；memory持久化、session_search、SESSION-STATE.md均正常运行",
+      "hash": "72a49dc00a389381266a260eab13c3de"
+    },
+    {
+      "id": "1f505a4d-e4eb-451b-b42f-e2701fe0fd79",
+      "memory": "As of April 26, 2026, the Qdrant vector database in the reverse-ai-engine project is unstable with a collection loss issue requiring reconstruction, marked with ⚠️ warning",
+      "hash": "794d015c851ec02260a10055349a9ad3"
+    },
+    {
+      "id": "ce3e4a79-ac91-49df-9977-1352c9737649",
+      "memory": "reverse-ai-engine system capabilities as of April 26, 2026: memory persistence ✅, session_search ✅, SESSION-STATE.md ✅ working; Qdrant vector database ⚠️ unstable",
+      "hash": "e52b894c5da04c5485d869b4188120cd"
+    },
+    {
+      "id": "6123bcd6-5f1c-476b-83c2-6f64c15c5e48",
+      "memory": "reverse-ai-engine actual installed tool versions as of April 26, 2026: Node.js v22.14.0, Python 3.13, mitmproxy 12.2.2, frida-tools 17.9.1, jadx 1.4.7, apktool 2.7.0, Java Temurin 17",
+      "hash": "e4b013a59b09355a2ea1f64a3d03b3a0"
+    },
+    {
+      "id": "860652da-72f6-4525-b68b-773a6179223c",
+      "memory": "reverse-ai-engine项目待完成项：⏳向量层文档同步(vector layer doc sync) | ⏳systemd配置",
+      "hash": "0db74a8c9915ebc703509b5fe8ef4c9d"
+    },
+    {
+      "id": "709bd8d7-566a-494d-9353-d08857855cfe",
+      "memory": "User's reverse-ai-engine project workspace structure: SESSION-STATE.md in workspace root (热记忆层), reverse-controller.py in workspace/scripts/, memory directory in workspace/memory/(projects/scripts/tools), tasks in workspace/tasks/(intake/queue/status), reverse-tools/ for toolchain, and /tmp/reverse-ai-engine/ for GitHub clone",
+      "hash": "814644760dceb4d60298cdcb27dc0a05"
+    },
+    {
+      "id": "76fa7797-d2a5-4e6d-8670-478c0cf909cc",
+      "memory": "reverse-ai-engine项目开发规范定义了日志标准(使用loguru，logger.info/debug/success/warning/error五级，记录task_id/target等上下文，DEBUG详细/INFO流程节点/SUCCESS关键成功/WARNING异常/ERROR失败)和测试规范(tests/test_signature.py，pytest测试用例包含test_aes_signature精确匹配、test_timestamp_tolerance容差±50ms、test_invalid_params错误参数测试)",
+      "hash": "302a093c4d9b2a2afebd322f1aeeb295"
+    },
+    {
+      "id": "a53bf1cf-ee31-4087-85dd-aed7e66b74be",
+      "memory": "reverse-ai-engine系统的Qdrant blocker具体表现为：服务端间歇性断连导致collection丢失需重建，真实embedding召回功能待实现，recall_memories已降级为scroll替代方案",
+      "hash": "b54cb0c3f01211c99ab7412c6a198856"
+    },
+    {
+      "id": "27f143e8-b048-49b9-8394-f89f9c7b4167",
+      "memory": "User's project demo-web-sig-20260422-auto-results archived original job execution results for a web JS signature reverse engineering task",
+      "hash": "d2dd8b9b7686d4a6aa9c2f93d174885b"
+    },
+    {
+      "id": "b477278d-4de2-4d7d-bb4c-1e3c69b64434",
+      "memory": "The demo-web-sig-20260422-auto-results job_id is web-js-signature-e1415fd7, executed by executor named Hermes",
+      "hash": "c7ba8080734e265d9fb72094b0b34a45"
+    },
+    {
+      "id": "e41467e2-a0d3-4c96-ad27-a461d3af9c11",
+      "memory": "The demo-web-sig-20260422-auto-results job covers 8 workflow steps: verify, recon, capture, js_locate, deobfuscate, implement, reverse, and second_opinion, each with original Result.json files",
+      "hash": "a54d1a98f40902bf57820d81e07f993f"
+    },
+    {
+      "id": "86fcf20c-b817-433c-aadc-f59b96f0a9a2",
+      "memory": "reverse_engineering/09-开发规范 9.8 错误日志规范：使用loguru记录日志，方法包括logger.info/debug/success/warning/error，需记录task_id/target等上下文，分级规则为DEBUG详情/INFO流程节点/SUCCESS关键成功/WARNING异常/ERROR失败",
+      "hash": "7975d7fb3783abc22eacd0cb77754e9d"
+    },
+    {
+      "id": "8f4599b4-ffd9-4753-aa9f-8f2295ec2051",
+      "memory": "reverse_engineering/09-开发规范 9.7 测试规范：测试文件位于tests/test_signature.py，使用pytest框架，包含test_aes_signature(精确匹配)、test_timestamp_tolerance(容差±50ms)、test_invalid_params(错误参数)三个测试用例",
+      "hash": "3c486cc01b75d28758359bb3032ac027"
+    },
+    {
+      "id": "b3cbd537-e369-410f-8968-3e18ca7cb19c",
+      "memory": "reverse-ai-engine项目当前工具版本：Node.js v22.14.0 | Python 3.13 | mitmproxy 12.2.2 | frida-tools 17.9.1 | jadx 1.4.7 | apktool 2.7.0 | Java Temurin 17",
+      "hash": "9eaef27797c2590df15b18e7d4724b16"
+    },
+    {
+      "id": "52557064-96f2-4ce1-bd3e-c7e2c0e44744",
+      "memory": "User's reverse-ai-engine system uses Qdrant MCP endpoint at http://152.136.169.127:6333 with collection named 'reverseengineering', 512-dimensional vectors using the bge-small-zh-v1.5 embedding model, as of April 25, 2026",
+      "hash": "0feb2863b9813f49f2ce60aa3abfd472"
+    },
+    {
+      "id": "22618480-7705-4eee-9fe4-be599381416a",
+      "memory": "OpenClaw automated task system is running a task with ID 'bilibili-reverse', which has executed 9895 times as of April 26, 2026",
+      "hash": "e65d209582a0ef48f3167052b5d3286c"
+    },
+    {
+      "id": "9c1dbf3d-8c29-494f-b7b2-02636827e51e",
+      "memory": "The bilibili-reverse task is currently in the 'doc_synthesis' phase, which was completed using the 'opencode-m2.7' tool",
+      "hash": "652f8f9fb5640738ea4658e8126976c4"
+    },
+    {
+      "id": "c9a7ab36-1ae5-4807-85e4-0685ec5622fc",
+      "memory": "User Cade AceJacoby的偏好设置（2026-04-26）：中文为主 | 喜欢直接说重点 | 技术偏好：逆向工程(Web签名+APP协议)+AI自动化 | 工具偏好：开箱即用CLI | 自动化理念：写一次跑多次 | 记忆偏好：语义搜索(Qdrant)>关键词 | 方案C(Qdrant+文件层) | 希望每次对话自动归档",
+      "hash": "aa3d3f91bb6189e3247fb97f47c5f572"
+    },
+    {
+      "id": "e6076bbb-a5d6-4588-98ab-12633ab4e37a",
+      "memory": "reverse-ai-engine项目(GitHub 70548887)当前阶段：P1控制器完成，2026-04-26开始daily/project memory建设",
+      "hash": "c0257cf8a36aa2d6925725d8457df33e"
+    },
+    {
+      "id": "1726dc16-291a-4acf-a01d-198ceb1ddc05",
+      "memory": "reverse-ai-engine项目待完成任务（截至2026-04-26）：daily/project memory建设 | 向量层文档同步 | systemd配置",
+      "hash": "18880bf3b785a26806a4b7bc654c3ade"
+    },
+    {
+      "id": "2acf3f71-9961-4d16-85b3-49111f9733d5",
+      "memory": "当前Blocker（2026-04-26）：Qdrant服务端间歇性断连导致collection丢失需重建 | 真实embedding召回待实现(recall_memories降级为scroll方案)",
+      "hash": "9892829ef08153ac03355cca95c624fa"
+    },
+    {
+      "id": "f3066519-e2ee-4315-af40-dce13e627e18",
+      "memory": "demo-web-sig-20260422原始结果归档：job_id为web-js-signature-e1415fd7，执行器Hermes，各步骤(verify/recon/capture/js_locate/deobfuscate/implement/reverse/second_opinion)原始Result.json已保存",
+      "hash": "441f41dbedd7436c74f601a0f7319ccb"
+    },
+    {
+      "id": "73cb2502-8ac2-43eb-90de-9b6ed9acfb1a",
+      "memory": "reverse-ai-engine workspace关键路径：SESSION-STATE.md(热记忆) | reverse-controller.py(控制器) | memory/(projects/scripts/tools) | tasks/(intake/queue/status) | reverse-tools/(逆向工具链) | /tmp/reverse-ai-engine/(GitHub克隆)",
+      "hash": "3538333892688a2616b84f59204b26fa"
+    },
+    {
+      "id": "903f6cb0-4b14-4d73-b787-bc30fca221d8",
+      "memory": "Qdrant向量库状态（2026-04-26）：memory持久化✅ | session_search✅ | SESSION-STATE.md✅ | 但collection不稳定存在丢失问题",
+      "hash": "a5c31a6d447b5c21be826e5f28800f0f"
+    },
+    {
+      "id": "4137abef-5229-4fa9-9b04-22c67ebdedab",
+      "memory": "用户Cade AceJacoby使用reverse-ai-engine的偏好设置：中文为主、喜欢直接说重点、技术偏好为逆向工程(Web签名+APP协议)+AI自动化、工具偏好开箱即用CLI、自动化理念写一次跑多次、记忆偏好语义搜索(Qdrant)优于关键词搜索、方案选择方案C(Qdrant+文件层)、希望每次对话自动归档",
+      "hash": "83f73d26e0291f755f841e8dacdcec7e"
+    },
+    {
+      "id": "246341e0-3372-4a8e-8533-43626af6ffce",
+      "memory": "2026-04-25 session：Cade从Web逆向转向APP逆向，工具链已安装在/opt/data/home/reverse-tools/",
+      "hash": "d8464384ff431f33f9e0fafe93b1d33f"
+    },
+    {
+      "id": "12494cd5-e35e-422f-8395-280c5eb0a34f",
+      "memory": "Cade之前成功逆向知乎x-zse-96签名，采用JSVMP+SM4+位混洗的技术方案",
+      "hash": "7964c0c5e369278ac5521a7d7a6ff950"
+    },
+    {
+      "id": "d3a322d1-c074-4dde-be53-a89bed424d9b",
+      "memory": "reverse-ai-engine项目P2 pipeline已跑通demo",
+      "hash": "88a8337a273f6dd600b937338241f5aa"
+    },
+    {
+      "id": "ed9e942e-c3f8-403b-9869-556ac1f26b15",
+      "memory": "User Cade AceJacoby在2026-04-25的session中从Web逆向转向APP逆向探索",
+      "hash": "292784ed36c163c4ecad1622d85d748b"
+    },
+    {
+      "id": "f41972e9-4548-4bc7-82b2-9d87bc85760d",
+      "memory": "reverse-ai-engine项目工具链安装在/opt/data/home/reverse-tools/目录",
+      "hash": "1f2811268072ddfa55f91e619ae05eb7"
+    },
+    {
+      "id": "27300644-66da-442f-970b-2c4b80f3afbc",
+      "memory": "Cade AceJacoby此前成功逆向过知乎x-zse-96签名，采用JSVMP+SM4+位混洗技术组合",
+      "hash": "dec6b8f3d60f0fb4c0d5fe062ca37e44"
+    },
+    {
+      "id": "e2110deb-1dea-410b-a4ec-789c4c76116d",
+      "memory": "Cade AceJacoby在2026-04-25 session讨论的逆向目标包括：抖音直播间逆向、知乎签名、其他APP协议",
+      "hash": "fa88d47b6aa23e0449d6e843f80b41b3"
+    },
+    {
+      "id": "b9b42641-f47e-4184-8b51-6f38b8c21eb6",
+      "memory": "reverse-ai-engine项目的P2 pipeline已在demo-web-sig-20260422中跑通验证",
+      "hash": "ba73a9635887c2383f98083da7098f6f"
+    },
+    {
+      "id": "90dd2634-d25e-4776-a8e4-73ebd33ea8e3",
+      "memory": "Memory Sync System v1.0设计规范：采用Qdrant+文件层混合方案 | 文件规范：frontmatter必须字段 | 正文结构：<language><code> | 写入触发条件：重大进展、工具配置、skill创建、bug修复、每次对话结束前、调研结论 | 检索流程：session_search→memory-sync.py→读取.md→补充写入",
+      "hash": "d74a7d077e26809ce3f499b2f56075fe"
+    },
+    {
+      "id": "288bea21-2064-4fcc-b2fa-c1a6c1d24312",
+      "memory": "Memory Sync System v1.0设计已确定：采用Qdrant+文件层混合方案，文件规范要求frontmatter必须字段，正文结构为<language><code>格式",
+      "hash": "0cad5423787365216d9efc053dd88cb5"
+    },
+    {
+      "id": "7a3656d3-55eb-4bf4-b4d6-076d3fc5cb2b",
+      "memory": "Memory Sync System v1.0写入触发条件包括：重大进展、工具配置、skill创建、bug修复、每次对话结束前、调研结论",
+      "hash": "caa7aab97ad6e819e01a14c63b5dee87"
+    },
+    {
+      "id": "ad35ada3-d1c6-47fb-8a35-fd85124b4978",
+      "memory": "Memory Sync System v1.0检索流程：session_search→memory-sync.py→读取.md文件→补充写入",
+      "hash": "86e0a5ba9783c06573f5f999babebf1f"
+    },
+    {
+      "id": "a9a2fdd4-f10b-4493-be27-c11ad8290dc1",
+      "memory": "reverse-ai-engine项目APP逆向控制器流程包含6个步骤：apk_fetch→mitm_capture→frida_hook→so_analyze→implement→verify，与Web控制器(10步骤)并列构成双轨逆向架构",
+      "hash": "e55fe8f70a99383ecd605a5038690ca7"
+    },
+    {
+      "id": "2addaacf-9f92-4005-926e-a10ed9bb2679",
+      "memory": "reverse-ai-engine项目GitHub PAT为githubpat11ASUEM7Y0m4rVUM8I7I1QTDLitrzqdwcdbkO6EuHVxLmX3xm3vgCUycEELVjxH01BYHSPD6GOjeLuGMR，已配置可读写权限",
+      "hash": "412a04f68f5fe99bbee9c834e83b3e3b"
+    },
+    {
+      "id": "999aeac1-3162-492c-9a2a-868630fd2432",
+      "memory": "reverse-ai-engine项目APP逆向控制器流程：apk_fetch→mitm_capture→frida_hook→so_analyze→implement→verify（与Web流程recon→capture→browser_probe→js_locate→deobfuscate→reverse→implement→verify→second_opinion并列）",
+      "hash": "6710e39b74522825ce9454a917456a3f"
+    },
+    {
+      "id": "afc6f61e-430d-4b22-b2f5-4006fa54fbe1",
+      "memory": "reverse-ai-engine项目GitHub PAT: githubpat11ASUEM7Y0m4rVUM8I7I1QTDLitrzqdwcdbkO6EuHVxLmX3xm3vgCUycEELVjxH01BYHSPD6GOjeLuGMR",
+      "hash": "dd29738460ca46278132e8a2ba33c69b"
+    },
+    {
+      "id": "aab952ea-6598-4275-a4d4-387a4cefe95b",
+      "memory": "抖音直播间逆向分析目标APK为com.ss.android.ugc.aweme，版本v380501，大小337MB，含59个DEX文件",
+      "hash": "8c8bc2d9cc063fff1dbc28f8d87e048c"
+    },
+    {
+      "id": "abd0494c-5689-46ef-a6a7-3c9968a20233",
+      "memory": "抖音直播间逆向已识别18个核心API端点，包括：webcast/feed/、webcast/livetab/、webcast/room/info/、webcast/room/infobyuser/、webcast/room/infobyscene/、webcast/room/mgetroombyscene/等",
+      "hash": "8086ced7948f439ffc0d66ca074bc685"
+    },
+    {
+      "id": "fc477360-f1de-4363-8aa0-371126c74659",
+      "memory": "抖音直播间逆向分析已提取关键响应结构：RoomResponse和LiveTabFeedChannelResponse",
+      "hash": "6724b9194994454b7b659d5e89fd134a"
+    },
+    {
+      "id": "f6ff32ec-238e-44c7-be0d-8626b8ed8e3e",
+      "memory": "Cade AceJacoby的抖音直播间逆向分析具体进展：目标APK为com.ss.android.ugc.aweme（抖音国际版）v380501版本，大小337MB，包含59个DEX文件，已定位18个核心API包括webcast/feed/livetab/、webcast/room/info/、webcast/room/infobyuser/、webcast/room/infobyscene/、webcast/room/mgetroombyscene/等，响应结构涉及RoomResponse和LiveTabFeedChannelResponse",
+      "hash": "09f4324175081d587964c5f365e2e366"
+    },
+    {
+      "id": "d0e2c001-7aff-4d4f-acb0-c982e550d66b",
+      "memory": "Memory Sync System v1.0已于2026年4月26日落地：方案C(Qdrant+文件层)实施完成，memory/目录下所有文件遵循CONVENTION.md规范，Git审计初始化完成",
+      "hash": "322b851709d4109e8ecf273cbfcce00c"
+    },
+    {
+      "id": "a50b0c1f-168a-4970-b6a2-1a44e52663cf",
+      "memory": "Memory Sync System v1.0已于2026年4月26日落地实施，方案C(Qdrant+文件层)已成功部署，所有memory/目录文件已遵循CONVENTION.md规范，Git审计初始化完成",
+      "hash": "1d82758ff54397528e4394b697bf6fa0"
+    },
+    {
+      "id": "0757cbaf-d163-40e2-b6db-48e0f09d1558",
+      "memory": "p2b-pipeline-verify-20260424-auto-history记录了P2B pipeline的执行轨迹：browserprobe✅ | capture✅ | deobfuscate✅ | jslocate⏳ | reverse⏳ | implement⏳ | verify⏳ | secondopinion⏳",
+      "hash": "bce9a826c21eb8b8f8b962557cff1ca1"
+    },
+    {
+      "id": "41fb2780-a437-4fd2-9568-c9ddd6261679",
+      "memory": "p2b-pipeline-verify-20260424-auto-history是一个Web逆向流水线验证任务，2026-04-24执行结果：browserprobe✅、capture✅、deobfuscate✅、jslocate⏳、reverse⏳、implement⏳、verify⏳、secondopinion⏳（前3步成功，后5步进行中）",
+      "hash": "ed36ff1fd0627731c89008f4ee991450"
+    },
+    {
+      "id": "0a5391ed-f19e-4026-ba05-68b13c248e94",
+      "memory": "抖音SO层逆向分析已识别多个关键动态库：libropaencrypt.so支持AES-128-CBC/GCM模式含RopaEncrypt JNI接口；libttcrypto.so提供RSA/DES/3DES/AES底层加密实现；libEncryptor.so为ttEncrypt主入口；libbyterts.so处理直播流；libkryptonlive.so实现直播Krypton协议；liblynxsecurity.so含nativeVerifySignBlock函数；同时包含HTTP Headers分析",
+      "hash": "feeaa95a24f6f17a9f5a1d7e258ab5f1"
+    },
+    {
+      "id": "c5d21d4a-2872-41e5-9ac6-e21725be5ac6",
+      "memory": "抖音SO层逆向分析已识别多个关键SO库：libropaencrypt.so(AES-128-CBC/GCM, RopaEncrypt JNI)、libttcrypto.so(RSA/DES/3DES/AES底层实现)、libEncryptor.so(ttEncrypt主入口)、libbyterts.so(直播流处理)、libkryptonlive.so(直播Krypton协议)、liblynxsecurity.so(nativeVerifySignBlock函数)，以及HTTP Headers分析",
+      "hash": "fd3f937b60a1906a3afdec36bc893d10"
+    },
+    {
+      "id": "7a1796e2-f760-4bb7-be22-560de55bbc57",
+      "memory": "User's CONVENTION.md file documents the standards for memory files: naming examples, frontmatter required fields, body structure format (<language><code>), write trigger conditions, quick commands, and the retrieval flow (session_search→memory-sync.py→read.md→supplement write)",
+      "hash": "ebf71c7b5f3d6880ccd6aca8b5427099"
+    },
+    {
+      "id": "fd6cc2b6-302b-455b-b661-147f4af610e1",
+      "memory": "p2b-pipeline-verify-20260424-auto-results job results archived with job_id: web-js-signature-8802a53f, executed by Hermes executor, containing original Result.json files for each pipeline step",
+      "hash": "8c261a41a00406f2fa21c24aa6068795"
+    },
+    {
+      "id": "882dcd4a-28c9-466c-8a2e-e4b287998f95",
+      "memory": "User reverse engineered Douyin live streaming APK (com.ss.android.ugc.aweme v380501, 337MB/59DEX) and documented 18 core APIs including webcast/feed/livetab/, webcast/room/info/, webcast/room/infobyuser/, webcast/room/infobyscene/, webcast/room/mgetroombyscene/ with RoomResponse/LiveTabFeedChannelResponse data structures",
+      "hash": "ade8581e6c5741c53b4600754898d538"
+    },
+    {
+      "id": "97d120b4-f662-4996-917a-6e3bb9733383",
+      "memory": "User's p2b-pipeline-verify-20260424-auto-history tracked progress: browserprobe✅ capture✅ deobfuscate✅ jslocate⏳ reverse⏳ implement⏳ verify⏳ secondopinion⏳",
+      "hash": "62c7bc7295483177c9aa09ab6bc01aee"
+    },
+    {
+      "id": "1784ede8-0b34-4f01-bc26-0c0508279157",
+      "memory": "User reverse engineered Douyin SO layer and documented: libropaencrypt.so (AES-128-CBC/GCM RopaEncrypt JNI), libttcrypto.so (RSA/DES/3DES/AES底层), libEncryptor.so (ttEncrypt主入口), libbyterts.so (直播流), libkryptonlive.so (直播Krypton协议), liblynxsecurity.so (nativeVerifySignBlock), plus HTTP Headers analysis",
+      "hash": "4ec3664ecb45e0b300041e42e5d9e6f3"
+    },
+    {
+      "id": "0264ebd9-1d0a-45b9-8bae-996acbea6d2a",
+      "memory": "User archived p2b-pipeline-verify-20260424-auto results with job_id: web-js-signature-8802a53f, executor: Hermes",
+      "hash": "1432f2b5f8d7b7afd4c47ef821af981d"
+    },
+    {
+      "id": "ce9c493a-86c5-4ec7-a1ae-4ace4012f597",
+      "memory": "Memory Sync System v1.0已落地(2026-04-26)：方案C(Qdrant+文件层混合)已实现，所有memory/目录文件遵循CONVENTION.md规范，Git审计初始化完成",
+      "hash": "24a8b3d887de1514a7e0f4f1ea11ac77"
+    },
+    {
+      "id": "6d2e0393-e9f3-4757-b70f-41e5ecebe11e",
+      "memory": "p2b-pipeline-verify-20260424原始结果已归档至memory/projects/：job_id=web-js-signature-8802a53f，执行器为Hermes，各步骤原始Result.json已保存",
+      "hash": "c3697c4d51cf3bcdc1e4384c25854ebb"
+    },
+    {
+      "id": "cd698cb3-19e7-47e8-a9ec-d688ee8f408a",
+      "memory": "抖音SO层逆向分析成果：libropaencrypt.so(AES-128-CBC/GCM RopaEncrypt JNI)、libttcrypto.so(RSA/DES/3DES/AES底层)、libEncryptor.so(ttEncrypt主入口)、libbyterts.so(直播流)、libkryptonlive.so(直播Krypton协议)、liblynxsecurity.so(nativeVerifySignBlock)，另有HTTP Headers分析",
+      "hash": "bdc4ccadc7f8aa9ba98730c6a7e0f6f1"
+    },
+    {
+      "id": "15938b22-2d41-4aac-9425-c4611e261432",
+      "memory": "demo-web-sig-20260422-auto-history tracks the execution trajectory of a web signature reverse engineering project, with status: browserprobe/outputready, capture/outputready, deobfuscate/outputready, jslocate⏳, reverse⏳",
+      "hash": "234fc3c22a4854948275cd7c1c8bca35"
+    },
+    {
+      "id": "33d13ddc-9041-4a20-aa82-70aa93ae2057",
+      "memory": "用户进行了抖音直播SO层逆向分析，涵盖libropaencrypt.so(AES-128-CBC/GCM RopaEncrypt JNI)、libttcrypto.so(RSA/DES/3DES/AES底层)、libEncryptor.so(ttEncrypt主入口)、libbyterts.so(直播流)、libkryptonlive.so(直播Krypton协议)、liblynxsecurity.so(nativeVerifySignBlock)以及HTTP Headers分析",
+      "hash": "15bb655cb345a34a56b6675f4ec98a7a"
+    },
+    {
+      "id": "bfe495a8-1a98-488f-838d-a4e2714614ae",
+      "memory": "用户制定了Memory File Convention规范：所有memory/.md文件需遵循文件命名示例、frontmatter必须字段、正文结构<language><code>、写入触发条件、快速命令、检索流程(session_search→memory-sync.py→读.md→补充写入)",
+      "hash": "3a831bb733f93fe95c623a691d29d34f"
+    },
+    {
+      "id": "d7910b2f-0333-4ed8-900a-945d6d33fdc2",
+      "memory": "p2b-pipeline-verify-20260424项目归档：job_id为web-js-signature-8802a53f，执行器为Hermes，包含各步骤原始Result.json文件",
+      "hash": "9cfc98f17a4f83c28ce02a5f61e75ad5"
+    },
+    {
+      "id": "540b2c86-a479-45ca-8086-e3e6854d170b",
+      "memory": "demo-web-sig-20260422-auto-history项目历史轨迹显示：browserprobe/outputready、capture/outputready、deobfuscate/outputready已完成，jslocate⏳和reverse⏳待执行",
+      "hash": "55410dfe9b7d80ff2e897c0c4d3f7723"
+    },
+    {
+      "id": "59a51144-2a5e-4056-b8d1-b9f2825b2770",
+      "memory": "用户于2026-04-24T11:39:29创建controller-system-test任务，测试reverse-controller.py系统就绪状态，当前阶段为init，状态为intake",
+      "hash": "b663edb67160a97c20efe2a3832accca"
+    },
+    {
+      "id": "cc31483b-f37a-4fa0-8434-ff76a0b69fd1",
+      "memory": "User documented Douyin (抖音) live streaming reverse engineering analysis covering native libraries: libropaencrypt.so (AES-128-CBC/GCM RopaEncrypt JNI), libttcrypto.so (RSA/DES/3DES/AES底层), libEncryptor.so (ttEncrypt主入口), libbyterts.so (直播流), libkryptonlive.so (直播Krypton协议), liblynxsecurity.so (nativeVerifySignBlock), plus HTTP Headers分析",
+      "hash": "54cd21723879b5bbd29226c711b46966"
+    },
+    {
+      "id": "f15f71cd-ff46-42c2-9ecd-4b6c0b6aaa68",
+      "memory": "User maintains a Memory File Convention standard for all memory/.md files, specifying: file naming conventions, required frontmatter fields, body structure with <language><code> blocks, write trigger conditions, quick commands, and retrieval flow (session_search→memory-sync.py→read.md→supplemental write)",
+      "hash": "a41ea920fda7018363345a0177219833"
+    },
+    {
+      "id": "ae388b06-f9c1-4136-9409-22638177b69f",
+      "memory": "2026-04-24每日记忆：记忆层体系完善(7层确认) | Qdrant连接正常(152.136.169.127:6333)collection有76条 | L0热记忆更新(Qdrant端口修正6333) | L6 Git审计初始化(workspace/.git) | L1-L4归档创建 | 完成demo-web-sig-20260422完整pipeline",
+      "hash": "bea2ff411533804a2a29d8966968160c"
+    },
+    {
+      "id": "aa838ac2-1bdb-437a-9b69-baac18f514b4",
+      "memory": "Memory File Convention规定：所有memory/.md文件必须遵循文件命名示例、frontmatter必须字段、正文结构<language><code>格式，写入触发条件包含快速命令，检索流程为session_search→memory-sync.py→读.md→补充写入",
+      "hash": "c7a9f02791315286b87483f78d886a90"
+    },
+    {
+      "id": "1c8e0b92-7ad2-416a-a5d0-e4ae5d393f87",
+      "memory": "p2b-pipeline-verify-20260424-auto-results项目原始结果归档：job_id为web-js-signature-8802a53f，执行器为Hermes，包含各步骤原始Result.json",
+      "hash": "549d7b3191cf508e997d29f8131bea10"
+    },
+    {
+      "id": "ce4cbbf6-4765-435f-abba-227abf8cf15b",
+      "memory": "demo-web-sig-20260422历史轨迹状态：browserprobe/outputready | capture/outputready | deobfuscate/outputready | jslocate⏳pending | reverse⏳pending",
+      "hash": "0bfa98e1f6d0c42ba5a1e7be9a8dc9b8"
+    },
+    {
+      "id": "e77e4b4b-a4b9-4be1-af04-8af06c556b6f",
+      "memory": "controller-system-test任务于2026-04-24T11:39:29进入intake阶段，任务内容为reverse-controller.py系统就绪测试，当前stage为init",
+      "hash": "c7c5db4966e15a9449f7020a4abb77d0"
+    },
+    {
+      "id": "0b9cb50c-451a-4225-9654-dd5b2a1b2ec6",
+      "memory": "p2b-pipeline-verify-20260424-auto-results原始结果归档，job_id: web-js-signature-8802a53f，executor: Hermes，包含各步骤原始Result.json",
+      "hash": "4ac95940986c94b498f776ec9f4e0fc9"
+    },
+    {
+      "id": "3d8642fd-a20e-4704-adcf-ac49df8e90e2",
+      "memory": "Memory File Convention已建立，定义了memory/.md文件命名规范、frontmatter必须字段、正文结构<language><code>、写入触发条件、快速命令及检索流程(session_search→memory-sync.py→读.md→补充写入)",
+      "hash": "f462b3d152a62a90b354e9d591780c5f"
+    },
+    {
+      "id": "ef1de189-c165-41f2-afd2-20ac92b489f5",
+      "memory": "demo-web-sig-20260422历史轨迹：browserprobe/outputready、capture/outputready、deobfuscate/outputready已完成，jslocate和reverse待处理",
+      "hash": "eefbb8ee9eee5b140d6f82256b879251"
+    },
+    {
+      "id": "516a4e98-84e0-4e0e-931e-379f2099232f",
+      "memory": "2026-04-24执行controller-system-test任务，测试reverse-controller.py系统就绪状态，timestamp: 2026-04-24T11:39:29，status: intake",
+      "hash": "c9f4ab2a66ff49889dc340e57e42c1b0"
+    },
+    {
+      "id": "357752a1-0ffc-4ed8-88ea-90fee2e1aa70",
+      "memory": "2026-04-24每日记忆：记忆层体系7层确认完成，Qdrant连接正常(152.136.169.127:6333)collection有76条记录，L0热记忆端口修正为6333，L6 Git审计初始化(workspace/.git)，L1-L4归档创建，完成demo-web-sig-20260422完整pipeline",
+      "hash": "9446a3899c99216e3e004900d05c6a33"
+    },
+    {
+      "id": "d5ee4efa-73e4-4397-b06e-884d1b4df1bc",
+      "memory": "用户制定了Memory File Convention规范，涵盖文件命名示例、frontmatter必须字段、正文结构<language><code>格式、写入触发条件、快速命令，以及检索流程(session_search→memory-sync.py→读.md→补充写入)",
+      "hash": "9662a73eee6eb94504c4a5d266416472"
+    },
+    {
+      "id": "429fdcd8-cd70-4427-bbaa-30421fe62b84",
+      "memory": "demo-web-sig-20260422历史轨迹状态：browserprobe/outputready | capture/outputready | deobfuscate/outputready | jslocate进行中 | reverse进行中",
+      "hash": "649f52d8d593310d52f07315ee5b7554"
+    },
+    {
+      "id": "3685a781-23ed-4181-a63a-b050d6922b50",
+      "memory": "2026-04-24每日记忆要点：记忆层体系7层确认完成 | Qdrant连接正常(152.136.169.127:6333)collection含76条记录 | L0热记忆更新(端口修正6333) | L6 Git审计初始化(workspace/.git) | L1-L4归档目录创建 | demo-web-sig-20260422完整pipeline执行完成",
+      "hash": "001d33e5dd52abf6142e0276251ca9df"
+    },
+    {
+      "id": "72f72cd2-3f60-47fc-bc71-bfc5b104084e",
+      "memory": "用户于2026-04-26创建了reverse_engineering/note类型的备注，标注为controller-initial-test，作为系统控制器初始化测试的记录",
+      "hash": "22fbdd0f6e3482e22cc286b41845eb6d"
+    },
+    {
+      "id": "25a8b01d-74d9-4a61-b0cf-6351458bf5bd",
+      "memory": "OpenClaw system maintains automatic task memory sync with a task identified as bilibili-reverse, which has been executed 9927 times as of April 26, 2026",
+      "hash": "a072fbc4c14fa758dbe7c07b79f5fcdc"
+    },
+    {
+      "id": "eb3c4a4d-b76b-4b9e-8bdb-ceedc37b4eb8",
+      "memory": "The bilibili-reverse task in OpenClaw is currently in_progress at the congling_response_shape phase, which was completed via opencode-m2.7",
+      "hash": "d22b58625323927ee00ad995c9d69d1d"
+    },
+    {
+      "id": "6e699412-1125-4816-a839-8acde6ae0b6f",
+      "memory": "OpenClaw automated task 'bilibili-reverse' has completed 9972 runs as of April 26, 2026",
+      "hash": "203973baf2caece6ef6b85d3e7d46fd3"
+    },
+    {
+      "id": "3ed5c276-619f-4e16-9c19-625ad81546b6",
+      "memory": "Task 'bilibili-reverse' is currently in_progress in the 'alt_analysis' phase, which was completed using opencode-m2.7",
+      "hash": "1d134f1123953cf5da5cbaaecaa823af"
+    },
+    {
+      "id": "d78f2e1f-a195-4caa-b773-cbbaf4b9da8e",
+      "memory": "User is running an automated task system called OpenClaw with task 'bilibili-reverse' which has executed 10,009 times, currently in_progress at phase 'congling_response_nonempty_data_probe' completed via opencode-m2.7",
+      "hash": "272cee97b792a7675098ce799b4958dc"
+    },
+    {
+      "id": "8213b653-795c-41e8-88cf-90e47107a2fc",
+      "memory": "User has an automated task configured in OpenClaw called 'bilibili-reverse' with task ID 'bilibili-reverse', which has run 10053 times and is currently in_progress with phase set to 'rsa_packaging_analysis'",
+      "hash": "23e67333934fd123ee604a60e0130bef"
+    },
+    {
+      "id": "a6833a40-9e60-4fec-9063-626e1958d948",
+      "memory": "The 'rsa_packaging_analysis' phase of the bilibili-reverse task was completed using 'opencode-m2.7'",
+      "hash": "3aaa635588da68ce2442ac077de21048"
+    },
+    {
+      "id": "b1d43815-ffdf-47a6-acb9-c0c0910d528a",
+      "memory": "OpenClaw automated task 'bilibili-reverse' completed its controller_route_matrix phase via controller-direct method, with output files saved to /home/ctyun/.openclaw/workspace/projects/bilibili-heartbeat-reverse/data/cleaned/securecollect_bridge_cdp_probe_controller_route_matrix.json and analysis at securecollect-bridge-cdp-probe-controller-route-matrix.md",
+      "hash": "f45bba3a870c8b20bb5e16a74cf645ba"
+    },
+    {
+      "id": "7d5920e8-ac94-404a-81fe-2133be1e1df4",
+      "memory": "The bilibili-reverse OpenClaw task has run 10104 times as of April 26, 2026",
+      "hash": "9f1210fccf6e567aa1e6f9fc907ffa6f"
+    },
+    {
+      "id": "c44e6a06-83f4-447b-ad31-3672c0ae4e2d",
+      "memory": "OpenClaw task tracking system shows task 'bilibili-reverse' has been executed 10,147 times, currently in phase 'payload_header_analysis' which was completed via 'opencode-m2.7'",
+      "hash": "7dbbe0ec3bb2089ae5e2e1fb30b6d309"
+    },
+    {
+      "id": "e16f8b1d-9104-4daa-9f82-640b8f582a7a",
+      "memory": "OpenClaw 自动任务 'bilibili-reverse' 已累计执行 10229 次，当前处于 in_progress 状态",
+      "hash": "2a48463d439c7db8cfbfe4c0a3558a14"
+    },
+    {
+      "id": "789e8230-c355-4790-91ed-67210a86d3cd",
+      "memory": "任务 bilibili-reverse 在 phase congling_response_nonempty_data_probe 阶段已通过 opencode-m2.7 完成数据探测验证",
+      "hash": "1dd982a43499f25919809037ca50aa93"
+    },
+    {
+      "id": "b8684e35-6bb6-4a37-8b71-10d96214a124",
+      "memory": "User maintains an automated task system (OpenClaw) with a task 'bilibili-reverse' that has completed 10,273 runs as of April 26, 2026",
+      "hash": "e5530dee012ad1ca09b610d971c43dfb"
+    },
+    {
+      "id": "2c767b91-a68e-4de6-8695-65f5c2608a3b",
+      "memory": "The 'bilibili-reverse' task is currently in_progress with phase 'rsa_packaging_analysis', which was completed using opencode-m2.7",
+      "hash": "d14f5c47731790cc434e2145da50d4dc"
     }
   ]
 }
