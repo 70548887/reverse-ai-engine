@@ -1,7 +1,8 @@
 model:
-  default: M2.7
-  provider: anthropic
-  base_url: https://api.minimaxi.com/anthropic
+  default: gpt-5.5
+  provider: custom
+  base_url: http://152.136.169.127:6006/v1/
+  api_type: responses
 providers: {}
 fallback_providers: []
 credential_pool_strategies: {}
@@ -17,7 +18,7 @@ agent:
   gateway_timeout_warning: 900
   gateway_notify_interval: 600
   verbose: false
-  reasoning_effort: medium
+  reasoning_effort: xhigh
   personalities:
     helpful: You are a helpful, friendly AI assistant.
     concise: You are a concise assistant. Keep responses brief and to the point.
@@ -125,52 +126,52 @@ auxiliary:
     timeout: 360
     extra_body: {}
   compression:
-    provider: openrouter
-    model: minimaxai/MiniMax-Text-01-M2
-    base_url: https://openrouter.ai/api/v1
+    provider: openai
+    model: gpt-5.5
+    base_url: http://152.136.169.127:6006/v1/
     api_key: sk-cp-...kOhg
     timeout: 120
     extra_body: {}
   session_search:
-    provider: openrouter
-    model: minimaxai/MiniMax-Text-01
-    base_url: https://openrouter.ai/api/v1
+    provider: openai
+    model: gpt-5.5
+    base_url: http://152.136.169.127:6006/v1/
     api_key: sk-cp-OhMhItNUEUfjM86yqRVjcMOTDpgR805iLH4OEdfqqG4WVP_KPtDs_0g7AsDembjsMjSBQKHXES9Tvrnun_Wqkg8TW3UFI1wWK3lPDFSEaoaKsxR8jCTkOhg
     timeout: 30
     extra_body: {}
     max_concurrency: 3
   skills_hub:
-    provider: openrouter
-    model: minimaxai/MiniMax-Text-01
-    base_url: https://openrouter.ai/api/v1
+    provider: openai
+    model: gpt-5.5
+    base_url: http://152.136.169.127:6006/v1/
     api_key: sk-cp-OhMhItNUEUfjM86yqRVjcMOTDpgR805iLH4OEdfqqG4WVP_KPtDs_0g7AsDembjsMjSBQKHXES9Tvrnun_Wqkg8TW3UFI1wWK3lPDFSEaoaKsxR8jCTkOhg
     timeout: 30
     extra_body: {}
   approval:
-    provider: openrouter
-    model: minimaxai/MiniMax-Text-01
-    base_url: https://openrouter.ai/api/v1
+    provider: openai
+    model: gpt-5.5
+    base_url: http://152.136.169.127:6006/v1/
     api_key: sk-cp-OhMhItNUEUfjM86yqRVjcMOTDpgR805iLH4OEdfqqG4WVP_KPtDs_0g7AsDembjsMjSBQKHXES9Tvrnun_Wqkg8TW3UFI1wWK3lPDFSEaoaKsxR8jCTkOhg
     timeout: 30
     extra_body: {}
   mcp:
-    provider: openrouter
-    model: minimaxai/MiniMax-Text-01
-    base_url: https://openrouter.ai/api/v1
+    provider: openai
+    model: gpt-5.5
+    base_url: http://152.136.169.127:6006/v1/
     api_key: sk-cp-OhMhItNUEUfjM86yqRVjcMOTDpgR805iLH4OEdfqqG4WVP_KPtDs_0g7AsDembjsMjSBQKHXES9Tvrnun_Wqkg8TW3UFI1wWK3lPDFSEaoaKsxR8jCTkOhg
     timeout: 30
     extra_body: {}
   flush_memories:
-    provider: openrouter
-    model: minimaxai/MiniMax-Text-01
-    base_url: https://openrouter.ai/api/v1
+    provider: openai
+    model: gpt-5.5
+    base_url: http://152.136.169.127:6006/v1/
     api_key: sk-cp-OhMhItNUEUfjM86yqRVjcMOTDpgR805iLH4OEdfqqG4WVP_KPtDs_0g7AsDembjsMjSBQKHXES9Tvrnun_Wqkg8TW3UFI1wWK3lPDFSEaoaKsxR8jCTkOhg
     timeout: 30
     extra_body: {}
   title_generation:
-    provider: openrouter
-    model: minimaxai/MiniMax-Text-01
-    base_url: https://openrouter.ai/api/v1
+    provider: openai
+    model: gpt-5.5
+    base_url: http://152.136.169.127:6006/v1/
     api_key: sk-cp-OhMhItNUEUfjM86yqRVjcMOTDpgR805iLH4OEdfqqG4WVP_KPtDs_0g7AsDembjsMjSBQKHXES9Tvrnun_Wqkg8TW3UFI1wWK3lPDFSEaoaKsxR8jCTkOhg
     timeout: 30
     extra_body: {}
@@ -260,7 +261,7 @@ delegation:
   base_url: ''
   api_key: ''
   max_iterations: 50
-  reasoning_effort: ''
+  reasoning_effort: xhigh
   default_toolsets:
   - terminal
   - file
@@ -395,5 +396,5 @@ TELEGRAM_HOME_CHANNEL: '8221547670'
 # For custom OpenAI-compatible endpoints, add base_url and key_env.
 #
 # fallback_model:
-#   provider: openrouter
+#   provider: openai
 #   model: anthropic/claude-sonnet-4
