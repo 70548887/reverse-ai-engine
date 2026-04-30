@@ -1,6 +1,6 @@
 {
-  "backup_at": "2026-04-27 04:00:26",
-  "total": 410,
+  "backup_at": "2026-04-30 04:00:58",
+  "total": 416,
   "memories": [
     {
       "id": "48d6a4bf-1406-47ec-ae7d-8ec851956a6f",
@@ -2051,6 +2051,36 @@
       "id": "2c767b91-a68e-4de6-8695-65f5c2608a3b",
       "memory": "The 'bilibili-reverse' task is currently in_progress with phase 'rsa_packaging_analysis', which was completed using opencode-m2.7",
       "hash": "d14f5c47731790cc434e2145da50d4dc"
+    },
+    {
+      "id": "6085a8ba-083c-485b-a876-fcdb214457b2",
+      "memory": "User has an automated task named 'bilibili-reverse' managed by OpenClaw that has run 12,153 times as of April 29, 2026",
+      "hash": "7747157e12dbb0bb5a0de2510ad8ed97"
+    },
+    {
+      "id": "2609a643-e6d1-4633-bdfc-df7618b9a042",
+      "memory": "The bilibili-reverse task's current run reached the postprocess_suite phase and completed it via controller-direct execution method",
+      "hash": "0438ece34b840cb99b7fc0f2149fc4ff"
+    },
+    {
+      "id": "e1a2c6e6-ec11-435a-978b-2d65e9455d40",
+      "memory": "The bilibili-reverse task involves data processing files including clean/securecollect_bridge_postprocess_suite.json and analysis/securecollect-bridge-postprocess-suite.md",
+      "hash": "e60332b407a5960d93718551b1f2808a"
+    },
+    {
+      "id": "3f78d9f1-16e4-42cb-99d5-e2937cbe3aa2",
+      "memory": "The bilibili-reverse task also uses clean/securecollect_bridge_cdp_probe_mainline_gate.json as evidence data",
+      "hash": "40debf569947890a2baec6d9fdbea547"
+    },
+    {
+      "id": "4bb1323a-394a-4e0a-b837-7afab23bfe4f",
+      "memory": "Memory Control Plane invariant: canonical files are written before semantic mirrors; task progress stays in Runtime State, not mem0 or the knowledge base.",
+      "hash": "a98d5071a08588908801b11827522d2c"
+    },
+    {
+      "id": "170395ed-6738-4b39-b268-4fa339e66173",
+      "memory": "Memory Control Plane invariant: canonical files are written before semantic mirrors; task progress stays in Runtime State, not mem0 or the knowledge base.",
+      "hash": "a98d5071a08588908801b11827522d2c"
     }
   ]
 }
