@@ -94,9 +94,9 @@ API Keys:
 **原因**: pgvector 上游读取时出错，但写入 (POST) 正常。
 **临时方案**: 用 `POST /memories` 写记忆时，响应返回 `{id, memory, ...}`，**自己保存这些 ID** 用于后续按 ID 读取。
 
-### 2. `POST /search` → 502
-**原因**: 向量搜索依赖 embedder 上游 (gemini via cc-vibe.com)。
-**临时方案**: 目前无法语义搜索，只能按 ID 读取。
+### 2. `POST /search` 可能 502，也可能恢复为 200
+**原因**: 向量搜索依赖 embedder 上游 (gemini via cc-vibe.com)，历史上曾因上游 provider error 返回 502；后续 canary probe 也观察到恢复为 200。
+**临时方案**: 把 search 只作为 retrieval-layer health signal；mirror 写入正确性以保存远端 ID 后的 `GET /memories/{id}` 为准。
 
 ### 3. `POST /memories` + `infer=True` → 200 但 `results=[]`
 **原因**: `infer=True` 时 LLM 提取 fact 但调用 `cc-vibe.com` 失败。
