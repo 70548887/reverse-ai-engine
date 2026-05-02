@@ -91,7 +91,7 @@ browser:
     managed_persistence: false
 checkpoints:
   enabled: true
-prefill_messages_file: /opt/data/home/.hermes/prefill.md
+  max_snapshots: 50
 file_read_max_chars: 100000
 compression:
   enabled: true
@@ -266,6 +266,7 @@ delegation:
   - terminal
   - file
   - web
+prefill_messages_file: /opt/data/home/.hermes/prefill.md
 skills:
   external_dirs: []
   template_vars: true
@@ -294,12 +295,13 @@ approvals:
   timeout: 60
   cron_mode: deny
 command_allowlist:
-- script execution via -e/-c flag
 - git reset --hard (destroys uncommitted changes)
-- script execution via heredoc
 - shell command via -c/-lc flag
-- delete in root path
 - pipe remote content to shell
+- recursive delete
+- script execution via heredoc
+- script execution via -e/-c flag
+- delete in root path
 quick_commands: {}
 hooks: {}
 hooks_auto_accept: false
@@ -396,5 +398,5 @@ TELEGRAM_HOME_CHANNEL: '8221547670'
 # For custom OpenAI-compatible endpoints, add base_url and key_env.
 #
 # fallback_model:
-#   provider: openai
+#   provider: openrouter
 #   model: anthropic/claude-sonnet-4
