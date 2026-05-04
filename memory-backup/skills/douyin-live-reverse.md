@@ -795,6 +795,76 @@ wss://: 0
   - `wss://`
   - `WebSocket`
 
+### 2026-05-03 补充：持续抓取与脚本收敛
+
+用户明确要求“不需要限时，持续抓”时，`/tmp/run_douyin_capture.py` 已支持：
+
+```bash
+python3 /tmp/run_douyin_capture.py --attach --js /tmp/douyin_live_http_ws_crypto.js --seconds 0 --log /tmp/douyin_live_ws_cont.log
+```
+
+`--seconds 0` 表示常驻采集，直到手动 kill / Ctrl-C；不要再用 180/360 秒限时参数。
+
+长驻抓取时的经验：
+
+- 旧的轻量脚本里硬 hook `WsConnectTask` / `WsPingTask` 会刷 `ClassNotFoundException ... ##not found in Plugin##`。这通常不是崩溃，只是当前版本类不存在/插件化未加载，但会污染日志。
+- 更稳做法是先停掉旧进程，再用通用 `OkHttp / RealCall / Request$Builder / WebSocketListener / RealWebSocket / Cipher / Mac / MessageDigest / ClassLoader` hook，不依赖易失 frontier 类名。
+- `Cronet` / `UrlRequest` 类不存在时也只是可忽略警告；如果持续刷屏，应从脚本中移除或改成发现类加载后再 hook。
+- 后台进程状态要用 Hermes `process.poll/log` 验证；看到 `ClassNotFoundException` 不等于采集停止，必须检查进程是否仍为 `running`。
+- 重启采集时先 `process.kill` 旧 session，避免多个 Frida script 同时挂载导致日志混乱。
+
+当前推荐的持续抓取日志：
+
+```text
+/tmp/douyin_live_ws_cont.log
+```
+
+当前推荐脚本文件：
+
+```text
+/tmp/douyin_live_http_ws_crypto.js
+```
+
+### 2026-05-03 补充：采集启动器 fallback 与日志提取器
+
+`/tmp/run_douyin_capture.py` 已支持 spawn 失败/超时时自动回退到 monkey 启动后 attach：
+
+```bash
+python3 /tmp/run_douyin_capture.py --spawn --spawn-fallback monkey-attach --seconds 0 --log /tmp/douyin_live_ws_cont.log
+```
+
+也可直接 attach 已运行抖音：
+
+```bash
+python3 /tmp/run_douyin_capture.py --attach --seconds 0 --log /tmp/douyin_live_ws_cont.log
+```
+
+关键实现坑：只有真正由 Frida `device.spawn()` 拉起的进程才应 `device.resume(pid)`；如果 spawn 失败后 fallback 到 `monkey-attach`，不要再对 monkey 启动的已运行进程调用 `resume`。启动器里应以 `spawned_by_frida` 判断，而不是简单判断 `args.spawn`：
+
+```python
+if spawned_by_frida:
+    logger.write("resuming app")
+    device.resume(pid)
+```
+
+日志提取器 `/tmp/extract_douyin_capture.py` 可把 Frida 采集日志收敛成 text / json / csv，避免大日志直接进上下文：
+
+```bash
+python3 /tmp/extract_douyin_capture.py --format text --out /tmp/douyin_live_ws_cont.summary.txt /tmp/douyin_live_ws_cont.log
+python3 /tmp/extract_douyin_capture.py --format json --out /tmp/douyin_live_ws_cont.events.json /tmp/douyin_live_ws_cont.log
+python3 /tmp/extract_douyin_capture.py --format csv --out /tmp/douyin_live_ws_cont.events.csv /tmp/douyin_live_ws_cont.log
+```
+
+验证命令：
+
+```bash
+python3 -m py_compile /tmp/run_douyin_capture.py /tmp/extract_douyin_capture.py
+python3 /tmp/run_douyin_capture.py --help
+python3 /tmp/extract_douyin_capture.py --format json --out /tmp/douyin_capture_attach.events.json /tmp/douyin_capture_attach.log
+```
+
+已有日志验证样例：`/tmp/douyin_capture_attach.log` 可提取出 `total_events=220`，分类包括 `crypto/http/lifecycle/class/websocket`，并统计 `live_signal_count` 与 `signature_signal_count`。摘要可重点看 top hosts/top paths/crypto/live-signature signals。
+
 ### 2026-05-02 补充：推荐流自动滑动找直播卡片的安全姿势
 
 在推荐流里自动滑动找直播卡片时，起滑点很重要。若从右侧互动栏、底部导航、评论按钮附近滑动，容易误触评论/关注/直播广场并进入登录页，例如登录页文案可能是：
@@ -805,7 +875,7 @@ wss://: 0
 com.ss.android.ugc.aweme.account.business.login.DYLoginActivity
 ```
 
-用户明确要求“不要进入直播广场，而是在推荐页面滑动寻找推荐的直播间入口”时，按推荐流路径执行：先关闭登录页/侧边抽屉并确认顶部「推荐」高亮、底部「首页」选中；不要点击顶部「直播/播」或侧边菜单「直播广场」。推荐流直播预览的可见特征包括左下粉色「直播中」标签、主播昵称（如 `@雾南枝（逆水寒手游）`）、直播分类/标题；命中后点击屏幕中部预览区域（约 `x=540,y=900`）进入。进入成功可用 Activity 验证：`com.ss.android.ugc.aweme.live.LivePlayActivity`；截图短时间黑屏/加载中并不一定失败。
+用户明确要求“不要进入直播广场，而是在推荐页面滑动寻找推荐的直播间入口”时，按推荐流路径执行：先关闭登录页/侧边抽屉并确认顶部「推荐」高亮、底部「首页」选中；不要点击顶部「直播/播」或侧边菜单「直播广场」。推荐流直播预览的可见特征包括左下粉色「直播中」标签、主播昵称（如 `@雾南枝（逆水寒手游）`）、直播分类/标题；命中后点击屏幕中部预览区域（约 `x=540,y=900`）进入。另一类命中是普通推荐视频右侧作者头像出现粉色圆环/上方「直播」标识，UIAutomator 可能只额外出现一次「直播中」；这通常是主播正在直播的进房入口，按 1080x1920 屏幕可优先点右侧头像区域约 `x=920~1060,y=490~650`，实测中心点 `x=990,y=570` 可进入。进入成功可用 Activity 验证：`com.ss.android.ugc.aweme.live.LivePlayActivity`；截图短时间黑屏/加载中并不一定失败。
 
 实测更安全的滑动区域：
 
@@ -863,8 +933,699 @@ grep -Ei 'preview/button_info|room/info|frontier|wss://|WebSocket|live_tab|webca
 - `spawn -> attach -> load script -> resume` 比 attach 已运行进程更稳。
 - 对直播分析来说，`OkHttp/WS/Cipher/ClassLoader` 的组合比只盯登录页更有产出。
 
+## 2026-05-03 补充：直播 Tab 点击进入与进房验证闭环
+
+本轮从推荐流继续执行时，长时间推荐流安全滑动未命中直播卡片，但顶部频道栏里 `uiautomator dump` 可稳定识别到「直播，按钮」。当用户目标是验证直播间 HTTP/WS，而不是坚持推荐流路径时，可切换到顶部直播 Tab：
+
+```bash
+export ADB_SERVER_SOCKET=tcp:10.0.2.2:5037
+export ANDROID_ADB_SERVER_ADDRESS=10.0.2.2
+export ANDROID_ADB_SERVER_PORT=5037
+
+# 先确认页面不是登录页/启动页
+adb shell dumpsys window windows | grep -E 'mCurrentFocus|mFocusedApp'
+adb shell uiautomator dump /sdcard/window.xml
+adb exec-out cat /sdcard/window.xml > /tmp/douyin_window.xml
+python3 - <<'PY'
+from pathlib import Path
+s = Path('/tmp/douyin_window.xml').read_text(errors='ignore')
+print('直播按钮位置', s.find('直播，按钮'))
+PY
+
+# 顶部「直播」按钮实测中心点约 (190,135)，不同频道布局需以 XML bounds 为准
+adb shell input tap 190 135
+sleep 4
+```
+
+进入直播 Tab 后，界面可能短时间黑屏或只显示「直播发现」，不要立刻判失败。继续等待、下拉刷新或轻触列表区域后，可能自动进入一个直播间。验证闭环优先看 UI Activity + 关键接口，而不是只看视觉截图：
+
+```bash
+adb shell dumpsys window windows | grep -E 'mCurrentFocus|mFocusedApp'
+# 成功进房应出现：com.ss.android.ugc.aweme.live.LivePlayActivity
+
+grep -Ei 'webcast/feed/live_tab|webcast/preview/button_info|webcast/room/info|webcast/room/enter|webcast/im/fetch/v2/history|WebSocketListener|RealWebSocket' \
+  /tmp/douyin_live_ws_cont.log | tail -n 80
+```
+
+本轮成功进房后的关键命中包括：
+
+```text
+/webcast/feed/live_tab/
+/webcast/preview/button_info/?room_id=...&anchor_id=...
+/webcast/room/info_by_scene/?room_id=...&scene=into_preview
+/webcast/room/enter_preload/?room_id=...
+/webcast/room/enter/?...
+/webcast/room/enter_backend/?room_id=...
+/webcast/im/fetch/v2/history/?rid=...&room_id=...
+WebSocketListener.onOpen
+WebSocketListener.onMessage
+RealWebSocket.send
+```
+
+判定规则：
+
+- `LivePlayActivity` + `/webcast/room/enter*` + `/webcast/im/fetch/v2/history` 基本可判定已进入真实直播间。
+- `webcast/feed/live_tab` 只表示直播 Tab/广场加载，不等于进房。
+- `preview/button_info` + `room_id/anchor_id` 表示直播预览/候选房间已出现；随后若出现 `room/info_by_scene`、`room/enter*` 才是进入路径。
+- 视觉上看到聊天室输入框「说点什么…」、主播信息、弹幕区后，可作为 UI 层二次确认；无需再点榜单/成员等控件验证进房。
+- 长驻采集进程可继续保持：`python3 /tmp/run_douyin_capture.py --attach --js /tmp/douyin_live_http_ws_crypto.js --seconds 0 --log /tmp/douyin_live_ws_cont.log`。
+
+### 2026-05-03 补充：ADB/Frida USB 断链的快速判定
+
+当复验长采集前出现以下组合时，先判定为宿主机 ADB/USB 链路未恢复，不要继续调 hook 或重试 MCP：
+
+```text
+10.0.2.2:5037 closed
+172.17.0.1:5037 closed
+adb devices -l 无设备
+frida.get_usb_device(...) -> InvalidArgumentError device not found
+```
+
+推荐一次性检查命令：
+
+```bash
+for host in 10.0.2.2 172.17.0.1; do
+  printf '%s:5037 ' "$host"
+  timeout 2 bash -lc "</dev/tcp/$host/5037" >/dev/null 2>&1 && echo open || echo closed
+  ADB_SERVER_SOCKET=tcp:$host:5037 ANDROID_ADB_SERVER_ADDRESS=$host ANDROID_ADB_SERVER_PORT=5037 timeout 8 adb devices -l || true
+done
+python3 - <<'PY'
+import frida
+print('frida', frida.__version__)
+try:
+    d = frida.get_usb_device(timeout=5)
+    print('USB_OK', d.id, d.name, d.type)
+except Exception as e:
+    print('USB_ERR', type(e).__name__, e)
+PY
+```
+
+只有宿主机侧 `adb devices -l` 恢复看到 `SJE0217B17002079 device` 后，才继续执行长采集：
+
+```bash
+python3 /tmp/run_douyin_capture.py --attach --js /tmp/douyin_live_http_ws_crypto.js --seconds 0 --log /tmp/douyin_live_ws_cont.log
+```
+
+### 2026-05-03 补充：运行态 attach 可稳定抓 TTNET/Cronet 与 Crypto
+
+本轮实测中，`spawn` 路径在当前环境可能卡住：
+
+```text
+frida.TransportError: timeout was reached
+```
+
+但先让抖音正常运行，再对主进程 `attach` 是可行路径：
+
+```bash
+python3 /tmp/run_douyin_capture.py --attach --seconds 60 --log /tmp/douyin_capture_attach.log
+```
+
+成功信号包括：
+
+```text
+script loaded
+[INIT] http/ws/crypto hooks installed
+[INIT] hooked com.ttnet.org.chromium.net.urlconnection.CronetHttpURLConnection.getResponseCode()
+[CRYPTO.SecretKeySpec] alg=AES keyLen=32
+[CRYPTO.IvParameterSpec] ivLen=12
+[CRYPTO.getInstance] AES/GCM/NoPadding
+[TTNET.getResponseCode] https://aweme.snssdk.com/service/settings/v3/?klink_egdi=...
+[TTNET.getResponseCode] https://aweme.snssdk.com/aweme/homepage/combine/?...
+[CRYPTO.getInstance] RSA/ECB/PKCS1Padding
+[CRYPTO.getInstance] AES/CBC/PKCS7PADDING
+[CRYPTO.SecretKeySpec] alg=HmacSHA256 keyLen=36
+[CRYPTO.mac.doFinal] inLen=52
+[CRYPTO.SecretKeySpec] alg=HmacSHA256 keyLen=64
+```
+
+### 关键判断
+
+- 大量请求走 `TTNET` / `CronetHttpURLConnection`，不要只盯 OkHttp；`com.ttnet.org.chromium.net.urlconnection.CronetHttpURLConnection.getResponseCode()` 是当前版本有效观察点。
+- 常见启动/首页接口：
+  - `aweme.snssdk.com/service/settings/v3/`
+  - `aweme.snssdk.com/aweme/homepage/combine/`
+  - `aweme.snssdk.com/aweme/v1/multicast/query/`
+  - `mssdk.bytedance.com/*`
+  - `gecko.zijieapi.com/*`
+  - `polaris.zijieapi.com/*`
+- `klink_egdi=...` 会在大量请求参数中出现，是后续可专盯的签名/设备风控参数之一。
+- Crypto 层可见 `AES/GCM/NoPadding`、`AES/CBC/PKCS7PADDING`、`RSA/ECB/PKCS1Padding`、`HmacSHA256`，以及 keyLen `16/32/36/64`、IV len `12` 等线索。
+- `okhttp3.internal.ws.RealWebSocket.connect` hook 报 overload 不匹配时不是致命问题；改 hook `.connect('okhttp3.OkHttpClient')` 或暂时只保留 `send/onMessage/onOpen`。
+- `org.chromium.net.UrlRequest*` 不存在时也不是失败，当前可用的是 `com.ttnet.org.chromium.*` 命名空间。
+
+### 日志收敛脚本
+
+大日志不要直接贴给模型；先抽关键行：
+
+```python
+import re
+path='/tmp/douyin_capture_attach.log'
+patterns=[
+  r'\[TTNET\.getResponseCode\] (https?://\S+)',
+  r'\[CRYPTO\.SecretKeySpec\] .*',
+  r'\[CRYPTO\.getInstance\] .*',
+  r'\[CRYPTO\.init\.key(?:\.spec)?\] .*',
+  r'\[CRYPTO\.doFinal(?:\.bytes)?\] .*',
+  r'\[CRYPTO\.digest\] .*',
+  r'\[CRYPTO\.mac\.doFinal\] .*',
+  r'\[INIT\] .*',
+  r'\[WARN\] .*',
+]
+seen=set()
+with open(path, errors='ignore') as f:
+  for line in f:
+    for p in patterns:
+      m=re.search(p, line)
+      if m and m.group(0) not in seen:
+        print(m.group(0)); seen.add(m.group(0))
+        break
+```
+
+### 决策规则更新
+
+- 若 `spawn` 超时，不要陷入重试；改为“用户/ADB 先拉起 App → attach 主进程 → 等 20–60 秒”。
+- 如果目标只是确认网络/加密 hook 是否有效，运行态 attach 已足够；只有需要捕获极早初始化时再考虑 spawn。
+- 看到 `TTNET.getResponseCode` + `CRYPTO.*` 即可判定 hook 有效；没有直播接口时先判断 UI 是否进入直播页，而不是怀疑注入失败。
+
+## 2026-05-03 补充：enhanced hook 复验 Query/Ropa/TTNET 的成功判定
+
+本轮在 ADB/Frida USB 恢复后，使用 enhanced hook 重新 attach 已运行抖音进程并长驻采集，确认以下闭环可作为“直播协议 hook 有效”的复验标准：
+
+```bash
+export ADB_SERVER_SOCKET=tcp:10.0.2.2:5037
+export ANDROID_ADB_SERVER_ADDRESS=10.0.2.2
+export ANDROID_ADB_SERVER_PORT=5037
+python3 /tmp/run_douyin_capture.py \
+  --attach \
+  --js /tmp/douyin_live_http_ws_crypto.js \
+  --seconds 0 \
+  --log /tmp/douyin_live_ws_enhanced_live.log
+```
+
+复验命令：
+
+```bash
+python3 /tmp/extract_douyin_capture.py \
+  --format text \
+  --out /tmp/douyin_live_ws_enhanced_live.summary.txt \
+  /tmp/douyin_live_ws_enhanced_live.log
+
+python3 - <<'PY'
+from pathlib import Path
+s = Path('/tmp/douyin_live_ws_enhanced_live.log').read_text(errors='ignore')
+for k in [
+  'webcast/im/fetch/v2', 'webcast/room/enter', 'webcast/room/info',
+  'webcast/feed/live_tab', 'preview/button_info', 'TTNET.getResponseCode',
+  'QUERY.filterQuery', 'QUERY.tryEncryptRequest', 'RopaEncrypt.', 'ROPA.',
+  'WebSocketListener', 'RealWebSocket', 'x-tt-dt', 'r_signature',
+  'klink_egdi', 'CRYPTO.SecretKeySpec', 'CRYPTO.digest'
+]:
+    print(f'{k}: {s.count(k)}')
+PY
+```
+
+已验证成功信号：
+
+```text
+[LAUNCHER] frida-python=16.2.2
+[LAUNCHER] device=VTR AL00 type=usb
+[LAUNCHER] attaching pid=<pid>
+[LAUNCHER] script loaded
+[INIT] enhanced http/ws/crypto/ttnet/query hooks installing
+[INIT] hooked com.bytedance.ropa.encrypt.RopaEncrypt.getEncryptSeq overload#0
+[INIT] hooked com.bytedance.ropa.encrypt.RopaEncrypt.getEncryptSeqV2 overload#0
+[QUERY.filterQuery] url=https://webcast.amemv.com/webcast/im/fetch/v2/?...
+[QUERY.tryEncryptRequest] extra=null url=https://webcast.amemv.com/webcast/im/fetch/v2/?...
+[TTNET.getResponseCode] com.ttnet.org.chromium.net.urlconnection.CronetHttpURLConnection:https://webcast.amemv.com/webcast/im/fetch/v2/?...
+[TTNET.getHeaderFields] .../webcast/im/fetch/v2/?...
+[TTNET.getInputStream] .../webcast/im/fetch/v2/?...
+[CRYPTO.digest] len=513 ...
+[CRYPTO.SecretKeySpec] alg=AES len=16 ...
+```
+
+关键判定规则：
+
+- `QUERY.filterQuery` + `QUERY.tryEncryptRequest` 出现，说明 `QueryFilterEngine` 链路已可见。
+- `RopaEncrypt.*` 的 `[INIT] hooked ...` 只代表 hook 安装成功；若没有 `ROPA.*` 调用输出，不一定失败，可能当前请求未走 RopaEncrypt、调用发生在 attach 前，或在其他进程。
+- `TTNET.getResponseCode/getHeaderFields/getInputStream` 命中 `com.ttnet.org.chromium.net.urlconnection.CronetHttpURLConnection`，说明当前网络观察点有效；不要只盯 `org.chromium.net.*`。
+- 直播间真实 IM 请求可表现为 `/webcast/im/fetch/v2/`，参数里常见：`room_id/rid`、`klink_egdi`、`r_signature`、`x-tt-dt` header。
+- UI 曾在 `com.ss.android.ugc.aweme.live.LivePlayActivity` 时抓到上述信号；若之后焦点切到桌面，长驻 hook 可能仍可继续运行，但必须先验证抖音主进程是否还存在。
+- 如果 `process.poll` 显示采集进程仍是 `running`，但 `adb shell pidof -s com.ss.android.ugc.aweme` 为空、`dumpsys window` 前台是 `com.huawei.android.launcher`，且日志计数不再增长，这通常表示目标 App 已退出/被回收，Frida 采集进程只是外壳还活着。此时不要继续等日志，也不要把它误判成 hook 失败；先 `process.kill` 旧采集 session，重新拉起抖音并进入直播页/直播间，再用 `--attach --seconds 0` 新开一轮长驻采集。
+
+快速判定命令：
+
+```bash
+export ADB_SERVER_SOCKET=tcp:10.0.2.2:5037
+export ANDROID_ADB_SERVER_ADDRESS=10.0.2.2
+export ANDROID_ADB_SERVER_PORT=5037
+adb shell dumpsys window windows | grep -E 'mCurrentFocus|mFocusedApp'
+adb shell pidof -s com.ss.android.ugc.aweme || true
+python3 - <<'PY'
+from pathlib import Path
+p=Path('/tmp/douyin_live_ws_enhanced_live2.log')
+s=p.read_text(errors='ignore') if p.exists() else ''
+for k in ['webcast/im/fetch/v2','webcast/room/enter','webcast/room/info','webcast/feed/live_tab','preview/button_info','TTNET.getResponseCode','QUERY.filterQuery','QUERY.tryEncryptRequest','RopaEncrypt.','ROPA.','WebSocketListener.onOpen','RealWebSocket.send','klink_egdi','x-tt-dt','CRYPTO.SecretKeySpec']:
+    print(f'{k}: {s.count(k)}')
+PY
+```
+
+恢复流程：
+
+```bash
+# 先停旧 Hermes background session，避免旧 script/日志污染
+# process.kill <old_session_id>
+adb shell monkey -p com.ss.android.ugc.aweme 1
+# 手动或 ADB 进入直播 Tab / LivePlayActivity 后：
+python3 /tmp/run_douyin_capture.py \
+  --attach \
+  --js /tmp/douyin_live_http_ws_crypto.js \
+  --seconds 0 \
+  --log /tmp/douyin_live_ws_enhanced_live3.log
+```
+
+本轮样例房间 ID：
+
+```text
+room_id=7635641714312514350
+```
+
+该 ID 只是样例，不应写死到脚本逻辑。
+
+## 2026-05-03 补充：ANR/异常提醒后的直播验证恢复规则
+
+本轮复验 `verify_live_signals` 时遇到一个容易误判的场景：Frida/ADB 都正常，Hook 也能加载，但 UI 因 ANR、误触系统 App、抖音异常修复页而离开直播路径，导致关键直播接口计数为 0。
+
+已观察到的状态组合：
+
+```text
+mCurrentFocus=com.huawei.android.launcher/.unihome.UniHomeLauncher
+adb shell pidof -s com.ss.android.ugc.aweme -> 仍有 PID
+frida.get_usb_device(timeout=5) -> USB_OK
+采集日志中 WebSocket/Crypto 少量命中，但：
+webcast/feed/live_tab: 0
+preview/button_info: 0
+webcast/room/info: 0
+webcast/room/enter: 0
+webcast/im/fetch/v2: 0
+QUERY.filterQuery: 0
+QUERY.tryEncryptRequest: 0
+```
+
+判定规则：
+
+- 抖音 PID 存在但前台是桌面/通讯录/手机管家/异常提醒页时，不要把直播接口 0 误判为 Hook 失败；先恢复 UI 到正常抖音首页或直播页。
+- 出现系统 ANR「抖音 无响应。是否将其关闭？」时，优先点击「等待」；但点击后必须立刻用 `dumpsys window` 和截图确认是否误入其他系统 App。
+- 出现「抖音异常提醒：检测到抖音多次闪退... 退出 / 优化程序」时，点击「优化程序」可能直接回到桌面；之后需要重新拉起抖音并等待进入正常首页，再 attach，不要继续盯旧日志等直播信号。
+- 顶部触控/指针调试浮层可能影响视觉判断，但不是 App 弹窗；真正阻断流程的是 ANR、异常提醒、登录页、系统 App 前台。
+- 旧的 Frida background 进程在目标 App 退到桌面或重启后可能仍显示存在/已退出混杂；复验前先 `process.list`/`process.kill` 清掉旧采集，避免旧日志污染。
+
+推荐恢复闭环：
+
+```bash
+export ADB_SERVER_SOCKET=tcp:10.0.2.2:5037
+export ANDROID_ADB_SERVER_ADDRESS=10.0.2.2
+export ANDROID_ADB_SERVER_PORT=5037
+
+# 1. 先确认链路和前台，不要直接判断 hook
+adb devices -l
+adb shell dumpsys window windows | grep -E 'mCurrentFocus|mFocusedApp'
+adb shell pidof -s com.ss.android.ugc.aweme || true
+python3 - <<'PY'
+import frida
+print('frida', frida.__version__)
+d = frida.get_usb_device(timeout=5)
+print('USB_OK', d.id, d.name, d.type)
+PY
+
+# 2. 若前台不是抖音正常首页/直播页，先重新拉起并截图确认
+adb shell monkey -p com.ss.android.ugc.aweme 1
+sleep 6
+adb shell dumpsys window windows | grep -E 'mCurrentFocus|mFocusedApp'
+adb exec-out screencap -p > /tmp/douyin_recover.png
+
+# 3. 只在 UI 正常后重新 attach 新日志
+python3 /tmp/run_douyin_capture.py \
+  --attach \
+  --js /tmp/douyin_live_http_ws_crypto.js \
+  --seconds 0 \
+  --log /tmp/douyin_live_ws_recover.log
+```
+
+验证 `verify_live_signals` 完成时，必须同时满足：
+
+- UI/Activity 已在直播 Tab 或 `LivePlayActivity`，而不是桌面/通讯录/异常提醒页；
+- 日志新增出现至少一类直播路径：`webcast/feed/live_tab`、`preview/button_info`、`webcast/room/info*`、`webcast/room/enter*`、`webcast/im/fetch/v2`；
+- 若只有 `WebSocketListener` / `CRYPTO.*` 少量命中但直播路径全为 0，只能说明 hook 活着，不能说明已进入直播页。
+
+## 2026-05-04 补充：直播 Tab 可直接进房，但 enhanced 全量 Hook 会诱发 ANR
+
+本轮从首页推荐流恢复后确认：不挂 Hook 时，顶部频道栏「直播/播」入口可稳定进入直播 Tab/直播发现页，并可自动进入直播间。验证路径：
+
+```bash
+export ADB_SERVER_SOCKET=tcp:10.0.2.2:5037
+export ANDROID_ADB_SERVER_ADDRESS=10.0.2.2
+export ANDROID_ADB_SERVER_PORT=5037
+
+adb shell monkey -p com.ss.android.ugc.aweme 1
+sleep 12
+adb shell input tap 190 135   # 顶部「直播」入口，实际以 XML bounds 为准
+sleep 15
+adb shell dumpsys window windows | grep -E 'mCurrentFocus|mFocusedApp'
+# 成功进房：com.ss.android.ugc.aweme/.live.LivePlayActivity
+```
+
+UI 侧成功信号：
+
+- `LivePlayActivity`
+- XML/截图中出现「说点什么」「关注」
+- 直播 Tab 阶段可能先出现「直播发现」「自动进入直播间」，等待即可自动进房
+
+但使用 `/tmp/douyin_live_http_ws_crypto.js` 的 enhanced 全量 Hook 在直播间内 attach 后，若继续点击输入框/上滑切房，容易出现系统 ANR：
+
+```text
+Application Not Responding: com.ss.android.ugc.aweme
+抖音 无响应。是否将其关闭？
+按钮：关闭应用 / 等待
+```
+
+本轮日志现象：Hook 初始化成功、`RopaEncrypt.*`/`WebSocketListener`/`RealWebSocket.send` 有少量命中，但直播 HTTP 关键路径仍全为 0：
+
+```text
+webcast/feed/live_tab: 0
+preview/button_info: 0
+webcast/room/info: 0
+webcast/room/enter: 0
+webcast/im/fetch/v2: 0
+QUERY.filterQuery: 0
+QUERY.tryEncryptRequest: 0
+```
+
+判定规则：
+
+- `LivePlayActivity` + UI 元素出现，说明进房路径本身没问题；直播接口为 0 时，不要先怀疑 UI 自动化。
+- attach 时机太晚时，`room/enter*` 和 `im/fetch/v2/history` 可能已在 attach 前完成；需要在进入直播 Tab 前挂轻量网络 Hook，或进房后等待刷新/切房触发。
+- enhanced 脚本包含 `ClassLoader.loadClass`、`Cipher.doFinal`、`MessageDigest.digest`、Header 构造等高频 Hook，直播页交互时性能压力大；若目标只是 URL/接口计数，先用轻量 Hook，不要一开始全量 Crypto/ClassLoader。
+- 出现 ANR 后优先点击「等待」，但必须马上用 `dumpsys window`/截图确认是否误入华为商城、手机管家等系统 App；不要继续盯旧日志。
+- 若 Hook 后误入系统 App 或抖音 PID 消失，应先 `process.kill` 旧采集，重新拉起抖音并确认首页，再继续。
+
+推荐下一轮轻量化策略：
+
+1. 先无 Hook/轻量 Hook 确认能从首页进入直播 Tab 和 `LivePlayActivity`。
+2. 只保留低频 URL 观察点：`OkHttpClient.newCall`、`RealCall.execute/enqueue`、`Request$Builder.url`、`com.ttnet.org.chromium.net.urlconnection.CronetHttpURLConnection.getResponseCode/getInputStream/getHeaderFields`、`WebSocketListener.onOpen/onMessage`、`RealWebSocket.send`。
+3. 暂时移除或延后：`ClassLoader.loadClass`、`Cipher.doFinal`、`MessageDigest.digest`、`SecretKeySpec/IvParameterSpec`、`Header.$init`、`Request$Builder.headers` 等高频 Hook。
+4. 直播 URL/room_id 抓到后，再针对单一路径恢复 QueryFilter/Ropa/Crypto 定点 Hook。
+
+## 2026-05-04 补充：轻量 TTNET/URL Hook 成功闭环与摘要落地
+
+本轮在 enhanced 全量 Hook 诱发 ANR 后，改用轻量 URL/TTNET/WS Hook，成功恢复到直播 Tab 并抓到真实直播间接口。可复用文件：
+
+```text
+/tmp/douyin_live_light_net.js
+/tmp/douyin_live_light_0504.log
+/tmp/douyin_live_light_0504.final_summary.md
+```
+
+推荐执行方式：
+
+```bash
+export ADB_SERVER_SOCKET=tcp:10.0.2.2:5037
+export ANDROID_ADB_SERVER_ADDRESS=10.0.2.2
+export ANDROID_ADB_SERVER_PORT=5037
+
+# 如 Frida USB 临时 device gone，先重启 16.2.2 server
+adb shell 'su -c "pkill -f frida-server || true"'
+sleep 1
+adb shell 'su -c "/data/local/tmp/frida-server-16.2.2-android-arm64 >/data/local/tmp/frida16.log 2>&1 &"'
+sleep 2
+
+# 拉起抖音，确认首页有顶部「直播」入口
+adb shell am force-stop com.ss.android.ugc.aweme
+adb shell monkey -p com.ss.android.ugc.aweme 1
+sleep 10
+adb shell uiautomator dump /sdcard/window.xml >/dev/null 2>&1
+adb exec-out cat /sdcard/window.xml | grep -E '直播|推荐|首页' | head
+
+# 先 attach 轻量 Hook，再点击顶部直播入口并等待进房
+python3 /tmp/run_douyin_capture.py \
+  --attach \
+  --js /tmp/douyin_live_light_net.js \
+  --seconds 0 \
+  --log /tmp/douyin_live_light_0504.log
+
+adb shell input tap 190 135
+sleep 15
+adb shell input tap 540 520   # 直播发现页里轻触列表/预览区域，必要时触发进房
+sleep 10
+```
+
+本轮最终验证状态：
+
+```text
+mCurrentFocus=com.ss.android.ugc.aweme/.live.LivePlayActivity
+pid=30923
+```
+
+关键命中计数样例：
+
+```text
+webcast/feed/live_tab: 23
+preview/button_info: 22
+webcast/room/info: 13
+webcast/room/enter: 65
+webcast/im/fetch/v2: 11
+QUERY.filterQuery: 68
+QUERY.tryEncryptRequest: 52
+TTNET.getResponseCode: 63
+TTNET.getHeaderFields: 189
+TTNET.getInputStream: 63
+x-tt-dt: 38
+r_signature: 103
+klink_egdi: 396
+room_id=: 250
+anchor_id=: 93
+```
+
+样例 ID：
+
+```text
+room_id/rid:
+- 7635818784263047987
+- 7635804407568861998
+anchor_id:
+- 2051051718472889
+```
+
+有效端点包括：
+
+```text
+/webcast/feed/live_tab/
+/webcast/preview/button_info/
+/webcast/room/info_by_scene/
+/webcast/room/enter/
+/webcast/room/enter_preload/
+/webcast/room/enter_backend/
+/webcast/im/fetch/v2/history/
+/webcast/gift/list/
+/webcast/gift/effect_game/get/
+/webcast/lottery/melon/lottery_info/
+```
+
+判定规则更新：
+
+- `LivePlayActivity + room/enter* + im/fetch/v2 + QueryFilterEngine + TTNET` 可判定已进入真实直播间并抓到协议链路。
+- 如果 `webcast/feed/live_tab` 有命中但没有 `room/enter*`，通常只到直播 Tab/直播发现页，继续等待或轻触预览区域。
+- 轻量脚本应优先保留 `TTNET.getResponseCode/getHeaderFields/getInputStream`、`Request/URL`、`QueryFilterEngine.filterQuery/tryEncryptRequest`、低频 WS hook；不要一开始启用 `ClassLoader.loadClass`、`Cipher.doFinal`、`MessageDigest.digest`、Header 构造等高频 Hook。
+- Frida 报 `TransportError: the connection is closed` / `InvalidOperationError: device is gone` 时，先重启设备侧 `frida-server-16.2.2`，再用 Python USB API attach；不要切回 remote `127.0.0.1:27042` 反复试。
+- 大日志收敛用脚本生成 markdown 摘要，不要直接把完整日志塞进上下文；本轮摘要落地为 `/tmp/douyin_live_light_0504.final_summary.md`。
+
+### 2026-05-04 续跑补充：从已运行首页恢复采集的最小闭环
+
+如果前一轮采集/上下文中断，但抖音仍在运行，优先不要 force-stop；先确认 ADB + Frida USB + PID，然后直接 attach 轻量脚本续抓：
+
+```bash
+export ADB_SERVER_SOCKET=tcp:10.0.2.2:5037
+export ANDROID_ADB_SERVER_ADDRESS=10.0.2.2
+export ANDROID_ADB_SERVER_PORT=5037
+
+adb devices -l
+adb shell dumpsys window windows | grep -E 'mCurrentFocus|mFocusedApp'
+adb shell pidof -s com.ss.android.ugc.aweme || true
+python3 - <<'PY'
+import frida
+print('frida', frida.__version__)
+d = frida.get_usb_device(timeout=5)
+print('USB_OK', d.id, d.name, d.type)
+PY
+
+python3 /tmp/run_douyin_capture.py \
+  --attach \
+  --js /tmp/douyin_live_light_net.js \
+  --seconds 0 \
+  --log /tmp/douyin_live_continue_0504.log
+```
+
+UI 恢复路径：若截图/视觉确认已在首页推荐流，直接点击顶部直播入口，再轻触直播发现页中部区域触发进房：
+
+```bash
+adb shell input tap 190 135
+sleep 15
+adb shell input tap 540 520
+sleep 10
+adb shell dumpsys window windows | grep -E 'mCurrentFocus|mFocusedApp'
+# 成功：com.ss.android.ugc.aweme/.live.LivePlayActivity
+```
+
+注意：`uiautomator dump` 偶发会卡住/超时，但这不代表 App 卡死。若 `dumpsys window` 显示仍在抖音，优先用 `adb exec-out screencap -p > /tmp/douyin_screen.png` 加视觉确认页面；确认是正常首页后继续点直播入口，不要因为 XML dump 超时而重启 App。
+
+本轮续跑样例计数：
+
+```text
+webcast/feed/live_tab: 22
+preview/button_info: 11
+webcast/room/info: 12
+webcast/room/enter: 91
+webcast/im/fetch/v2: 11
+QUERY.filterQuery: 90
+QUERY.tryEncryptRequest: 65
+TTNET.getResponseCode: 86
+TTNET.getHeaderFields: 259
+TTNET.getInputStream: 86
+r_signature: 149
+klink_egdi: 445
+x-tt-dt: 46
+room_id=: 261
+anchor_id=: 92
+WS.connect/onOpen/onMessage/send: 0
+wss:// / frontier: 0
+```
+
+判定规则：`LivePlayActivity + room/enter* + im/fetch/v2 + QueryFilterEngine + TTNET` 已足够判定直播链路抓取成功；同轮 `WS.*=0` 继续支持“当前版本不要把 wss/frontier 当唯一成功指标”的规则。
+
+## 2026-05-04 补充：不要把“未抓到 wss”误判为失败，当前版本可能走 TTNET HTTP fetch
+
+在轻量 TTNET/URL Hook 已经成功抓到真实直播间接口后，额外尝试了 WebSocket 专项 probe：
+
+```text
+/tmp/douyin_ws_probe.js
+/tmp/douyin_ws_probe2.js
+/tmp/douyin_ws_probe2_0504c.log
+```
+
+probe 覆盖点包括：
+
+- `okhttp3.internal.ws.RealWebSocket.connect(okhttp3.OkHttpClient)`
+- `okhttp3.WebSocketListener.onOpen/onMessage(String|ByteString)`
+- `okhttp3.internal.ws.RealWebSocket.send(String|ByteString)`
+- `java.net.Socket.connect(SocketAddress[, int])`
+- `javax.net.ssl.SSLSocket.startHandshake()`
+
+实测结论：
+
+- WS hook 能安装成功，日志里可见 `hooked okhttp3.internal.ws.RealWebSocket.connect(...)`、`hooked okhttp3.WebSocketListener.onOpen/onMessage(...)`。
+- 但进入直播间/滑动刷新后，没有实际命中 `WS.connect`、`WS.onOpen`、`WS.onMessage`、`SOCKET.connect`、`SSL.startHandshake`。
+- 日志全文没有 `wss://`、`frontier` 字符串。
+- 同时 TTNET/QueryFilter 侧稳定命中：`/webcast/room/enter*`、`/webcast/im/fetch/v2/history/`、`r_signature`、`x-tt-dt`、`klink_egdi`。
+
+判定规则更新：
+
+- 在当前抖音 v38.5.0 / Huawei P10 / Android 9 环境里，直播 IM 数据可能优先表现为 TTNET/Cronet 的 HTTP fetch/history 链路，而不是传统 OkHttp `wss://` WebSocket。
+- `RealWebSocket/WebSocketListener` 只出现 hook 初始化、不出现运行事件时，不应直接判定抓取失败；若 `LivePlayActivity + /webcast/im/fetch/v2/history + r_signature` 已出现，应转向 HTTP fetch 与签名链路分析。
+- 不要用 `frontier` 或 `wss://` 作为唯一成功指标；当前可用的成功指标是 `room/enter*`、`im/fetch/v2/history`、`QueryFilterEngine`、`TTNET.getResponseCode/getInputStream/getHeaderFields`。
+- 若确实需要继续追长连接，下一步应 hook Cronet/native/QUIC/HTTP2 层或 Bytedance KMP websocket service，而不是只反复 hook OkHttp WebSocket。
+- WebSocket 专项 probe 不要加入默认 enhanced 脚本长期运行；需要时短时加载即可，避免多脚本同时 attach 导致日志混乱或 ANR。
+
+关键样例：
+
+```text
+/webcast/im/fetch/v2/history/?rid=<room_id>&room_id=<room_id>&...&r_signature=<sig>
+```
+
+这里的 `r_signature` 是下一阶段更值得优先逆向的目标。
+
+## 2026-05-04 补充：r_signature/QueryFilter 调用栈探针结论
+
+本轮在轻量 TTNET/URL Hook 已确认直播链路后，进一步挂载定点 `r_signature` / `QueryFilterEngine` / `Request$Builder.url` 调用栈 probe，成功触发直播刷新与进房请求。
+
+关键日志：
+
+```text
+/tmp/douyin_r_signature_stack_probe_0504c.log
+```
+
+有效状态验证：
+
+```text
+mCurrentFocus=com.ss.android.ugc.aweme/.live.LivePlayActivity
+```
+
+样例计数：
+
+```text
+webcast/feed/live_tab: 16
+preview/button_info: 8
+webcast/room/enter: 50
+webcast/im/fetch/v2: 8
+QUERY.filterQuery: 44
+QUERY.tryEncryptRequest: 42
+RETRO.Builder.url.BEFORE: 97
+r_signature=: 109
+klink_egdi: 175
+room_id=: 182
+rid=: 8
+STACK: 183
+```
+
+样例房间：
+
+```text
+room_id/rid = 7635850760042875684
+anchor_id   = 3018621455177194
+```
+
+关键观察：
+
+- `r_signature` 已在直播相关请求中出现，并常与 `luckydog_base`、`luckydog_token`、`luckydog_data`、`klink_egdi` 同现。
+- 样例接口包括 `/webcast/privilege/subscribe/info/`、`/webcast/room/enter*`、`/webcast/im/fetch/v2/history/`。
+- `QueryFilterEngine.filterQuery` / `tryEncryptRequest` 稳定命中，调用链路可见：
+  ```text
+  QueryFilterEngine.filterQuery/tryEncryptRequest
+    -> X.1IK6.newSsCall
+    -> X.1IK9.newSsCall
+    -> com.bytedance.ttnet.retrofit.SsRetrofitClient.newSsCall
+    -> com.bytedance.retrofit2.CallServerInterceptor.intercept
+    -> com.bytedance.retrofit2.intercept.RealInterceptorChain.proceed
+  ```
+- 本轮 `QueryFilterEngine` 输出中可见 `queryEnc=false`、`bodyEnc=false`；因此 `r_signature` 不应先假定为 QueryFilterEngine 直接生成，可能由更上/下游拦截器追加。
+- `Request$Builder.url` 的调用栈显示 URL 会被多层 interceptor 改写，重点类包括：
+  ```text
+  com.bytedance.ug.sdk.luckydog.tokenunion.interceptor.TokenUnionInterceptor.intercept
+  com.bytedance.frameworks.baselib.netx.partner.NetworkPartnerGroup$PartnerInterceptor.intercept
+  com.bytedance.frameworks.baselib.netx.partner.mutable.MutableRequest.LIZ
+  com.bytedance.frameworks.baselib.network.http.retrofit.BaseSsInterceptor.processBeforeSendRequest
+  com.bytedance.ttnet.retrofit.SsInterceptor.processBeforeSendRequest
+  ```
+
+下一步定位策略：
+
+1. 对上述 Interceptor 做 before/after URL diff，找出哪一层首次插入 `r_signature`。
+2. 静态检索 smali：
+   ```bash
+   ROOT=/opt/data/home/reverse-tools/douyin_decompiled/douyin_base
+   rg -n "TokenUnionInterceptor|NetworkPartnerGroup|BaseSsInterceptor|SsInterceptor|r_signature|luckydog_base|tryEncryptRequest|filterQuery" \
+     $ROOT/smali*
+   ```
+3. 优先枚举/Hook `com.bytedance.ug.sdk.luckydog.*`、`*TokenUnion*`、`*LuckyDog*`，观察 `luckydog_*` 与 `r_signature` 是否同阶段新增。
+4. 用同一请求时间序列确认：
+   ```text
+   原始 Retrofit URL
+     -> QueryFilterEngine.filterQuery / tryEncryptRequest
+     -> TokenUnion/LuckyDog
+     -> BaseSsInterceptor/SsInterceptor
+     -> TTNET getResponseCode
+   ```
+
 ## 下一步
 
-1. **spawn 注入 Frida Hook** — 先 Hook OkHttp/WS/Cipher，确认 Java 层可见流量
+1. **运行态 attach 或 spawn 注入 Frida Hook** — 先 Hook TTNET/Cronet/OkHttp/WS/Cipher，确认 Java 层可见流量
 2. **Hook RopaEncrypt / QueryFilterEngine / WebSocketTask** — 实时抓输入输出（最快验证路径）
-3. **抓包验证 SO headers** — 确认 x-tt-encrypt-queries 实际值格式
+3. **抓包验证 SO headers** — 确认 x-tt-encrypt-queries / klink_egdi 等实际值格式
