@@ -1624,8 +1624,565 @@ anchor_id   = 3018621455177194
      -> TTNET getResponseCode
    ```
 
-## 下一步
+### 2026-05-04 补充：r_signature 静态收敛到 RoomParamHandler
 
-1. **运行态 attach 或 spawn 注入 Frida Hook** — 先 Hook TTNET/Cronet/OkHttp/WS/Cipher，确认 Java 层可见流量
-2. **Hook RopaEncrypt / QueryFilterEngine / WebSocketTask** — 实时抓输入输出（最快验证路径）
-3. **抓包验证 SO headers** — 确认 x-tt-encrypt-queries / klink_egdi 等实际值格式
+在当前 apktool/smali 目录中，直接搜索 `TokenUnionInterceptor`、`NetworkPartnerGroup$PartnerInterceptor`、`BaseSsInterceptor`、`SsInterceptor` 可能因混淆/拆包不稳定而无命中；不要继续只泛搜这些 Interceptor。`r_signature` 静态入口已收敛到：
+
+```text
+smali_classes15/com/bytedance/android/live/network/impl/handler/RoomParamHandler.smali
+```
+
+关键方法：
+
+```smali
+.method public static final handleGetRequest(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+```
+
+该方法逻辑：
+
+1. 读取 `LIVE_ROOM_SIGNATURE_PARAM` 配置。
+2. 调用 `RoomSessionConfig->LIZ(Ljava/lang/String;)Z` 判断当前 path/scene 是否需要房间签名。
+3. 从 URL 解析 `room_id`。
+4. 通过静态字段 `RoomParamHandler->LIZIZ:LX/04eO;` 以 `room_id` 查询签名缓存。
+5. 命中后返回追加 `r_signature` 的新 URL，否则返回原 URL。
+
+同类中还存在直接 append 层：
+
+```smali
+const-string v0, "r_signature"
+invoke-virtual {v1, v0, p1}, Landroid/net/Uri$Builder;->appendQueryParameter(Ljava/lang/String;Ljava/lang/String;)Landroid/net/Uri$Builder;
+```
+
+以及综合处理逻辑会先调用：
+
+```smali
+invoke-static {p2, p3}, Lcom/bytedance/android/live/network/impl/handler/RoomParamHandler;->handleGetRequest(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+```
+
+若返回值变长且包含 `r_signature`，则直接返回该 URL。因此下一轮 Frida 定点 Hook 应优先选择：
+
+```text
+com.bytedance.android.live.network.impl.handler.RoomParamHandler.handleGetRequest(String,String)
+android.net.Uri$Builder.appendQueryParameter(String,String)  # 仅 key == r_signature 时打印
+com.bytedance.retrofit2.client.Request$Builder.url(String)
+```
+
+记录字段：before URL、path/scene 参数、after URL、是否新增 `r_signature`、调用栈。这样比继续泛搜 Interceptor 更快定位签名缓存来源和插入时机。
+
+## 2026-05-04 补充：r_signature diff 日志动态确认插入层
+
+本轮分析 `/tmp/douyin_r_signature_diff_0504b.log`，已把 `r_signature` 的 URL 插入层从“静态疑似 RoomParamHandler”推进到动态确认。
+
+### 日志与样例
+
+```text
+/tmp/douyin_r_signature_diff_0504b.log
+/tmp/douyin_r_signature_diff_0504b.analysis.txt
+```
+
+核心计数样例：
+
+```text
+ROOM.handleGetRequest: 24
+URI.append.r_signature: 14
+RETRO.Builder.url.BEFORE: 160
+QUERY.filterQuery: 42
+QUERY.tryEncryptRequest: 36
+addedSig=true: 13
+r_signature=: 133
+/webcast/room/enter: 54
+/webcast/im/fetch/v2: 57
+STACK: 276
+```
+
+`r_signature` 样例规律：
+
+- 本轮唯一签名值 2 个
+- 长度均为 `112`
+- 示例：
+
+```text
+ME4EELLwpQZgeoyJONWVaHw5GOAEOOLIQkbClBsPGRP-Tm2157KPN0Y90QmsyYeVoYf7d-LZNhidku_02Z0qA2-H0OpkhDFBDbPZVg7QBAABAAAA
+```
+
+### 动态确认的插入调用栈
+
+`android.net.Uri$Builder.appendQueryParameter("r_signature", value)` 的调用栈确认：
+
+```text
+android.net.Uri$Builder.appendQueryParameter(Native Method)
+  -> com.bytedance.android.live.network.impl.handler.RoomParamHandler.LIZ(SourceFile:33816596)
+  -> com.bytedance.android.live.network.impl.handler.RoomParamHandler.handleGetRequest(SourceFile:33882178)
+  -> com.bytedance.android.live.network.impl.handler.RoomParamHandler.handlePostRequest(SourceFile:84344855)
+  -> X.0lX0.interceptForRoom(SourceFile:67371050)
+  -> com.bytedance.android.live.network.impl.NetWorkService.post(SourceFile:67371013)
+  -> X.0kNW.execute(SourceFile:590610)
+  -> com.bytedance.retrofit2.CallServerInterceptor.executeCall(...)
+  -> com.bytedance.retrofit2.intercept.RealInterceptorChain.proceed(...)
+```
+
+结论：`r_signature` 的 URL append 层已确认是：
+
+```text
+RoomParamHandler.handleGetRequest(String,String)
+  -> RoomParamHandler.LIZ(...)
+  -> Uri.Builder.appendQueryParameter("r_signature", value)
+```
+
+`QueryFilterEngine.filterQuery / tryEncryptRequest` 仍在同一网络链路中稳定出现，但不是本轮观察到的首次插入点；不要再把 QueryFilterEngine 当作 `r_signature` 直接生成层。
+
+### 会追加 r_signature 的接口
+
+本轮 `addedSig=true` 的 scene/path 包括：
+
+```text
+/webcast/im/fetch/v2/
+/webcast/fansclub/homepage/
+/webcast/growth/activity/common_banner/
+/webcast/im/fetch/v2/history/
+/webcast/ranklist/hour_entrance/
+/webcast/gift/list/
+/webcast/assets/effects/
+/webcast/gift/effect_game/get/
+/webcast/gift/play/indicator/
+```
+
+完整 URL 中 `r_signature` 命中较多的 path：
+
+```text
+/webcast/im/fetch/v2/
+/webcast/fansclub/homepage/
+/webcast/gift/play/indicator/
+/webcast/gift/list/
+/webcast/gift/effect_game/get/
+/webcast/growth/activity/common_banner/
+/webcast/room/leave/
+/webcast/im/fetch/v2/history/
+/webcast/ranklist/hour_entrance/
+/webcast/assets/effects/
+```
+
+### 下一步定位规则更新
+
+下一阶段不要继续泛搜 `TokenUnionInterceptor` / `NetworkPartnerGroup` / `BaseSsInterceptor` 这类网络 Interceptor；优先顺着 `RoomParamHandler` 内部追签名缓存来源。
+
+重点静态入口：
+
+```text
+smali_classes15/com/bytedance/android/live/network/impl/handler/RoomParamHandler.smali
+RoomParamHandler->LIZIZ:LX/04eO;
+LIVE_ROOM_SIGNATURE_PARAM
+RoomSessionConfig->LIZ(String):Z
+```
+
+推荐静态 grep：
+
+```bash
+ROOT=/opt/data/home/reverse-tools/douyin_decompiled/douyin_base
+rg -n "RoomParamHandler|LIZIZ:LX/04eO|LX/04eO|LIVE_ROOM_SIGNATURE_PARAM|RoomSessionConfig|r_signature" \
+  $ROOT/smali*
+```
+
+推荐下一轮 Frida 定点 Hook：
+
+```text
+com.bytedance.android.live.network.impl.handler.RoomParamHandler.handleGetRequest(String,String)
+com.bytedance.android.live.network.impl.handler.RoomParamHandler.LIZ(...)
+android.net.Uri$Builder.appendQueryParameter(String,String)  # 仅 key == r_signature 时打印
+LX/04eO 相关 get/put/update 方法
+/webcast/room/enter* 响应解析或 RoomSession 初始化相关方法
+```
+
+记录字段：
+
+```text
+room_id
+path/scene
+before URL
+after URL
+cache key
+cache value / signature value
+是否 addedSig
+调用栈
+```
+
+核心判断：`r_signature` 当前更像按 `room_id` 查询缓存后追加；下一步应定位 `RoomParamHandler.LIZIZ` 这个 `room_id -> signature` 缓存的写入/更新来源，重点看进房接口 `/webcast/room/enter*`、`RoomSessionConfig`、直播 session 初始化和 JSON/Gson 反序列化中是否下发或生成签名。
+
+
+## 2026-05-04 补充：r_signature 缓存写入源动态确认
+
+本轮挂载 `RoomParamHandler.updateRoomSignature` / `RoomParamHandler.LIZIZ` 缓存 get/put / `Uri.Builder.appendQueryParameter("r_signature", ...)` 定点 Hook 后，已动态确认 `r_signature` 不是 `QueryFilterEngine` 直接生成，而是进房后写入房间签名缓存，后续请求按 `room_id` 读取缓存追加。
+
+关键日志与摘要：
+
+```text
+/tmp/douyin_room_signature_source_0504.log
+/tmp/douyin_room_signature_source_0504.summary.md
+```
+
+样例计数：
+
+```text
+ROOM.updateRoomSignature: 2
+CACHE.put: 10
+CACHE.get: 151
+URI.append.r_signature: 26
+ROOM.appendSig: 26
+ROOM.handleGetRequest: 44
+ROOM.handlePostRequest: 24
+TTNET.getResponseCode: 29
+/webcast/room/enter: 19
+/webcast/im/fetch/v2: 63
+```
+
+样例 room/signature：
+
+```text
+room_id = 7635873514557573915
+r_signature len = 112
+ME4EEA975I8CvoV3nQHjEPQUQE0EOBzjXEUw9-2Khpw0Z4Y_6wV0XfPYAYroU2ezGuCdKBKhT6ARJI36p3uvEVIbFYivwybM5QRI6-tfBAABAAAA
+```
+
+动态确认链路：
+
+```text
+/webcast/room/enter* response / enter success message
+  -> X.0ZBv.handleMsg(...)
+  -> RoomParamHandler.updateRoomSignature(long roomId, String signature)
+  -> RoomParamHandler.LIZIZ (X.04eO cache) put(roomId, signature)
+  -> later live requests RoomParamHandler.handleGetRequest/handlePostRequest
+  -> cache get(roomId)
+  -> RoomParamHandler.LIZ(...)
+  -> Uri.Builder.appendQueryParameter("r_signature", signature)
+  -> TTNET/Cronet request
+```
+
+关键栈证据：
+
+```text
+RoomParamHandler.updateRoomSignature(Native Method)
+  -> X.0ZBv.handleMsg(SourceFile:17301904)
+  -> WeakHandler.handleMessage(...)
+  -> Handler.dispatchMessage(...)
+  -> ActivityThread.main(...)
+
+Uri$Builder.appendQueryParameter(Native Method)
+  -> RoomParamHandler.LIZ(SourceFile:33816596)
+  -> RoomParamHandler.handleGetRequest(SourceFile:33882178)
+  -> RoomParamHandler.handlePostRequest(SourceFile:84344855)
+  -> X.0lX0.interceptForRoom(...)
+  -> NetWorkService.post/get(...)
+  -> Retrofit/TTNET
+```
+
+下一步应追 `X.0ZBv.handleMsg` 的消息来源：它很可能是 `/webcast/room/enter*` 响应或直播 session 初始化消息中携带的 room signature。优先静态/动态定位 `X/0ZBv.smali`、其构造参数、Handler message `what/obj`，以及 room enter 响应解析字段；不要再泛追 `TokenUnionInterceptor` 或 `QueryFilterEngine` 作为 `r_signature` 生成层。
+
+## 2026-05-04 补充：r_signature 写入源静态追踪新定位点
+
+在继续追 `X.0ZBv.handleMsg` 与 `RoomParamHandler.updateRoomSignature` 上游时，静态 grep 新增确认以下定位点：
+
+```text
+ROOT=/opt/data/home/reverse-tools/douyin_decompiled/douyin_base
+```
+
+### 关键静态命中
+
+1. `X/0ZBv.smali` 主写入点：
+
+```text
+smali_classes15/X/0ZBv.smali:4649
+invoke-static {v1, v2, v0}, Lcom/bytedance/android/live/network/impl/handler/RoomParamHandler;->updateRoomSignature(JLjava/lang/String;)V
+```
+
+这与动态栈 `X.0ZBv.handleMsg(SourceFile:17301904) -> RoomParamHandler.updateRoomSignature` 对齐，是当前追 room signature 来源的主入口。
+
+2. `RoomModuleService` 创建 `LX/0ZBv`：
+
+```text
+smali_classes15/com/bytedance/android/livesdk/impl/RoomModuleService.smali:961
+new-instance v0, LX/0ZBv;
+```
+
+后续应读取该构造调用周边，确认传入的 `IEnterRoomController$EnterListener`、Handler/Controller 对象和 room enter 生命周期关系。
+
+3. `X/0ZBv.smali` 构造/字段：
+
+```text
+smali_classes15/X/0ZBv.smali:127
+iput-object p1, p0, LX/0ZBv;->e:Lcom/bytedance/android/livesdk/chatroom/detail/IEnterRoomController$EnterListener;
+```
+
+`0ZBv` 持有 `IEnterRoomController$EnterListener` 字段 `e`，并在多个分支中读取该字段（如 around lines 3352 / 3928 / 4783），说明它处于 enter room controller 回调链路中。
+
+4. 另一条 `updateRoomSignature` 调用点：
+
+```text
+smali_classes15/Y/AConsumerS28S0100100_21.smali:398
+invoke-static {v1, v2, v4}, Lcom/bytedance/android/live/network/impl/handler/RoomParamHandler;->updateRoomSignature(JLjava/lang/String;)V
+```
+
+这说明除了 `X.0ZBv.handleMsg`，还有 Rx/Consumer 式链路会写入 room signature。后续要读取该类 `accept(...)` 分支，确认 `v1/v2` 的 room_id 与 `v4` 的 signature 来自哪个响应对象字段。
+
+### 下一轮静态读取优先级
+
+```text
+read_file /opt/data/home/reverse-tools/douyin_decompiled/douyin_base/smali_classes15/X/0ZBv.smali offset=4560 limit=140
+read_file /opt/data/home/reverse-tools/douyin_decompiled/douyin_base/smali_classes15/com/bytedance/android/livesdk/impl/RoomModuleService.smali offset=930 limit=80
+read_file /opt/data/home/reverse-tools/douyin_decompiled/douyin_base/smali_classes15/Y/AConsumerS28S0100100_21.smali offset=330 limit=120
+```
+
+重点还原：
+
+- `updateRoomSignature` 调用前 `v1/v2` 和 `v0/v4` 的来源；
+- `Message.what` / `Message.obj`；
+- room enter 响应对象类型；
+- 可能的 `getRoomId()` / `getSignature()` / `room_signature` 字段；
+- `0ZBv` 构造参数与 enter controller/listener 的绑定点。
+
+### 下一轮 Frida 定点 probe
+
+优先 Hook：
+
+```text
+X.0ZBv.handleMsg(...)
+Y.AConsumerS28S0100100_21.accept(...)
+RoomParamHandler.updateRoomSignature(long,String)
+android.os.Handler.sendMessage(Message)
+android.os.Message.obtain(...)
+```
+
+记录字段：
+
+```text
+Message.what
+Message.obj.getClass()
+Message.obj.toString()
+room_id
+signature
+signature.length
+调用栈
+```
+
+判定规则：`RoomParamHandler.updateRoomSignature` 已确认是缓存写入，不是签名生成；下一步的关键不是继续追 QueryFilter/Interceptor，而是定位 enter room response/message 中哪个字段携带了 signature。
+
+## 2026-05-04 补充：0ZBv.handleMsg 与 EnterRoomExtra.rSignature 静态确认
+
+继续读取 `X/0ZBv.smali`、`Y/AConsumerS0S0200200_21.smali`、`Y/AConsumerS28S0100100_21.smali`、`RoomModuleService.smali` 后，已静态确认 `RoomParamHandler.updateRoomSignature(roomId, signature)` 的签名参数来自 enter room response 的 `EnterRoomExtra.rSignature`，而不是本地实时计算。
+
+### 关键文件
+
+```text
+ROOT=/opt/data/home/reverse-tools/douyin_decompiled/douyin_base
+smali_classes15/X/0ZBv.smali
+smali_classes15/Y/AConsumerS0S0200200_21.smali
+smali_classes15/Y/AConsumerS28S0100100_21.smali
+smali_classes15/com/bytedance/android/livesdk/impl/RoomModuleService.smali
+smali_classes15/com/bytedance/android/livesdk/chatroom/room/core/task/EnterRoomTaskV1.smali
+```
+
+### `LX/0ZBv.handleMsg(Message)` 分支
+
+`X/0ZBv.smali` 中 `handleMsg` 主要关注三类 `Message.what`：
+
+```text
+what == 0x20 -> 若未结束，调用 LX/0ZBv.LIZJ(false, true)
+what == 0x27 -> Message.obj 是 EnterRoomInfoResult 时回调 onEnterRoomInfo(obj)
+what == 0x4  -> 进入房间成功/失败主分支，Message.obj 可能是异常或 LX/0ZC5
+```
+
+`what == 0x4` 且 `Message.obj instanceof LX/0ZC5` 时，成功路径会读取：
+
+```text
+LX/0ZC5.LIZ   -> Room
+LX/0ZC5.LIZIZ -> EnterRoomExtra
+LX/0ZC5.LIZIZ.rSignature -> room signature
+LX/0ZBv.f     -> roomId
+```
+
+然后在 `LIVE_ROOM_SIGNATURE_PARAM` 配置启用且 `rSignature` 非空时调用：
+
+```text
+RoomParamHandler.updateRoomSignature(LX/0ZBv.f, LX/0ZC5.LIZIZ.rSignature)
+```
+
+### `LX/0ZC5` 来源
+
+`Y/AConsumerS0S0200200_21.smali` 中，`ResponseNoDataException.getResponse()` 返回的 `BaseResponse` 被处理为成功封装：
+
+```text
+new LX/0ZC5()
+LX/0ZC5.LIZ   = Room
+LX/0ZC5.LIZIZ = (EnterRoomExtra) BaseResponse.extra
+Room.nowTime  = EnterRoomExtra.now / 1000
+Room.enterLogId = BaseResponse.logId
+Message.obj = LX/0ZC5
+Handler.sendMessage(Message)
+```
+
+这说明正常 enter room 成功结果通过 `Message.obj = LX/0ZC5` 送入 `0ZBv.handleMsg`，其中 `rSignature` 来自服务端响应 `BaseResponse.extra`。
+
+### re-enter 写入路径
+
+`Y/AConsumerS28S0100100_21.smali::accept$1` 是另一条 `updateRoomSignature` 调用路径：
+
+```text
+p1 = BaseResponse
+roomId = LX/0ZI3.d.getId()        # d 是 Room
+signature = ((EnterRoomExtra) p1.extra).rSignature
+if LIVE_ROOM_SIGNATURE_PARAM enabled and signature non-empty:
+    RoomParamHandler.updateRoomSignature(roomId, signature)
+```
+
+因此 re-enter 成功也会用响应 `extra.rSignature` 更新 room signature 缓存。
+
+### `0ZBv` 构造绑定点
+
+`RoomModuleService.smali` 中创建 enter room controller：
+
+```text
+new LX/0ZBv(
+  IEnterRoomController$EnterListener,
+  long roomId,
+  String,
+  RoomEnterInfo,
+  Room
+)
+```
+
+`0ZBv` 构造中字段映射：
+
+```text
+0ZBv.e = EnterListener
+0ZBv.f = roomId
+0ZBv.h = RoomEnterInfo.getEnterArgs()
+0ZBv.v = Room
+0ZBv.M = roomId + "_" + RoomEnterInfo.LJJIII
+```
+
+`EnterRoomTaskV1.smali` 会复用预进入结果：若 `IEnterRoomController.getResult()` 是 `LX/0ZC5`，则记录 `pre enter room success on enter room, use pre enter room`，并从 `LX/0ZC5.LIZ` 继续取 `Room`。
+
+### 静态结论
+
+当前可把 r_signature 缓存链路写成：
+
+```text
+/webcast/room/enter* response
+  -> BaseResponse.extra as EnterRoomExtra
+  -> EnterRoomExtra.rSignature
+  -> LX/0ZC5.LIZIZ.rSignature 或 re-enter BaseResponse.extra.rSignature
+  -> RoomParamHandler.updateRoomSignature(roomId, rSignature)
+  -> RoomParamHandler.LIZIZ cache[roomId] = rSignature
+  -> 后续 RoomParamHandler.handleGetRequest/handlePostRequest 从 roomId 缓存取出并 append r_signature
+```
+
+### 后续动态 probe 要点
+
+下一轮 Frida 不需要再泛追 `QueryFilterEngine`/Interceptor 作为生成层；应定点验证 message 和响应字段：
+
+```text
+LX.0ZBv.handleMsg(android.os.Message)
+Y.AConsumerS0S0200200_21.accept(...)
+Y.AConsumerS28S0100100_21.accept(...)
+RoomParamHandler.updateRoomSignature(long,String)
+android.os.Handler.sendMessage(Message)
+```
+
+记录：
+
+```text
+Message.what
+Message.obj.getClass().getName()
+LX/0ZC5.LIZ room id
+LX/0ZC5.LIZIZ.rSignature / length
+BaseResponse.logId
+BaseResponse.extra class
+EnterRoomExtra.rSignature / length
+RoomParamHandler.updateRoomSignature 调用栈
+```
+
+可直接使用已编写的定点 probe：
+
+```text
+/tmp/douyin_room_message_signature_probe.js
+```
+
+运行示例：
+
+```bash
+export ADB_SERVER_SOCKET=tcp:10.0.2.2:5037
+export ANDROID_ADB_SERVER_ADDRESS=10.0.2.2
+export ANDROID_ADB_SERVER_PORT=5037
+adb devices -l
+python3 /tmp/run_douyin_capture.py \
+  --attach \
+  --js /tmp/douyin_room_message_signature_probe.js \
+  --seconds 0 \
+  --log /tmp/douyin_room_message_signature_probe_$(date +%m%d).log
+```
+
+该 probe 已通过 `node --check` 语法检查；会 Hook `X.0ZBv.handleMsg`、`WeakHandler.handleMessage`、`Handler.sendMessage`、`RoomParamHandler.updateRoomSignature`、`Y.AConsumerS0S0200200_21.accept`、`Y.AConsumerS28S0100100_21.accept/accept$1`，并尝试解包 `LX/0ZC5.LIZ/LIZIZ` 与 `BaseResponse.extra as EnterRoomExtra`。
+
+判定规则：
+
+```text
+Message.what == 4
+Message.obj.getClass() == X.0ZC5 / LX.0ZC5
+LX/0ZC5.LIZIZ.rSignature == RoomParamHandler.updateRoomSignature 第二参
+或 BaseResponse.extra.rSignature == updateRoomSignature 第二参
+```
+
+若 ADB server 可连通但 `adb devices` 为空，说明当前只是设备未恢复/未授权，不要继续改 probe；等设备恢复后直接运行上述命令复验。
+
+### 2026-05-05 补充：无 ADB 时继续追 EnterRoomExtra 字段定义的策略
+
+在无 ADB 的静态阶段，已经可以通过 `RoomManagementRetrofitApi.enterRoom`、`Y/AConsumerS0S0200200_21`、`X/0ZBv.handleMsg` 确认：
+
+```text
+POST /webcast/room/enter/
+  -> BaseResponse.extra
+  -> cast com.bytedance.android.livesdk.chatroom.model.EnterRoomExtra
+  -> EnterRoomExtra.rSignature
+  -> LX/0ZC5.LIZIZ.rSignature
+  -> RoomParamHandler.updateRoomSignature(roomId, rSignature)
+```
+
+关键证据：
+
+- `RoomManagementRetrofitApi.smali` 的 `enterRoom(...)` 返回 `Observable<BaseResponse<Room, EnterRoomExtra>>`，接口是 `POST /webcast/room/enter/`。
+- `Y/AConsumerS0S0200200_21.smali` 把 `BaseResponse.extra` cast 成 `EnterRoomExtra`，写入 `LX/0ZC5.LIZIZ`，再作为 `Message.obj` 发送给 Handler。
+- `X/0ZBv.smali` 在 `Message.what == 4` 且 `Message.obj instanceof LX/0ZC5` 的成功路径中读取 `LX/0ZC5.LIZIZ.rSignature`，非空时调用 `RoomParamHandler.updateRoomSignature(LX/0ZBv.f, rSignature)`。
+
+坑点：当前 apktool/smali 目录里直接搜索 `*EnterRoomExtra*`、`.field .*rSignature`、`value = "r_signature"` / `"room_signature"` 可能找不到类定义，只能找到引用点。这通常说明模型定义可能在未解出的 split/插件/其他 dex，或 apktool 当前目录不完整；不要因此推翻 `extra.rSignature` 链路。
+
+无 ADB 时的下一步静态策略：
+
+```bash
+ROOT=/opt/data/home/reverse-tools/douyin_decompiled/douyin_base
+rg -n "EnterRoomExtra|rSignature|room_signature|r_signature|BaseResponse;->extra|LX/0ZC5" $ROOT/smali*
+```
+
+若 apktool 目录无字段定义，应改搜原始 APK/DEX 字符串池或 jadx 输出：
+
+```python
+import zipfile
+apk='/tmp/douyin.apk'
+needles=[b'EnterRoomExtra', b'rSignature', b'r_signature', b'room_signature']
+with zipfile.ZipFile(apk) as z:
+    for n in z.namelist():
+        if n.endswith('.dex'):
+            data=z.read(n)
+            hits=[x.decode() for x in needles if x in data]
+            if hits:
+                print(n, hits)
+```
+
+继续静态补全优先读取：
+
+```text
+smali_classes15/Y/AConsumerS28S0100100_21.smali around 300-410   # re-enter updateRoomSignature 路径
+smali_classes15/X/0ZC5.smali                                    # Room + EnterRoomExtra 封装结构
+smali_classes15/com/bytedance/android/livesdk/impl/RoomModuleService.smali around 930-990
+jadx --single-class com.bytedance.android.livesdk.chatroom.model.EnterRoomExtra <命中的 dex>
+```
+
+判定规则：`EnterRoomExtra` 字段定义未找到时，下一步是扩大到原始 dex/jadx/split，而不是回头泛追 `QueryFilterEngine`、`TokenUnionInterceptor` 或 `RopaEncrypt` 作为 `r_signature` 生成层。当前更可靠的模型是：`r_signature` 由 room enter 响应 extra 下发，App 只做 room_id 缓存和后续 URL append。
