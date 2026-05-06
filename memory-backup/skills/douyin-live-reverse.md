@@ -2133,6 +2133,66 @@ LX/0ZC5.LIZIZ.rSignature == RoomParamHandler.updateRoomSignature 第二参
 
 若 ADB server 可连通但 `adb devices` 为空，说明当前只是设备未恢复/未授权，不要继续改 probe；等设备恢复后直接运行上述命令复验。
 
+### 2026-05-05 补充：EnterRoomExtra.rSignature 字段定义与响应映射已确认
+
+静态阶段已通过 JADX 反编译 `classes58.dex` 确认 `EnterRoomExtra` 字段定义，摘要落地：
+
+```text
+/tmp/douyin_enter_room_rsignature_static_0505.md
+/tmp/jadx_enter_extra_classes58/sources/com/bytedance/android/livesdk/chatroom/model/EnterRoomExtra.java
+```
+
+关键定义：
+
+```java
+@ProtoMessage("webcast.api.room.EnterRoomResponse.EnterRoomExtra")
+public final class EnterRoomExtra extends Extra implements InterfaceC21920DuG {
+    @IgnoreProtoFieldCheck
+    @SerializedName("signature")
+    public String rSignature;
+}
+```
+
+Proto/Flex 元信息同时确认：
+
+```java
+new FieldMeta("signature", 7, stringType, null);
+new Type.Message("webcast.api.room.EnterRoomResponse.EnterRoomExtra");
+```
+
+因此服务端响应字段名是 `signature`，Proto field number 是 `7`，Java 字段名是 `rSignature`；客户端后续追加到 URL 时参数名才变成 `r_signature`。
+
+`/webcast/room/enter/` 接口签名：
+
+```text
+RoomManagementRetrofitApi.enterRoom(...)
+@POST("/webcast/room/enter/")
+@FormUrlEncoded
+@PbRequest("room")
+Observable<BaseResponse<Room, EnterRoomExtra>>
+```
+
+两条写入缓存路径已静态确认：
+
+1. `X/0ZBv.smali` 主 enter 成功路径：`Message.what == 4` 且 `Message.obj instanceof LX/0ZC5` 时，读取 `LX/0ZC5.LIZIZ.rSignature` 并调用 `RoomParamHandler.updateRoomSignature(roomId, signature)`。
+2. `Y/AConsumerS28S0100100_21.smali` re-enter 路径：`BaseResponse.extra` cast 为 `EnterRoomExtra`，读取 `rSignature`，以当前 `Room.getId()` 调用 `updateRoomSignature`。
+
+最终模型：
+
+```text
+/webcast/room/enter/ response
+  -> BaseResponse.extra as EnterRoomExtra
+  -> response.extra.signature (proto field 7)
+  -> Java EnterRoomExtra.rSignature
+  -> RoomParamHandler.updateRoomSignature(roomId, rSignature)
+  -> RoomParamHandler.LIZIZ cache[roomId] = rSignature
+  -> 后续 handleGetRequest/handlePostRequest
+  -> Uri.Builder.appendQueryParameter("r_signature", rSignature)
+```
+
+动态 probe `/tmp/douyin_room_message_signature_probe.js` 已通过 `node --check`；`/tmp/run_douyin_capture.py` 与 `/tmp/extract_douyin_capture.py` 已通过 `py_compile`。ADB 恢复后直接运行该 probe，验证 `0ZC5.LIZIZ.rSignature` 或 `BaseResponse.extra.rSignature` 等于 `updateRoomSignature` 第二参即可闭环。
+
+
 ### 2026-05-05 补充：无 ADB 时继续追 EnterRoomExtra 字段定义的策略
 
 在无 ADB 的静态阶段，已经可以通过 `RoomManagementRetrofitApi.enterRoom`、`Y/AConsumerS0S0200200_21`、`X/0ZBv.handleMsg` 确认：
