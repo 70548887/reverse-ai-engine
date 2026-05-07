@@ -2246,3 +2246,118 @@ jadx --single-class com.bytedance.android.livesdk.chatroom.model.EnterRoomExtra 
 ```
 
 判定规则：`EnterRoomExtra` 字段定义未找到时，下一步是扩大到原始 dex/jadx/split，而不是回头泛追 `QueryFilterEngine`、`TokenUnionInterceptor` 或 `RopaEncrypt` 作为 `r_signature` 生成层。当前更可靠的模型是：`r_signature` 由 room enter 响应 extra 下发，App 只做 room_id 缓存和后续 URL append。
+
+### 2026-05-06 补充：无动态时的静态 fallback 收口规则
+
+当动态不可用或 ADB/Frida 断链时，可继续静态验证 `EnterRoomExtra / room enter` 响应链路，不必等待设备恢复。已落地摘要：
+
+```text
+/tmp/douyin_enter_room_rsignature_static_0505.md
+```
+
+补充静态证据：
+
+- `smali_classes15/X/0ZD2.smali`：通过 `IEnterRoomController.getRoomExtra()` 取对象，`instance-of` / `check-cast` 为 `com.bytedance.android.livesdk.chatroom.model.EnterRoomExtra`，并读取 `unableRetry`。说明 `EnterRoomExtra` 不只携带 `rSignature`，也参与进房失败/重试策略判断。
+- `smali_classes15/Y/AObserverS292S0200000_21.smali`：同样从 `IEnterRoomController.getRoomExtra()` 获取并 cast 为 `EnterRoomExtra`，后续调用 `EnterRoomExtra.isVSType()`，说明该 extra 在房间状态/展示逻辑中被复用。
+
+静态 fallback 的可复用方法：
+
+1. 先以已知写入点收口：`RoomParamHandler.updateRoomSignature(roomId, signature)`、`X/0ZBv.handleMsg`、`Y/AConsumerS28S0100100_21.accept$1`。
+2. 再横向搜索 `IEnterRoomController.getRoomExtra()`、`EnterRoomExtra`、`rSignature`，确认 `BaseResponse.extra` 在 room session 后续逻辑中的使用范围。
+3. 字段定义若在 apktool smali 目录缺失，转查原始 DEX 字符串池或 JADX single-class 输出；不要因 smali 目录无类定义而回退去追 `QueryFilterEngine` / `RopaEncrypt`。
+4. 交付摘要应明确区分服务端响应字段与 URL 参数：响应是 `extra.signature` / Java `EnterRoomExtra.rSignature` / Proto field `7`；后续请求才由 `RoomParamHandler` append 为 `r_signature`。
+
+最终静态模型：
+
+```text
+/webcast/room/enter/
+  -> BaseResponse.extra as EnterRoomExtra
+  -> EnterRoomExtra.signature (proto field 7)
+  -> EnterRoomExtra.rSignature
+  -> RoomParamHandler.updateRoomSignature(roomId, rSignature)
+  -> RoomParamHandler.LIZIZ cache[roomId] = rSignature
+  -> 后续 RoomParamHandler.handleGetRequest/handlePostRequest append r_signature
+```
+
+### 2026-05-06 补充：静态枚举核心接口签名的方法
+
+当任务是“还原 room enter / im fetch / gift 核心接口的方法签名和参数，暂不处理 ADB”时，优先用 smali Retrofit 注解枚举，不要先进入动态验证。当前 apktool/smali 根目录仍是：
+
+```text
+ROOT=/opt/data/home/reverse-tools/douyin_decompiled/douyin_base
+```
+
+比单纯 `rg` 更稳的做法是用 Python 扫描 endpoint 字符串后回溯 `.method` 边界，输出接口类、方法签名和行号：
+
+```python
+from pathlib import Path
+root = Path('/opt/data/home/reverse-tools/douyin_decompiled/douyin_base')
+needles = [
+    '/webcast/room/enter', '/webcast/im/fetch',
+    '/webcast/gift/list', '/webcast/gift/effect_game',
+    '/webcast/gift/play/indicator', '/webcast/room/info_by_scene',
+    '/webcast/room/info/'
+]
+for p in root.glob('smali*/**/*.smali'):
+    s = p.read_text(errors='ignore')
+    if not any(n in s for n in needles):
+        continue
+    lines = s.splitlines()
+    for i, line in enumerate(lines, 1):
+        if any(n in line for n in needles):
+            method = ''
+            for j in range(i - 1, -1, -1):
+                if lines[j].startswith('.method'):
+                    method = lines[j]
+                    break
+            print(p, i, line.strip(), method)
+```
+
+当前已确认的 room 接口主类：
+
+```text
+smali_classes15/com/bytedance/android/livesdk/chatroom/room/api/RoomManagementRetrofitApi.smali
+```
+
+核心签名：
+
+```text
+backendRoom(JLjava/lang/String;Ljava/util/Map;) -> GET /webcast/room/enter_backend/
+  Query room_id, Query biz_params, QueryMap
+
+backendRoomV2(Ljava/lang/String;JLjava/lang/String;Ljava/util/Map;) -> GET /webcast/room/enter_backend/
+  Header x-nx-chunk, Query room_id, Query biz_params, QueryMap, Streaming
+
+enterRoom(JJJJJLjava/util/Map;Ljava/lang/String;) -> POST /webcast/room/enter/
+  FormUrlEncoded, PbRequest("room"), MonitorTimeCost("enterRoom")
+  Field room_id, hold_living_room, is_login, enter_from_uid_by_shared, video_id, FieldMap
+  Header Room-Enter-User-Login-Ab
+  returns Observable<BaseResponse<Room, EnterRoomExtra>>
+
+enterRoom(JJJJJLjava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;) -> POST /webcast/room/enter/
+  same fields as above plus headers live-multi-path and live-api-priority
+
+splitEnterRoom(JILjava/util/Map;) -> /webcast/room/enter_preload/
+fetchRoom(Ljava/util/HashMap;) -> GET /webcast/room/info/
+getRoomInfoByScene(JLjava/lang/String;) -> GET /webcast/room/info_by_scene/
+fetchUserRoom(JLjava/lang/String;Ljava/lang/String;) -> GET /webcast/room/info_by_user/
+```
+
+旁路 room info 接口也要记录，避免误以为只有 `RoomManagementRetrofitApi` 一处：
+
+```text
+PreviewRoomApi.fetchRoomInfo(JLjava/lang/String;) -> /webcast/room/info_by_scene/
+IFetchRoomApi.fetchRoomInfo(JLjava/lang/String;Ljava/lang/String;J) -> /webcast/room/info_by_scene/
+IInsertPreRoomApi.fetchRoomInfo(JI) -> /webcast/room/info/
+IInsertPreRoomApi.fetchRoomInfoByScene(JLjava/lang/String;) -> /webcast/room/info_by_scene/
+LiveRoomInfoApi -> /webcast/room/info_by_user/
+```
+
+静态搜索坑点：
+
+- 直接搜索 `webcast/im/fetch/v2/history`、`webcast/gift/list/` 可能 0 命中；先放宽到 `im/fetch/v2`、`gift/list`、`gift/effect_game/get`、`gift/play/indicator`，并结合动态日志里的 path 反向定位。
+- 不要用 Python 逐个 `Path.glob('smali*/**/*.smali') + read_text()` 全量遍历整个 apktool 目录同时搜很多 needle；当前 douyin smali 体量下该方式实测 300s 超时。若只需定位 endpoint/字符串，优先用 `rg -n --fixed-strings` 精准搜；若要回溯 `.method` 边界，先用 `rg -l --fixed-strings <needle> $ROOT/smali*` 缩小文件集，再对命中的少量文件用 Python/read_file 回溯方法签名。
+- `RoomManagementRetrofitApi` 的 `/webcast/room/enter/` 方法有两个 overload，第二个多 `live-multi-path` 和 `live-api-priority` header，不要漏记。
+- 静态枚举核心接口时，优先 `rg -l --fixed-strings <endpoint> $ROOT/smali*` 缩小命中文件，再用 `read_file`/小脚本回溯 `.method` 边界；不要直接对整个 apktool 树做全量 Python `glob + read_text` 多关键词遍历，容易超时。
+- gift / im 相关接口不要只搜文件名或完整路径，先放宽到 `im/fetch/v2`、`gift/list`、`gift/effect_game/get`、`gift/play/indicator`、`room/info_by_scene`、`room/info/` 再回溯方法签名。
+- 任务若要求“暂不处理 ADB”，就把未命中的 im/gift 标为待继续静态定位，不要切回手机验证。
