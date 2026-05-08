@@ -8,6 +8,10 @@ triggers: ["抖音直播", "APP逆向", "直播间协议", "douyin live", "webca
 
 抖音直播间接口逆向分析流程。
 
+## Hermes 技能加载注意
+
+当前 Hermes `skill_view` 使用技能名本身加载；即使列表中显示分类为 `red-teaming`，也应调用 `skill_view(name="douyin-live-reverse")`，不要用 `red-teaming:douyin-live-reverse`，后者会报 `Skill ... not found`。
+
 ## 环境就绪
 
 | 工具 | 路径/状态 |
@@ -2286,6 +2290,15 @@ jadx --single-class com.bytedance.android.livesdk.chatroom.model.EnterRoomExtra 
 ```text
 ROOT=/opt/data/home/reverse-tools/douyin_decompiled/douyin_base
 ```
+
+若用户询问 `https://github.com/715494637/reverse-skill` 工具/资料是否已安装，当前环境已见两个本地副本，可作为后续 `ingest_reverse_skill` 的来源：
+
+```text
+/opt/data/home/reverse-skill
+/tmp/reverse-skill
+```
+
+执行静态接口挖掘时，不要把 `reverse-skill` 是否存在和 `reverse-tools` 混淆；`reverse-tools` 是工具链/反编译产物目录，`reverse-skill` 是外部资料库，筛选有用内容时单独从上述路径读取。
 
 比单纯 `rg` 更稳的做法是用 Python 扫描 endpoint 字符串后回溯 `.method` 边界，输出接口类、方法签名和行号：
 
