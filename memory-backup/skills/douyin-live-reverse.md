@@ -2251,6 +2251,70 @@ jadx --single-class com.bytedance.android.livesdk.chatroom.model.EnterRoomExtra 
 
 判定规则：`EnterRoomExtra` 字段定义未找到时，下一步是扩大到原始 dex/jadx/split，而不是回头泛追 `QueryFilterEngine`、`TokenUnionInterceptor` 或 `RopaEncrypt` 作为 `r_signature` 生成层。当前更可靠的模型是：`r_signature` 由 room enter 响应 extra 下发，App 只做 room_id 缓存和后续 URL append。
 
+### 2026-05-08 补充：无 ADB/Frida 时的 r_signature 静态记录落盘
+
+当 ADB/Frida 当前不可用时，不要卡住等待动态验证；先把可证明的静态链路落盘并标注动态阻塞。当前验证过的最小闭环如下：
+
+```text
+POST /webcast/room/enter/
+  -> BaseResponse.extra as EnterRoomExtra
+  -> EnterRoomExtra.rSignature
+  -> LX/0ZC5.LIZIZ.rSignature
+  -> RoomParamHandler.updateRoomSignature(roomId, rSignature)
+  -> RoomParamHandler.LIZIZ cache[roomId] = rSignature
+  -> RoomParamHandler.handleGetRequest / handlePostRequest
+  -> Uri.Builder.appendQueryParameter("r_signature", rSignature)
+  -> 后续直播请求携带 r_signature
+```
+
+关键静态证据文件：
+
+```text
+smali_classes15/com/bytedance/android/livesdk/chatroom/room/api/RoomManagementRetrofitApi.smali
+smali_classes15/Y/AConsumerS0S0200200_21.smali
+smali_classes15/Y/AConsumerS28S0100100_21.smali
+smali_classes15/X/0ZBv.smali
+smali_classes15/X/0ZC5.smali
+smali_classes15/com/bytedance/android/live/network/impl/handler/RoomParamHandler.smali
+```
+
+可复用落盘摘要路径样例：
+
+```text
+/tmp/douyin_r_signature_chain_note_0508.md
+```
+
+动态阻塞要明确区分环境问题与 hook 问题。例如本轮检查结果为：
+
+```text
+adb devices -l      -> 无设备
+adb shell id        -> adb: no devices/emulators found
+python import frida -> No module named 'frida'
+```
+
+这种情况下应记录“设备/环境未恢复”，不要继续修改 probe。设备恢复后直接执行：
+
+```bash
+export ADB_SERVER_SOCKET=tcp:10.0.2.2:5037
+export ANDROID_ADB_SERVER_ADDRESS=10.0.2.2
+export ANDROID_ADB_SERVER_PORT=5037
+
+adb devices -l
+adb shell id
+python3 - <<'PY'
+import frida
+print(frida.__version__)
+d = frida.get_usb_device(timeout=5)
+print(d.id, d.name, d.type)
+PY
+
+python3 /tmp/run_douyin_capture.py \
+  --attach \
+  --js /tmp/douyin_room_message_signature_probe.js \
+  --seconds 0 \
+  --log /tmp/douyin_room_message_signature_probe.log
+```
+
 ### 2026-05-06 补充：无动态时的静态 fallback 收口规则
 
 当动态不可用或 ADB/Frida 断链时，可继续静态验证 `EnterRoomExtra / room enter` 响应链路，不必等待设备恢复。已落地摘要：
@@ -2283,9 +2347,321 @@ jadx --single-class com.bytedance.android.livesdk.chatroom.model.EnterRoomExtra 
   -> 后续 RoomParamHandler.handleGetRequest/handlePostRequest append r_signature
 ```
 
-### 2026-05-06 补充：静态枚举核心接口签名的方法
+### 2026-05-09 补充：Samsung SM-G770F / Android 13 新机环境初始化闭环
 
-当任务是“还原 room enter / im fetch / gift 核心接口的方法签名和参数，暂不处理 ADB”时，优先用 smali Retrofit 注解枚举，不要先进入动态验证。当前 apktool/smali 根目录仍是：
+当切换到新手机做抖音动态验证时，先按“设备 → Frida → APK → smoke test”四步闭环验证，不要直接进入直播抓包。
+
+### 当前已验证设备
+
+```text
+设备 ID: RF8N21LRGPM
+型号: Samsung SM-G770F / device r5q
+Android: 13 / SDK 33
+ABI: arm64-v8a
+root: adb shell su -c id -> uid=0(root) context=u:r:magisk:s0
+ADB: 容器内 ADB_SERVER_SOCKET=tcp:10.0.2.2:5037 可用；172.17.0.1:5037 也可通
+```
+
+### Frida 版本与启动
+
+当前可用组合是：
+
+```text
+设备侧: /data/local/tmp/frida-server
+Python client: frida==16.2.2
+连接方式: frida.get_usb_device(timeout=8)
+```
+
+启动/验证命令：
+
+```bash
+export ADB_SERVER_SOCKET=tcp:10.0.2.2:5037
+export ANDROID_ADB_SERVER_ADDRESS=10.0.2.2
+export ANDROID_ADB_SERVER_PORT=5037
+
+adb shell 'su -c id'
+adb shell 'su -c "pkill -f frida-server || true"'
+sleep 1
+adb shell 'su -c "/data/local/tmp/frida-server >/data/local/tmp/frida.log 2>&1 &"'
+sleep 2
+adb shell 'ps -A | grep -i frida || true; tail -n 20 /data/local/tmp/frida.log 2>/dev/null || true'
+
+python3 - <<'PY'
+import frida
+print('client', frida.__version__)
+d = frida.get_usb_device(timeout=8)
+print('USB_OK', d.id, d.name, d.type)
+print('apps', len(d.enumerate_applications()))
+print('procs', len(d.enumerate_processes()))
+PY
+```
+
+成功信号样例：
+
+```text
+USB_OK RF8N21LRGPM SM G770F usb
+apps 38
+procs 206
+```
+
+### 抖音安装验证
+
+本地 APK：
+
+```text
+/opt/data/home/reverse-tools/douyin_base.apk
+```
+
+安装命令：
+
+```bash
+adb install --no-streaming -r -d -g /opt/data/home/reverse-tools/douyin_base.apk
+```
+
+注意：本机实测安装末尾可能出现：
+
+```text
+adb: error: failed to read copy response
+```
+
+但包可能已经成功安装。不要只看 install exit code，必须用 `pm path` / `dumpsys package` 二次确认：
+
+```bash
+adb shell pm path com.ss.android.ugc.aweme
+adb shell 'dumpsys package com.ss.android.ugc.aweme | grep -E "versionName|versionCode|firstInstallTime|lastUpdateTime|codePath|pkg=|userId" | head -n 40'
+adb shell 'cmd package resolve-activity --brief com.ss.android.ugc.aweme 2>/dev/null || true'
+```
+
+已验证安装结果：
+
+```text
+package:com.ss.android.ugc.aweme
+versionCode=380501
+versionName=38.5.0
+入口: com.ss.android.ugc.aweme/.splash.SplashActivity
+```
+
+### 最小 smoke test
+
+在进入直播抓包前，先跑 spawn + attach + Java probe，验证 Frida Java 层可用：
+
+```python
+# /tmp/douyin_smoke.py
+import frida, time, json, sys, traceback, subprocess, os
+pkg='com.ss.android.ugc.aweme'
+print('client', frida.__version__)
+d=frida.get_usb_device(timeout=8)
+print('device', d.id, d.name, d.type)
+pid=d.spawn([pkg])
+print('SPAWN_OK', pid)
+s=d.attach(pid)
+print('ATTACH_OK', pid)
+js = r'''
+function emit(x){ try { send(x); } catch(e) {} console.log(x); }
+setImmediate(function(){
+  Java.perform(function(){
+    emit('[SMOKE] Java.available=' + Java.available);
+    try { var ActivityThread=Java.use('android.app.ActivityThread'); emit('[SMOKE] package=' + ActivityThread.currentPackageName()); } catch(e){ emit('[SMOKE] package err ' + e); }
+    try { var OkHttp=Java.use('okhttp3.OkHttpClient'); emit('[SMOKE] OkHttpClient found overloads=' + OkHttp.newCall.overloads.length); } catch(e){ emit('[SMOKE] OkHttp err ' + e); }
+    try { var Cipher=Java.use('javax.crypto.Cipher'); emit('[SMOKE] Cipher found'); } catch(e){ emit('[SMOKE] Cipher err ' + e); }
+  });
+});
+'''
+sc=s.create_script(js)
+sc.on('message', lambda m,data: print('MSG', json.dumps(m, ensure_ascii=False)))
+sc.load()
+print('SCRIPT_LOADED')
+d.resume(pid)
+print('RESUMED', pid)
+time.sleep(8)
+s.detach()
+print('DETACH_OK')
+```
+
+成功信号：
+
+```text
+SPAWN_OK <pid>
+ATTACH_OK <pid>
+SCRIPT_LOADED
+RESUMED <pid>
+[SMOKE] Java.available=true
+[SMOKE] package=com.ss.android.ugc.aweme
+[SMOKE] Cipher found
+DETACH_OK
+```
+
+`okhttp3.OkHttpClient` 在 smoke 阶段可能因当前 ClassLoader 指向 WebView 而 `ClassNotFoundException`，这不代表注入失败；只要 `Java.available=true`、包名正确、`Cipher found` 即可判断基础 Java Hook 可用。后续正式网络观察仍应优先用轻量 TTNET/Cronet/QueryFilter 路线。
+
+### ADB 短暂断链判定
+
+安装或 spawn 后可能短暂出现：
+
+```text
+adb: device still authorizing
+adb: no devices/emulators found
+```
+
+若稍后 `adb devices -l` 又恢复同一设备，且 Frida smoke 已成功，不要误判为安装或 Frida 失败；按 ADB/USB 重枚举处理，先重查 `adb devices -l` 与 `frida.get_usb_device()`。
+
+## 2026-05-09 补充：Samsung 动态抓包闭环与 r_signature 来源确认
+
+在 Samsung SM-G770F / Android 13 新机环境中，轻量 TTNET/QueryFilter/URL hook 与 room signature 定点 probe 已完成动态闭环。关键日志与汇总样例：
+
+```text
+/tmp/douyin_live_continue_0509.log
+/tmp/douyin_room_message_signature_probe_0509b.log
+/tmp/douyin_room_message_signature_probe_0509b.summary.md
+/tmp/douyin_0509_log_consolidated_report.md
+```
+
+轻量网络 hook 有效命中样例：
+
+```text
+webcast/feed/live_tab: 22
+preview/button_info: 11
+webcast/room/info: 12
+webcast/room/enter: 143
+webcast/im/fetch/v2: 11
+QUERY.filterQuery: 257
+QUERY.tryEncryptRequest: 186
+TTNET.getResponseCode: 257
+TTNET.getHeaderFields: 761
+TTNET.getInputStream: 252
+r_signature=: 195
+klink_egdi: 1357
+x-tt-dt: 105
+wss://: 0
+frontier: 0
+```
+
+判定规则：
+
+- `LivePlayActivity + /webcast/room/enter* + /webcast/im/fetch/v2/history + QueryFilterEngine + TTNET` 足够判定直播 HTTP/IM 链路抓取成功。
+- 当前版本可出现 `wss:// = 0`、`frontier = 0`，但 TTNET HTTP fetch/history 稳定命中；不要把 OkHttp WebSocket / frontier 当唯一成功指标。
+- 主观察点继续优先用 `com.ttnet.org.chromium.net.urlconnection.CronetHttpURLConnection.getResponseCode/getHeaderFields/getInputStream`、`QueryFilterEngine.filterQuery/tryEncryptRequest`，而不是高频 Crypto/ClassLoader 全量 hook。
+
+本轮动态确认 `r_signature` 来源链路：
+
+```text
+/webcast/room/enter* response
+  -> BaseResponse.extra
+  -> EnterRoomExtra.rSignature
+  -> Message.obj = X.0ZC5
+  -> X.0ZBv.handleMsg(Message what=4)
+  -> RoomParamHandler.updateRoomSignature(roomId, rSignature)
+  -> X.04eO cache.put(roomId, rSignature)
+  -> 后续请求 cache.get(roomId)
+  -> RoomParamHandler append r_signature
+```
+
+关键动态证据模式：
+
+```text
+[Handler.sendMessage.obj.0ZC5.EnterRoomExtra] rSignatureLen=112 rSignature=<sig>
+[ZBv.handleMsg.obj.0ZC5.EnterRoomExtra] rSignatureLen=112 rSignature=<same sig>
+[ROOM.updateRoomSignature] roomId=<room_id> sigLen=112 sig=<same sig>
+[CACHE.put] key=<room_id> valLen=112 val=<same sig>
+[CACHE.get] key=<room_id> hit=true valLen=112 val=<same sig>
+```
+
+调用栈关键证据：
+
+```text
+RoomParamHandler.updateRoomSignature
+  -> X.0ZBv.handleMsg
+  -> WeakHandler.handleMessage
+  -> Handler.dispatchMessage
+```
+
+最终模型：
+
+```text
+服务端响应字段: extra.signature
+Java 字段: EnterRoomExtra.rSignature
+后续 URL 参数: r_signature
+长度: 112
+```
+
+结论：`r_signature` 不是 QueryFilterEngine 或 RopaEncrypt 本地现场生成；它由 `/webcast/room/enter/` 响应 extra 下发，客户端按 room_id 缓存后在后续请求中追加。若要复现后续请求，优先模拟/调用 room enter 拿到 `extra.signature`，再按 room_id 作为 `r_signature` 使用。
+
+下一步若继续追，应从“URL append”切到“响应对象/响应体解析”：
+
+```text
+com.bytedance.android.livesdk.chatroom.model.EnterRoomExtra
+com.bytedance.retrofit2.SsResponse
+com.bytedance.android.live.network.response.BaseResponse
+X.0ZC5
+X.0ZBv.handleMsg
+RoomParamHandler.updateRoomSignature
+```
+
+目标是直接抓 `/webcast/room/enter/` 响应 `BaseResponse.extra.signature`，而不是继续泛追 QueryFilterEngine、TokenUnionInterceptor、RopaEncrypt。
+
+## 2026-05-09 补充：LivePlayActivity 存在但新增窗口无直播接口时的判定
+
+本轮续抓时出现一个容易误判的状态：
+
+```text
+mCurrentFocus=com.ss.android.ugc.aweme/.live.LivePlayActivity
+pid=<pid>
+轻量 Hook 仍在运行
+```
+
+但新增采集窗口里关键直播路径全为 0：
+
+```text
+webcast/feed/live_tab: 0
+preview/button_info: 0
+webcast/room/info: 0
+webcast/room/enter: 0
+webcast/im/fetch/v2: 0
+r_signature=: 0
+WS.connect/onOpen/onMessage: 0
+```
+
+同时只持续出现埋点/配置/首页类流量，例如：
+
+```text
+/service/2/app_log/
+/aweme/v1/nearby/guide/
+/service/settings/v3/
+/gkx/api/resource/v7/polling
+/gkx/api/settings/v3
+/api/neptune/v3/sdk/PackLiveSDK
+/v2/bytesync/api/pipeline
+```
+
+判定规则：
+
+- `LivePlayActivity` 只能证明 UI 还停在直播 Activity，不等价于新增窗口一定会重新发起 `room/enter` 或 `im/fetch`。
+- 如果 hook 安装正常且 `QUERY.*` / `TTNET.*` 仍有命中，但直播路径与 `r_signature` 计数为 0，通常说明当前直播会话已处于静默/稳定态，新的采集窗口没有触发进房、刷新、切房或 IM history 请求。
+- 不要把这种状态误判为 Frida/TTNET Hook 失败；Hook 有效性的低门槛信号是 `QUERY.filterQuery`、`QUERY.tryEncryptRequest`、`TTNET.getResponseCode/getHeaderFields/getInputStream` 仍增长。
+- 若目标是复现直播链路，必须触发新的直播动作：切换直播间、返回直播 Tab 后重新进房、下滑切房、轻触/刷新直播发现页，或重新拉起并点击顶部直播入口；仅等待已进入的 `LivePlayActivity` 可能只产生埋点和配置请求。
+- 汇总时要区分“当前前台在直播页”与“本采集窗口命中了直播协议”。后者必须看 `/webcast/room/enter*`、`/webcast/im/fetch/v2*`、`preview/button_info`、`r_signature` 等计数。
+
+最小复验命令：
+
+```bash
+python3 /tmp/extract_douyin_capture.py --format text --out /tmp/<log>.summary.txt /tmp/<log>.log
+python3 - <<'PY'
+from pathlib import Path
+import re
+s = Path('/tmp/<log>.log').read_text(errors='ignore')
+for k, pat in {
+  'webcast/room/enter': r'/webcast/room/enter',
+  'webcast/im/fetch/v2': r'/webcast/im/fetch/v2',
+  'QUERY.filterQuery': r'\[QUERY\.filterQuery\]',
+  'TTNET.getResponseCode': r'\[TTNET\.getResponseCode\]',
+  'r_signature=': r'r_signature=',
+}.items():
+    print(k, len(re.findall(pat, s)))
+PY
+```
+
+## 2026-05-06 补充：静态枚举核心接口签名的方法
+
+当任务是“还原 room enter / im fetch / gift 核心接口签名和参数，暂不处理 ADB”时，优先用 smali Retrofit 注解枚举，不要先进入动态验证。当前 apktool/smali 根目录仍是：
 
 ```text
 ROOT=/opt/data/home/reverse-tools/douyin_decompiled/douyin_base
