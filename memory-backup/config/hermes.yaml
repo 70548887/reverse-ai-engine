@@ -344,6 +344,14 @@ mcp_servers:
     - /opt/data/home/mcp-tools/node_modules/.bin/frida-mobile-mcp
     - stdio
     timeout: 30
+  jshook:
+    command: /opt/data/home/nodejs/bin/node
+    args:
+    - /opt/data/home/jshookmcp/dist/index.mjs
+    env:
+      MCP_TOOL_PROFILE: workflow
+    timeout: 120
+    connect_timeout: 60
   jadx:
     command: /opt/data/home/nodejs/bin/node
     args:
