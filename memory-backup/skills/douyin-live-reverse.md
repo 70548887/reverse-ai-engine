@@ -2598,6 +2598,140 @@ RoomParamHandler.updateRoomSignature
 
 目标是直接抓 `/webcast/room/enter/` 响应 `BaseResponse.extra.signature`，而不是继续泛追 QueryFilterEngine、TokenUnionInterceptor、RopaEncrypt。
 
+## 2026-05-10 补充：上下文压缩后续跑长驻采集的核验闭环
+
+当上下文压缩后只保留 active task，且已有 Hermes background 采集进程在跑时，不要重启 App 或重复 attach。优先做三步核验：
+
+1. `process.poll` 检查原采集 session 是否仍为 `running`，确认命令是轻量脚本，例如：
+
+```bash
+python3 /tmp/run_douyin_capture.py --attach --js /tmp/douyin_live_light_net.js --seconds 0 --log /tmp/douyin_live_capture_*.log
+```
+
+2. 用 ADB 验证设备和抖音进程仍存在：
+
+```bash
+export ADB_SERVER_SOCKET=tcp:10.0.2.2:5037
+export ANDROID_ADB_SERVER_ADDRESS=10.0.2.2
+export ANDROID_ADB_SERVER_PORT=5037
+adb devices -l
+adb shell pidof -s com.ss.android.ugc.aweme || true
+adb shell dumpsys window windows | grep -E 'mCurrentFocus|mFocusedApp' || true
+```
+
+注意：`dumpsys window | grep` 可能偶发无输出；如果 `adb devices` 和 `pidof` 正常，且日志计数持续增长，不要仅因 focus 为空就判定失败。
+
+3. 对当前日志做关键计数；只要出现 `room/enter*`、`im/fetch/v2`、`QueryFilterEngine`、`TTNET`、`r_signature`，即可判定轻量采集有效并可完成“准备直播捕捉”任务：
+
+```python
+from pathlib import Path
+s = Path('/tmp/douyin_live_capture_0510b.log').read_text(errors='ignore')
+for k in ['webcast/feed/live_tab','preview/button_info','webcast/room/info','webcast/room/enter','webcast/im/fetch/v2','QUERY.filterQuery','QUERY.tryEncryptRequest','TTNET.getResponseCode','TTNET.getHeaderFields','TTNET.getInputStream','r_signature=','klink_egdi','x-tt-dt','room_id=','anchor_id=','wss://','frontier']:
+    print(f'{k}: {s.count(k)}')
+```
+
+判定规则：
+
+- `process.poll` 显示 running + 日志 bytes/计数增长，说明采集仍活着。
+- `webcast/room/enter` 与 `webcast/im/fetch/v2` 已有命中时，不需要为了“准备捕捉”再点击或重启；直接汇报采集有效。
+- `wss://` / `frontier` 为 0 仍可接受，当前版本的成功指标优先看 TTNET HTTP fetch/history。
+- 只有当采集进程退出、抖音 PID 消失、或日志关键计数长期不增长时，才清理旧 session 并重新拉起/attach。
+
+## 2026-05-10 补充：轻量长驻日志中的核心接口与参数判定
+
+当用户问“抓到关键接口了吗 / 有没有核心参数”时，不要只回答是否有流量；应直接从当前长驻日志抽取接口计数、核心参数频次，并按“进房链路 / IM history / 心跳 / 房间业务 / 风控签名”分类判断。
+
+当前样例日志：
+
+```text
+/tmp/douyin_live_capture_0510b.log
+```
+
+快速提取命令：
+
+```bash
+python3 - <<'PY'
+from pathlib import Path
+import re, urllib.parse, collections
+p=Path('/tmp/douyin_live_capture_0510b.log')
+s=p.read_text(errors='ignore') if p.exists() else ''
+for k in [
+ 'webcast/room/enter_backend','webcast/room/enter_preload','webcast/room/enter/',
+ 'webcast/im/fetch/v2/history','webcast/room/ping/audience','webcast/gift/list',
+ 'webcast/gift/effect_game/get','webcast/lottery/melon/lottery_info',
+ 'QUERY.filterQuery','QUERY.tryEncryptRequest','TTNET.getResponseCode',
+ 'r_signature=','klink_egdi','x-tt-dt','wss://','frontier'
+]: print(k, s.count(k))
+urls=[]
+for m in re.finditer(r'https?://[^\s"\\]+', s):
+    u=m.group(0).rstrip('),;]')
+    if 'webcast' in u:
+        pr=urllib.parse.urlparse(u)
+        urls.append((pr.path, urllib.parse.parse_qs(pr.query)))
+paths=collections.Counter(path for path,_ in urls)
+print('TOP_PATHS')
+for path,c in paths.most_common(20): print(c, path)
+core_prefixes=['/webcast/room/enter','/webcast/im/fetch/v2','/webcast/room/enter_backend','/webcast/room/enter_preload']
+param_counter=collections.Counter(); param_by_path={}
+for path, qs in urls:
+    if any(path.startswith(pref) for pref in core_prefixes):
+        pc=param_by_path.setdefault(path, collections.Counter())
+        for k in qs:
+            param_counter[k]+=1; pc[k]+=1
+print('CORE_PARAMS_TOP')
+for k,c in param_counter.most_common(60): print(c, k)
+print('CORE_PATH_PARAMS')
+for path,pc in sorted(param_by_path.items()): print(path, pc.most_common(30))
+PY
+```
+
+本轮验证过的关键计数样例：
+
+```text
+/webcast/room/enter_backend/       52
+/webcast/room/enter_preload/       26
+/webcast/room/enter/               26
+/webcast/im/fetch/v2/history/      22
+/webcast/room/ping/audience/       169
+/webcast/gift/list/                26
+/webcast/gift/effect_game/get/     24
+/webcast/lottery/melon/lottery_info/ 22
+QUERY.filterQuery                  775
+QUERY.tryEncryptRequest            660
+TTNET.getResponseCode              775
+r_signature=                       969
+klink_egdi                         6994
+x-tt-dt                            593
+wss://                             0
+frontier                           0
+```
+
+判定为“已抓到关键接口”的标准：
+
+- 进房主链路：`/webcast/room/enter/`
+- 进房辅助链路：`/webcast/room/enter_backend/`、`/webcast/room/enter_preload/`
+- IM/弹幕历史：`/webcast/im/fetch/v2/history/`
+- 心跳：`/webcast/room/ping/audience/`
+- 房间业务：`/webcast/gift/list/`、`/webcast/gift/effect_game/get/`、`/webcast/lottery/melon/lottery_info/`
+- 网络链路：`QUERY.filterQuery`、`QUERY.tryEncryptRequest`、`TTNET.getResponseCode/getHeaderFields/getInputStream`
+
+核心参数分类：
+
+```text
+房间身份：room_id, rid, anchor_id
+进房参数：biz_params, chunk_sleep_ms, live_reason, enter_type, enter_source, is_login, filter_field, latency_ab_tag
+IM history：rid, room_id, exclude_history_msg, live_id, user_id, aid, device_id, iid, klink_egdi
+设备/通用：iid, device_id, aid, app_name, version_code, version_name, device_platform, os, channel, ac
+风控/签名：r_signature, klink_egdi, x-tt-dt, luckydog_base, luckydog_token, luckydog_data
+```
+
+回答规则：
+
+- `r_signature` 是当前最核心的直播房间签名参数；已确认来源是 `/webcast/room/enter/` 响应 `extra.signature` -> `EnterRoomExtra.rSignature` -> `RoomParamHandler.updateRoomSignature` 缓存 -> 后续请求 append 为 `r_signature`。
+- `klink_egdi` 高频出现，属于后续值得单独追的设备/风控/网络参数。
+- `wss://` / `frontier` 为 0 不应判失败；当前版本主链路可表现为 TTNET/Cronet HTTP fetch/history。
+- 若要继续复现，应优先抓 `/webcast/room/enter/` 的完整请求与响应 `extra.signature`，以及 `/webcast/im/fetch/v2/history/` 的完整 URL/Header/r_signature/x-tt-dt/klink_egdi 样本。
+
 ## 2026-05-09 补充：LivePlayActivity 存在但新增窗口无直播接口时的判定
 
 本轮续抓时出现一个容易误判的状态：
