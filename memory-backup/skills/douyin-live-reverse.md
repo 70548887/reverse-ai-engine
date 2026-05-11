@@ -41,7 +41,63 @@ GET  /webcast/room/info/          ← 直播间信息
 POST /webcast/distribution/check_user_live_status/ ← 用户直播状态
 ```
 
+## 签名四件套静态检索经验（2026-05-10）
+
+当目标是定位 `x-argus` / `x-ladon` / `x-gorgon` / `x-khronos` 的生成入口时，不要只在 smali 业务层反复 grep header 明文；本轮验证显示：
+
+1. **base smali 中无四件套明文**
+   - 对大小写变体 `x-argus|x-ladon|x-gorgon|x-khronos|X-Argus|...` 检索 `.smali` 结果为 0。
+   - 结论：四件套注入不在普通 Java/Kotlin 业务代码明文层，继续固定 header 字符串 grep 收益低。
+
+2. **四件套明文在 `libsscronet.so`**
+   - `strings libsscronet.so` 命中 `x-argus`、`x-ladon`、`x-gorgon`、`x-khronos`。
+   - 同 SO 还有 MetaSec/MSSDK/TTNet 线索：`x-metasec-process-mssdk-cost`、`x-metasec-bypass-mssdk`、`x-metasec-ttnet-native-drop`、`x-metasec-process-mssdk-async-native-callback`。
+   - 关键字符串：`Cronet_ClientOpaqueData_do_sign_set/get`，提示签名可能经 Cronet opaque callback / MSSDK native callback 注入。
+
+3. **`ISecApi.frameSign(String,int)` 的定位要谨慎**
+   - 当前唯一明确调用点在 `com/bytedance/android/live/pushstream/utils/StreamSignHelper.smali`。
+   - 更像直播推流 frame 签名入口，不应直接等同于 `/webcast/*` HTTP 请求头四件套主入口。
+
+4. **推荐下一步从动态边界验证**
+   - Java 层：hook `ISecApi.frameSign(String,int)`、`StreamSignHelper`、TTNet/NetworkParams 初始化点。
+   - Native 层：hook `libsscronet.so` request header 添加路径、`ClientOpaqueData_do_sign`、MSSDK callback；同时 hook `libEncryptor.so` 的 `ttEncrypt` 区分 body/query 加密和 header 签名。
+   - 对 `/webcast/room/enter/`、`/webcast/room/info/`、`/webcast/im/*` 分别在 Java 拦截器层和 native send 前打印 headers；若 Java 层无四件套而 native send 前有，则注入点基本在 TTNet/Cronet + MetaSec/MSSDK native 链路。
+
+产物位置：`/opt/data/home/reverse-tools/douyin_analysis/signature_static/summary.md` 与 `native_so_strings_exports.json`。
+
 ## 环境连通与调试坑点
+
+### 动态 Hook 前置检查（Frida/MCP/磁盘）
+
+在进入 Frida hook 前，先做三类前置检查，避免把环境问题误判为 hook 脚本问题：
+
+1. **先确认当前接入的是哪台设备和包名**
+   ```bash
+   ADB_SERVER_SOCKET=tcp:10.0.2.2:5037 adb devices -l
+   ADB_SERVER_SOCKET=tcp:10.0.2.2:5037 adb shell getprop ro.product.model
+   ADB_SERVER_SOCKET=tcp:10.0.2.2:5037 adb shell getprop ro.build.version.release
+   ADB_SERVER_SOCKET=tcp:10.0.2.2:5037 adb shell pm list packages | grep -E 'douyin|aweme|snssdk|ies'
+   ADB_SERVER_SOCKET=tcp:10.0.2.2:5037 adb shell pidof com.ss.android.ugc.aweme || true
+   ```
+   不要假设仍是上次的华为 P10；实际接入设备可能变化。例如曾遇到当前设备为 `SM-G770F / Android 13`，包名仍是 `com.ss.android.ugc.aweme`。
+
+2. **frida-mobile MCP 不可达时不要反复重试同一个 MCP**
+   如果 `frida_mobile` 工具返回 “unreachable after 3 consecutive failures”，按工具提示停止重试，改走本地 `adb + frida-python/frida-tools`，或先让用户检查 MCP server。
+
+3. **安装/运行 Frida 前先检查 Python 与磁盘空间**
+   ```bash
+   python - <<'PY'
+   try:
+       import frida
+       print('frida_py', frida.__version__)
+   except Exception as e:
+       print('frida_py_err', e)
+   PY
+   which frida-ps || true
+   df -h / /opt/data /tmp
+   du -sh /opt/data/home/.cache/uv 2>/dev/null || true
+   ```
+   本环境可能没有 `pip/ensurepip`，可用 `uv venv` + `uv pip install --python ... frida frida-tools`。但如果 `/opt/data` 只有几 MB 可用，安装 frida wheel 会失败：`No space left on device`。先清理 `/opt/data/home/.cache/uv` 等缓存，再安装。
 
 ### ADB 连接方式
 容器内通常通过宿主机 ADB server 转发连接手机。已验证可用的两种 server 地址：
@@ -2732,6 +2788,49 @@ IM history：rid, room_id, exclude_history_msg, live_id, user_id, aid, device_id
 - `wss://` / `frontier` 为 0 不应判失败；当前版本主链路可表现为 TTNET/Cronet HTTP fetch/history。
 - 若要继续复现，应优先抓 `/webcast/room/enter/` 的完整请求与响应 `extra.signature`，以及 `/webcast/im/fetch/v2/history/` 的完整 URL/Header/r_signature/x-tt-dt/klink_egdi 样本。
 
+## 2026-05-10 补充：用户追问“还在直播间但没抓到接口”时的核验与汇报规则
+
+当用户认为手机仍在直播间并追问“没有帮助获取到接口信息吗”时，不要直接沿用历史成功结论，也不要立刻重启/反复 attach。先用工具核验三件事：
+
+```bash
+process.list / process.poll              # 是否已有长驻采集进程
+adb devices -l
+adb shell pidof -s com.ss.android.ugc.aweme || true
+adb shell dumpsys activity activities | grep -E 'mResumedActivity|topResumedActivity|ResumedActivity' | head
+adb shell uiautomator dump /sdcard/window.xml >/dev/null 2>&1 || true
+adb exec-out cat /sdcard/window.xml | grep -E 'DYLoginActivity|直播|说点什么|首页|推荐' | head
+```
+
+若新开采集窗口只看到 `klink_egdi` / app_log / settings 类流量，而：
+
+```text
+webcast/room/enter: 0
+webcast/im/fetch/v2: 0
+QUERY.filterQuery: 0
+TTNET.getResponseCode: 0
+r_signature=: 0
+```
+
+同时 UI 实际在桌面或登录页，例如：
+
+```text
+com.sec.android.app.launcher/.activities.LauncherActivity
+com.ss.android.ugc.aweme/.account.business.login.DYLoginActivity
+```
+
+应明确区分：
+
+- **历史已抓到的接口信息**：可以汇报已有长驻日志中已确认的 `/webcast/room/enter*`、`/webcast/im/fetch/v2/history`、`r_signature` 链路。
+- **当前新窗口未新增直播接口**：原因是 UI 不在真实直播间/直播 Tab 有效状态，而不是先判断 Hook 失败。
+
+如果误把桌面坐标当直播入口点击，可能只会在 launcher 上无效点击；若 `monkey` 拉起后进入 `DYLoginActivity`，不要继续采集直播接口，应提示需要先恢复到真实直播间或已登录/可进直播状态，再重新 attach 轻量脚本。
+
+汇报时用清晰措辞：
+
+```text
+之前已经抓到过直播核心接口和 r_signature 来源；但本轮当前手机不在直播间，而在登录页/桌面，所以这次新日志没有新增直播接口。
+```
+
 ## 2026-05-09 补充：LivePlayActivity 存在但新增窗口无直播接口时的判定
 
 本轮续抓时出现一个容易误判的状态：
@@ -2884,3 +2983,94 @@ LiveRoomInfoApi -> /webcast/room/info_by_user/
 - 静态枚举核心接口时，优先 `rg -l --fixed-strings <endpoint> $ROOT/smali*` 缩小命中文件，再用 `read_file`/小脚本回溯 `.method` 边界；不要直接对整个 apktool 树做全量 Python `glob + read_text` 多关键词遍历，容易超时。
 - gift / im 相关接口不要只搜文件名或完整路径，先放宽到 `im/fetch/v2`、`gift/list`、`gift/effect_game/get`、`gift/play/indicator`、`room/info_by_scene`、`room/info/` 再回溯方法签名。
 - 任务若要求“暂不处理 ADB”，就把未命中的 im/gift 标为待继续静态定位，不要切回手机验证。
+
+## 2026-05-10 补充：继续抓新的实时样本的最小操作闭环
+
+当用户要求“继续抓新的实时样本”时，按轻量 hook + UI 触发新房间的流程执行，避免重启 App 或使用 enhanced 全量 hook：
+
+```bash
+export ADB_SERVER_SOCKET=tcp:10.0.2.2:5037
+export ANDROID_ADB_SERVER_ADDRESS=10.0.2.2
+export ANDROID_ADB_SERVER_PORT=5037
+
+# 1. 先核验设备、当前进程、Activity、Frida USB
+adb devices -l
+adb shell pidof -s com.ss.android.ugc.aweme || true
+adb shell dumpsys activity activities | grep -E 'topResumedActivity|mResumedActivity|ResumedActivity' | head
+python3 - <<'PY'
+import frida
+print('frida', frida.__version__)
+d=frida.get_usb_device(timeout=5)
+print('USB_OK', d.id, d.name, d.type)
+PY
+
+# 2. 启动轻量长驻采集，seconds 0 表示持续抓直到手动 kill
+python3 /tmp/run_douyin_capture.py \
+  --attach \
+  --js /tmp/douyin_live_light_net.js \
+  --seconds 0 \
+  --log /tmp/douyin_live_capture_<tag>.log
+
+# 3. 在首页推荐页点击顶部“直播”Tab；进入直播发现后轻触预览区域触发进房
+adb shell input tap 190 135
+sleep 15
+adb shell input tap 540 520
+sleep 8
+
+# 4. 验证进入直播间
+adb shell dumpsys activity activities | grep -E 'topResumedActivity|mResumedActivity|ResumedActivity' | head
+# 成功应为 com.ss.android.ugc.aweme/.live.LivePlayActivity
+```
+
+如果已经进入 `LivePlayActivity`，要抓“新样本”不能只等待；需要主动触发新请求：
+
+```bash
+# 直播间内上滑切到新房间
+adb shell input swipe 540 1650 540 350 350
+sleep 12
+```
+
+然后从日志提取结构化样本，不要直接把大日志塞进上下文：
+
+```python
+from pathlib import Path
+import re, urllib.parse, collections, json, time
+p=Path('/tmp/douyin_live_capture_<tag>.log')
+s=p.read_text(errors='ignore')
+urls=[]
+for m in re.finditer(r'https?://[^\s"\\]+', s):
+    u=m.group(0).rstrip('),;]')
+    if 'webcast' in u:
+        pr=urllib.parse.urlparse(u)
+        urls.append((u, pr.path, urllib.parse.parse_qs(pr.query)))
+print('bytes', len(s), 'url_count', len(urls))
+for path,c in collections.Counter(path for _,path,_ in urls).most_common(35):
+    print(c, path)
+rooms=[]
+for _,_,qs in urls:
+    rid=(qs.get('room_id') or qs.get('rid') or [''])[0]
+    if rid and rid not in rooms:
+        rooms.append(rid)
+print('rooms', rooms)
+```
+
+本流程已实测：从首页推荐页点击顶部直播入口约 `(190,135)`，再轻触中部约 `(540,520)` 可进入真实直播间；之后直播间内上滑可切新房间。有效样本中通常会新增/确认：
+
+```text
+/webcast/room/enter_preload/
+/webcast/room/enter_backend/
+/webcast/room/enter/
+/webcast/im/fetch/v2/history/
+/webcast/gift/list/
+/webcast/gift/effect_game/get/
+/webcast/lottery/melon/lottery_info/
+/webcast/preview/button_info/
+/webcast/distribution/check_user_live_status/
+```
+
+判定规则：
+
+- `LivePlayActivity` + `room/enter*` + `im/fetch/v2/history` + `r_signature` 才算新实时直播样本有效。
+- 若点击直播预览后回到普通推荐视频，说明没有进房；重新点击顶部直播 Tab 或另一个直播预览，不要判 hook 失败。
+- 抓完后手动 `process.kill` 长驻采集，落盘 JSON/Markdown 摘要，例如 `/tmp/douyin_live_samples_<tag>.json` 与 `/tmp/douyin_live_capture_<tag>_summary.md`。
+- mem0 自部署 API 当前写入可能返回 `HTTP 422 Unprocessable Entity`；不应阻塞抓样本任务，先完成本地日志/JSON/Markdown 落盘。
