@@ -1,6 +1,6 @@
 {
-  "backup_at": "2026-05-12 04:00:50",
-  "total": 416,
+  "backup_at": "2026-05-13 04:01:11",
+  "total": 417,
   "memories": [
     {
       "id": "48d6a4bf-1406-47ec-ae7d-8ec851956a6f",
@@ -2081,6 +2081,11 @@
       "id": "170395ed-6738-4b39-b268-4fa339e66173",
       "memory": "Memory Control Plane invariant: canonical files are written before semantic mirrors; task progress stays in Runtime State, not mem0 or the knowledge base.",
       "hash": "a98d5071a08588908801b11827522d2c"
+    },
+    {
+      "id": "6a25f70e-bb91-41c6-9216-8394f58eeddd",
+      "memory": "抖音直播 X-Cylons v38 归档：12 个 priority dispatcher direct caller 全为 0；全局 slot writer 8286 个，+0x38 payload/context writer 531 个，score>=70 writer 80 个；top +0x38 writer 为 0x32e8e0/0x325e38/0x2f73f8/0x2ed930/0x2ccdf8/0x2cbc30/0x2c6208/0x2c5fb4/0x2c5d60/0x2c4478/0x2ba1e0/0x2b9efc。状态：算法本体仍未完整还原；这些是 payload slot 写入邻域，不是已证明生成点。",
+      "hash": "c8470075d4f59363848ceee0c03c5cda"
     }
   ]
 }
