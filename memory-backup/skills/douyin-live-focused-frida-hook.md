@@ -812,3 +812,771 @@ hbB
 7. v13 focus 采样中 `hook-ok=22`、`offset-hit=186`、`/ws/v2=97`、`x-security-argus=6`、`x-tt-e-=2`、`/webcast/feed/live_tab=2`，说明 `0x2d469c/0x2d45f4` 对请求对象仍稳定可见；但若 v13 日志里的 `X-Cylons` 主要来自 hook label/ready 文本，就不能算真实请求证据。真实 X-Cylons 证据仍以 v12 `0x346bcc` 事件为准。
 
 对用户汇报时务必区分：已定位到强候选 header 打包/添加点 `0x346bcc`，但 `X-Cylons` value 生成算法尚未完整还原。
+
+### 2026-05-12 v14 `0x346bcc` enter/leave diff 负样本经验
+
+在已有 v12 真实样本确认 `libsscronet.so!0x346bcc` 入参/header-list 可见真实：
+
+```text
+X-Cylons = UNB8MfgOqTylQ0Ktb8HgBx+d2
+```
+
+之后准备并运行 v14 enter/leave diff 脚本：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/run_v14_346bcc_enter_leave_diff_0512.py
+/opt/data/home/reverse-tools/douyin_analysis/v14_346bcc_enter_leave_diff_conclusion_0512.md
+```
+
+本轮统计：
+
+```text
+hook-ok=32
+ring-enter=12
+ring-hit=8
+```
+
+但没有再次命中真实 `X-Cylons` 或已知 value 片段 `UNB8`。判定口径：
+
+1. `hook-ok`、`ring-enter`、`ring-hit` 只能证明 `0x346bcc` 及上游 ring-buffer hook 链路正常，不能证明命中了带 `X-Cylons` 的目标窗口。
+2. 如果 enter/leave diff 没有真实 `X-Cylons`/value，不能判断 value 是在 `0x346bcc` 函数内部生成，还是 enter 前由上游传入。
+3. 不能把“v14 未复现真实 X-Cylons”当作否定 `0x346bcc` 的证据；v12 的真实 header-list 命中仍使 `0x346bcc` 保持当前最强 header 打包/添加点候选。
+4. 下一步应继续围绕 `0x346bcc` 做可复现目标窗口采样：只有当 enter 前无 value、leave 后出现 value，才能支持“函数内部写入/生成”；若 enter 前已存在 value，则沿上游 backtrace offset 反推算法入口。
+5. 汇报时保持三分法：
+   - 接口/协议链路：已确认。
+   - header 打包/添加点：`0x346bcc` 当前最强。
+   - 算法本体/value 生成：尚未还原。
+
+### 2026-05-12 v15/v16 SSL 对齐与 3a 链路探测经验
+
+v15/v16 进一步验证了两类 `X-Cylons` 动态链路，证据文件：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/v15_ssl_xcylons_align_0512.log
+/opt/data/home/reverse-tools/douyin_analysis/v16_3a_chain_probe_0512.log
+/opt/data/home/reverse-tools/douyin_analysis/run_v16_3a_chain_probe_0512.py
+```
+
+v15 在 SSL 明文中抓到 `/webcast/im/push/v3/` WebSocket 握手完整请求：
+
+```text
+GET /webcast/im/push/v3/?... HTTP/1.1
+Host: webcast100-ws-c-lf.amemv.com
+X-Cylons: 8HDckViuCZyeDqQ9z2GtxL89
+Sec-WebSocket-Key: 8pI6Qy+Kgx1TCPmnYG5idQ==
+Sec-WebSocket-Protocol: pbbp2
+```
+
+对应稳定发送栈：
+
+```text
+libsscronet.so!0x3ec4f0
+<- libsscronet.so!0x3ec44c
+<- libsscronet.so!0x3a6b50
+<- libsscronet.so!0x3a66b0
+<- libsscronet.so!0x2d45f4
+<- libsscronet.so!0x2d4a38
+<- libsscronet.so!0x51997c
+<- libsscronet.so!0x388864
+```
+
+v16 以 `0x3ec4f0/0x3ec44c/0x3a6b50/0x3a66b0/0x2d45f4/0x2d4a38/0x51997c/0x388864/0x346bcc/0x4cff5c` 做入参扫描，确认：
+
+1. `0x346bcc` 可稳定命中 IM ACK / 上行包内 `X-Cylons`，典型内容：
+   ```text
+   X-Cylons..qCiEyQD2UcRdu/rTlzk4nOdl2.none:.ackB
+   internal_src:pushserver|first_req_ms:...|seq:5|wss_msg_type:wrds|wrds_v:...
+   ```
+   典型 backtrace：
+   ```text
+   libsscronet.so!0x346bcc
+   <- libsscronet.so!0x4cff5c
+   <- libsscronet.so!0x4cff50
+   <- libsscronet.so!0x21e17c
+   <- libsscronet.so!0x2107dc
+   <- libsscronet.so!0x2235d8
+   <- libsscronet.so!0x302114
+   <- libsscronet.so!0x2107dc
+   ```
+2. `0x3ec4f0/0x3ec44c` 可在非目标窗口看到 `webcast100-ws-c-lf.amemv.com` 等连接/host 周边内存，但不一定直接持有完整 HTTP 明文；最终握手明文仍以 SSL_write 为准。
+3. `0x2d45f4/0x2d4a38` 会频繁出现 webcast/frontier/DNS/日志对象，噪声较大；只有与 SSL 明文目标 URL/header 同窗口对齐时才算链路证据。
+
+判定口径更新：
+
+- 当前应把 `X-Cylons` 分成两条动态证据链：
+  1. WebSocket 握手 `X-Cylons`：最终明文在 SSL_write，发送栈重点是 `0x3ec4f0 <- 0x3ec44c <- 0x3a6b50 <- 0x3a66b0 ...`。
+  2. IM ACK/uplink 包内 `X-Cylons`：`0x346bcc <- 0x4cff5c <- 0x4cff50 ...` 是当前最强 header-list/包打包候选。
+- 抓到 SSL 明文或 `0x346bcc` 包内 value，只能说明接口链路和 header/包打包点已确认；仍不能宣称算法本体已还原。
+- 下一步如果要还原算法，应围绕真实 `X-Cylons` 命中窗口做 enter/leave diff 和上游 ring-buffer：
+  - WebSocket 握手链：重点 `0x3a6b50/0x3a66b0/0x3ec44c/0x3ec4f0`。
+  - IM ACK/uplink 链：重点 `0x346bcc/0x4cff5c/0x4cff50/0x21e17c`。
+  - 只有当 enter 前无 value、leave 后出现 value，才可把某函数升级为“生成/写入点”；否则它仍只是“携带/打包点”。
+- 对用户汇报继续明确区分：接口/协议链路已确认，动态打包/发送点已强收窄，算法本体/value 生成还未完整挖出。
+
+### 2026-05-12 v18 ACK + X-Cylons 同窗采样负样本经验
+
+v18 围绕 IM ACK/uplink 包内 `X-Cylons` 链路做 ring-buffer/onEnter/onLeave 同窗采样，目标包括：
+
+```text
+libsscronet.so!0x346bcc
+libsscronet.so!0x4cff5c
+libsscronet.so!0x4cff50
+libsscronet.so!0x21e17c
+libsscronet.so!0x2107dc
+```
+
+沉淀文件示例：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/run_v18_ack_xcylons_window_0512.py
+/opt/data/home/reverse-tools/douyin_analysis/v18_ack_xcylons_window_0512.log
+/opt/data/home/reverse-tools/douyin_analysis/v18_ack_xcylons_window_conclusion_0512.md
+```
+
+一次典型负样本流程：先确认抖音主进程是否存在；若 `pid None`，通过 ADB 启动 App，再确认主进程和关键 so：
+
+```text
+libsscronet.so
+libttboringssl.so
+libttcrypto.so
+libvcn.so
+libvcnverify.so
+```
+
+该轮 hook 安装正常：
+
+```text
+hook-ok=13
+hook-err=0
+Traceback=0
+TransportError=0
+```
+
+但 300 秒窗口内没有目标 ACK / X-Cylons 事件复现：
+
+```text
+enter=0
+leave=0
+ack-window=0
+xc-window=0
+```
+
+判定口径：
+
+1. 主进程、模块和 hook 安装都正常，但 `enter/leave/ack-window/xc-window` 全为 0 时，只能记为“目标 IM ACK/uplink 事件未复现”的负样本。
+2. 日志中的 `X-Cylons`、`ackB`、`client_start_pack_time` 若只来自脚本 ready/filter 文本，不是真实请求或内存证据，不能算命中。
+3. 该类负样本不能推进算法入口判断，也不能否定 v16 的真实证据。
+4. 当前最强 IM ACK/uplink 证据仍以 v16 为准：`0x346bcc` / `0x4cff5c` 在 enter 时同一 buffer 内已经携带 `client_finish_pack_time`、`client_send_ack_time`、`client_start_pack_time`、`client_recv_time`、`X-Cylons=<value>`、`ackB` 与 `internal_src:pushserver|...|wss_msg_type:wrds`。
+5. 因为 v16 显示 `0x346bcc` 和 `0x4cff5c` enter 时 value 已存在，所以它们更像 IM ACK/uplink 包内 `X-Cylons` 的携带/打包链路，不是最上游生成点。
+6. 更上游是否在 `0x4cff50 / 0x21e17c / 0x2107dc / 0x2235d8 / 0x302114` 内写入，需要再次命中真实 ACK/X-Cylons 窗口后才能判断。
+
+对用户汇报时建议明确：v18 是链路正常但目标事件未复现的负样本；目前已确认协议链路、SSL 明文、IM ACK/uplink 打包携带链路，算法本体/value 生成仍未完整还原。
+
+### 2026-05-12 v19 上游 enter/leave/ring-buffer 严格采样经验
+
+v19 在 v16/v18 基础上继续做上游 enter/leave/ring-buffer 严格采样，目标是避免 ready/filter 文本误报，只在真实 ACK 或 `X-Cylons` 数据窗口出现时吐出证据。沉淀文件示例：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/run_v19_upstream_xcylons_strict_0512.py
+/opt/data/home/reverse-tools/douyin_analysis/v19_upstream_xcylons_strict_conclusion_0512.md
+```
+
+执行前先做脚本可执行性检查：
+
+```text
+python3 -m py_compile run_v19_upstream_xcylons_strict_0512.py
+# JS 提取/静态检查应确认 hook JS 可解析，且没有把 ready 文本计入真实命中
+```
+
+典型流程与判定：
+
+1. 如果首次运行发现：
+   ```text
+   pid None
+   no pid
+   ```
+   先用 ADB 启动抖音并确认主进程，而不是直接修改 hook：
+   ```text
+   frontmost com.ss.android.ugc.aweme <pid> 抖音
+   app com.ss.android.ugc.aweme 抖音 <pid>
+   ```
+2. attach 后必须确认关键 so 已加载：
+   ```text
+   libsscronet.so
+   libttboringssl.so
+   libttcrypto.so
+   libvcn.so
+   libvcnverify.so
+   ```
+3. 若统计类似：
+   ```text
+   hook-ok=13
+   hook-err=0
+   Traceback=0
+   TransportError=0
+   strict-x-window=0
+   strict-ack-window=0
+   strict-enter-x=0
+   strict-leave-new-x=0
+   X-Cylons=0
+   ackB=0
+   /webcast/=0
+   /ws/v2=0
+   /bytelink/wss=0
+   ```
+   应判定为“主进程、模块、Frida、hook 链路全部正常，但采样窗口内目标 ACK/X-Cylons 事件未复现”的负样本。
+4. v19 负样本不能否定 v16 真实证据。当前最强证据仍是：`0x346bcc / 0x4cff5c` 在 v16 中真实看到 IM ACK/uplink 包内携带 `X-Cylons`；但它们更像携带/打包点，`X-Cylons` value 最上游生成算法仍未完整还原。
+5. 对用户汇报时继续使用三分法：
+   - 协议/接口链路：已确认。
+   - header/包携带或打包点：`0x346bcc / 0x4cff5c` 为强证据。
+   - 算法本体/value 生成：尚未还原；负样本只说明目标事件未复现。
+
+### 2026-05-12 v22 first-seen diff：`0x21e17c` 上游传播层新增证据
+
+v22 围绕 `0x346bcc` 上游链做 strict first-seen enter/leave diff，目标是追踪 `X-Cylons` value 首次出现层，而不是只确认最终携带点。沉淀文件示例：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/run_v22_first_seen_xcylons_diff_0512.py
+/opt/data/home/reverse-tools/douyin_analysis/v22_first_seen_xcylons_diff_0512.log
+/opt/data/home/reverse-tools/douyin_analysis/v22_first_seen_xcylons_diff_conclusion_0512.md
+```
+
+典型统计：
+
+```text
+hook-ok=15
+hook-err=0
+Traceback=0
+TransportError=0
+v22-x-enter=20
+v22-x-leave-new=0
+v22-ack-enter=4
+v22-live-context=5
+```
+
+主要命中点：
+
+```text
+up!0x21e17c  xEnter=17, enter=165
+up!0x302114  xEnter=1
+ctx!0x30ff40 xEnter=1
+up!0x2235d8  xEnter=1
+```
+
+关键经验：
+
+1. v22 把 `X-Cylons` / `/webcast/` / `/ws/v2` 周边内存窗口进一步推到 `libsscronet.so!0x21e17c` 这一层；该点 enter 时已经能看到 `X-Cylons` 相关对象。
+2. 典型 backtrace：
+   ```text
+   libsscronet.so!0x21e17c
+   <- libsscronet.so!0x3f0348 / 0x38549c / 0x433798
+   <- libsscronet.so!0x30fc84
+   <- libsscronet.so!0x30fbf8
+   <- libsscronet.so!0x3404ac
+   <- libsscronet.so!0x533650
+   <- libsscronet.so!0x5337d0
+   <- libsscronet.so!0x3406e4
+   <- libsscronet.so!0x310510
+   <- libsscronet.so!0x2f8d50
+   ```
+3. ACK 侧也可命中真实上下文字段：
+   ```text
+   ackB
+   client_start_pack_time
+   client_finish_pack_time
+   client_send_ack_time
+   client_recv_time
+   internal_src:pushserver
+   wss_msg_type
+   wrds_v
+   /webcast/
+   ```
+4. `v22-x-leave-new=0` 是关键边界：本轮没有观察到“enter 前无 X-Cylons、leave 后新出现 X-Cylons”，因此不能把 `0x21e17c`、`0x346bcc` 或其它已 hook offset 升级为算法生成/写入点。
+5. v22 与 v16/v20 结论兼容：`0x346bcc / 0x4cff5c` 仍是 IM ACK/uplink 包内 `X-Cylons` 的强携带/打包点；`0x21e17c` 是新增的更上游传播/携带层证据；算法本体/value 生成入口仍未完整还原。
+6. 采样进程可能超过传入 duration 不自然退出；如果已产出 summary 与有效事件，可手动 kill 后分析日志，但后续脚本应修复退出逻辑，避免后台进程长时间挂起。
+7. `extractX` 不要从 JSON keys 或脚本文本中误抽 value；日志中多为 protobuf/对象池原始内存，`X-Cylons` 字段和值未必线性相邻，干净 value 仍应以真实 ASCII/SSL/内存字段为准。
+
+下一步如果继续追算法本体，应以 `0x21e17c` 为新锚点，围绕直接调用邻域做更短窗口 enter/leave diff：
+
+```text
+0x3f0348
+0x38549c
+0x433798
+0x30fc84
+0x30fbf8
+0x3404ac
+0x533650
+0x5337d0
+```
+
+判定标准保持不变：只有观察到某点 enter 前无 value、leave 后出现 value，或定位到明确 sign/opaque callback 输出，才能称为 `X-Cylons` value 生成点；否则仍只能称为携带/传播/打包链路。
+
+### 2026-05-12 v23 `0x21e17c` 邻域 first-seen diff 负样本经验
+
+v23 修复了采样脚本退出逻辑，并围绕 v22 中 `0x21e17c` 直接调用邻域继续做 strict enter/leave first-seen diff。沉淀文件示例：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/run_v23_21e17c_neighbor_first_seen_0512.py
+/opt/data/home/reverse-tools/douyin_analysis/v23_21e17c_neighbor_first_seen_0512.log
+/opt/data/home/reverse-tools/douyin_analysis/v23_21e17c_neighbor_first_seen_conclusion_0512.md
+```
+
+典型统计：
+
+```text
+script-start=1
+ready=1
+hook-ok=14
+hook-err=0
+v23-live-enter=3
+v23-x-enter=0
+v23-x-leave-new=0
+v23-ack-enter=0
+X-Cylons=0
+ackB=0
+client_start_pack_time=0
+/webcast/=0
+/ws/v2=18
+/bytelink/wss=0
+Traceback=0
+TransportError=0
+```
+
+本轮只在这些邻域点看到 `/ws/v2` Frontier 配置上下文：
+
+```text
+mid!0x3404ac
+mid!0x30fc84
+mid!0x5337d0
+```
+
+典型内存字段：
+
+```text
+final_host=frontier-aweme-lf-ipainner.amemv.com
+heartbeat_interval=30
+/ws/v2
+```
+
+判定口径：
+
+1. `hook-ok=14`、`hook-err=0`、无 `Traceback/TransportError`，且关键 so 已加载时，应先判定 Frida、主进程、模块与 hook 链路正常。
+2. `v23-x-enter=0`、`v23-x-leave-new=0`、日志全文 `X-Cylons=0` 时，本轮不能算 `X-Cylons` 生成/传播窗口；不要从 `/ws/v2` 配置文本推断算法入口。
+3. `ackB=0`、`client_start_pack_time=0`、`v23-ack-enter=0` 时，本轮没有复现 IM ACK/uplink 目标事件，不能推进 ACK 包内 `X-Cylons` 生成点判断。
+4. `0x3404ac / 0x30fc84 / 0x5337d0` 在 v23 中只能表述为 Frontier `/ws/v2` 配置/传播上下文点；没有真实 `X-Cylons` 或 first-seen diff 前，不应升级为算法入口。
+5. v23 负样本不能否定 v16/v20/v22 真实证据。当前总判断仍是：`0x346bcc / 0x4cff5c` 为 IM ACK/uplink 包内 `X-Cylons` 强携带/打包点，`0x21e17c` 是更上游传播层，算法本体/value 生成点仍未完整还原。
+6. 后续继续追时，应先复现真实 `X-Cylons` / `ackB` / `client_start_pack_time` 窗口，再分析邻域 enter/leave diff；否则只记录为“链路正常但目标事件未复现”。
+
+### 2026-05-12 v25 `0x21e17c` 上游 first-seen：ACK 上下文活跃但 X-Cylons 未复现
+
+v25 继续围绕 `0x21e17c` 邻域与上游链做 first-seen / enter-leave diff，沉淀文件示例：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/run_v25_21e17c_upstream_firstseen_0512.py
+/opt/data/home/reverse-tools/douyin_analysis/v25_21e17c_upstream_firstseen_0512.log
+/opt/data/home/reverse-tools/douyin_analysis/v25_21e17c_upstream_firstseen_conclusion_0512.md
+```
+
+一次典型统计：
+
+```text
+hook-ok=28
+hook-err=0
+Traceback=0
+TransportError=0
+v25-x-enter=0
+v25-x-leave-new=0
+v25-ssl-x=0
+v25-ssl-live=0
+v25-ack-enter=3
+v25-live-enter=21
+X-Cylons=0
+ackB=593
+client_start_pack_time=115
+/webcast/=7639
+/ws/v2=552
+```
+
+判定口径：
+
+1. `hook-ok`、无 `Traceback/TransportError` 说明 Frida/主进程/hook 链路正常；这类结果不是脚本失效。
+2. `v25-ack-enter` 可在 `up!0x2107dc` 看到 ACK/uplink 字段：`ackB`、`client_start_pack_time`、`client_finish_pack_time`、`client_send_ack_time`、`client_recv_time`、`internal_src:pushserver`、`wss_msg_type`、`wrds_v`。因此 `0x2107dc` 是值得保留的 ACK 上下文点。
+3. `anchor!0x21e17c` 继续可见 live/frontier/webcast 上下文，支持它是上游传播/携带/上下文层；但没有 `xEnter/xLeaveNew` 时不能升级为生成点。
+4. 若全文 `X-Cylons=0` 且 `v25-ssl-x=0`，即便 `/webcast/`、`/ws/v2`、`ackB` 很多，也只能算“ACK/live 上下文活跃但目标 X-Cylons/SSL 窗口未复现”的负样本。
+5. v25 进程可能超过传入 duration 不自然退出；若日志已有 summary，可手动 kill 后分析，但后续脚本应修复退出逻辑。
+
+
+### 2026-05-12 v26 ACK/X-Cylons source-window 负样本经验
+
+v26 继续围绕已验证 ACK / `X-Cylons` 链路做更严格 source-window / first-seen 采样，沉淀文件示例：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/run_v26_ack_xcylons_source_window_0512.py
+/opt/data/home/reverse-tools/douyin_analysis/v26_ack_xcylons_source_window_0512.log
+/opt/data/home/reverse-tools/douyin_analysis/v26_ack_xcylons_source_window_conclusion_0512.md
+```
+
+本轮 hook 安装与运行链路正常：
+
+```text
+script-start=1
+hook-ok=21
+ready=1
+hook-err=0
+mod-miss=0
+hook-miss=0
+Traceback=0
+TransportError=0
+```
+
+关键 so 已加载：
+
+```text
+libsscronet.so
+libttboringssl.so
+libttcrypto.so
+libvcn.so
+libvcnverify.so
+```
+
+但最终统计显示没有复现真实 ACK / `X-Cylons` 目标窗口：
+
+```text
+xEnter=0
+xLeaveNew=0
+ackEnter=0
+ackLeaveNew=0
+sslX=0
+sslLive=0
+liveEnter=5
+emitted=0
+```
+
+`first` 中 `x/ack/client_start_pack_time/client_finish_pack_time/client_send_ack_time/client_recv_time/internal_src/wss_msg_type/wrds_v` 全为空。日志中唯一 `X-Cylons=1` 来自脚本 ready/note 文本，不是真实请求或内存证据，不能算命中。
+
+有效命中仅限 live/frontier/webcast 上下文：
+
+```text
+mid!0x5337d0
+anchor!0x21e17c
+up!0x2235d8
+up!0x302114
+ctx!0x30ff40
+```
+
+可见关键词包括：
+
+```text
+/webcast/
+/ws/v2
+/bytelink/wss
+webcast100-ws
+```
+
+判定口径：
+
+1. v26 是“主进程、模块、hook 链路正常，但目标 ACK/X-Cylons 事件未复现”的负样本。
+2. 不能用 v26 否定 v16/v20/v22 的真实 `X-Cylons` / ACK 证据。
+3. `0x21e17c / 0x2235d8 / 0x302114 / 0x30ff40` 在本轮只能继续表述为 live/frontier/webcast 上下文或传播层，不能升级为算法生成点。
+4. `0x346bcc / 0x4cff5c` 仍保持 IM ACK/uplink 包内 `X-Cylons` 强携带/打包点判断；本轮没有命中不等于被否定。
+5. 后续不要继续盲目扩大 hook；应先提高目标事件复现率：force-stop 后早期 attach，保守切房/重进/等待 WS 重连。只有出现真实 `X-Cylons`、`ackB`、`client_start_pack_time` 或目标 SSL 明文后，才分析 enter/leave diff。
+
+### 2026-05-12 v27 reconnect-assisted 采样：NotificationShade/锁屏会让自动触发完全失效
+
+v27 在 v26 负样本后加入了早期 attach、保守重连/切房触发与 strict first-seen 统计，沉淀文件示例：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/run_v27_ack_xcylons_firstseen_reconnect_0512.py
+/opt/data/home/reverse-tools/douyin_analysis/v27_ack_xcylons_firstseen_reconnect_0512.console.log
+/opt/data/home/reverse-tools/douyin_analysis/v27_ack_xcylons_firstseen_reconnect_0512.console2.log
+/opt/data/home/reverse-tools/douyin_analysis/v27_ack_xcylons_firstseen_reconnect_conclusion_0512.md
+```
+
+一次典型受阻统计：
+
+```text
+script-start=2
+ready=2
+hook-ok=52
+hook-err=0
+mod-miss=0
+LOCKED_OR_SHADED=2
+skip_trigger_locked_or_shaded=12
+TransportError=1   # 首轮 attach timeout
+v27-summary=2
+v27-first-seen=0
+v27-ssl-x=0
+X-Cylons=0
+ackB=0
+client_start_pack_time=0
+/webcast/=0
+/ws/v2=0
+/bytelink/wss=0
+```
+
+设备状态反复显示：
+
+```text
+mCurrentFocus=Window{... NotificationShade}
+mFocusedApp=... com.ss.android.ugc.aweme/.live.LivePlayActivity
+mShowingDream=false mDreamingLockscreen=true
+```
+
+判定口径：
+
+1. 第二轮 v27 能安装大量 `hook-ok`，说明脚本、主进程、模块与 Frida hook 链路基本正常；不要把本轮直接归因为 hook 点错误。
+2. `NotificationShade` + `mDreamingLockscreen=true` 时，ADB 输入会被锁屏/通知栏捕获，v27 会输出 `skip_trigger_locked_or_shaded` 并跳过 UI 重连/切房；此时无法提高 ACK / `X-Cylons` 复现率。
+3. 如果 `v27-first-seen=0`、`v27-ssl-x=0` 且全文没有真实 `X-Cylons` / `ackB` / `client_start_pack_time` / 目标 URL，本轮只能记为“锁屏/通知栏导致 UI 触发失败”的负样本。
+4. 该负样本不能否定 v16/v20/v22 的真实证据；当前仍保持：`0x346bcc / 0x4cff5c` 是 IM ACK/uplink 包内 `X-Cylons` 强携带/打包点，`0x21e17c` 是上游传播层，`0x2107dc` 是 ACK 上下文点；value 生成算法仍未完整还原。
+5. 下一轮必须先人工/物理解锁或以可靠方式退出 `NotificationShade`，确认 `mCurrentFocus` 回到抖音 `LivePlayActivity` 后再运行 v27。仅用 `input keyevent WAKEUP`、上下滑、Back 不一定能解除 Huawei/Samsung 设备的 dozing/NotificationShade 状态。
+
+### 2026-05-12 v28 recover strict first-seen：链路正常但仍未复现目标 X-Cylons/ACK/SSL
+
+v28 在 v27 基础上增加前台恢复逻辑：尝试从 `SplashActivity` / `NotificationShade` / 锁屏状态恢复到抖音前台，再运行 strict first-seen / ACK / `X-Cylons` / SSL 采样。沉淀文件示例：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/run_v28_recover_strict_firstseen_0512.py
+/opt/data/home/reverse-tools/douyin_analysis/v28_recover_strict_firstseen_0512.console.log
+/opt/data/home/reverse-tools/douyin_analysis/v28_recover_strict_firstseen_0512.log
+/opt/data/home/reverse-tools/douyin_analysis/v28_recover_strict_firstseen_conclusion_0512.md
+```
+
+一次典型统计：
+
+```text
+hook-ok=26
+hook-err=0
+mod-miss=0
+hook-miss=0
+Traceback=0
+TransportError=0
+v28-summary=10
+v28-first-seen=0
+v28-ssl-x=0
+v28-ssl-live=0
+xEnter=0
+xLeaveNew=0
+ackEnter=0
+ackLeaveNew=0
+sslX=0
+sslLive=0
+liveEnter=7
+```
+
+主要活跃点：
+
+```text
+sslchain!0x2d45f4 enter=609 liveEnter=7
+ackctx!0x2107dc enter=14 ackEnter=0
+sslchain!0x2d4a38 enter=19
+mid!0x533650 enter=1
+mid!0x5337d0 enter=1
+```
+
+判定口径：
+
+1. `hook-ok`、无 `Traceback/TransportError`、多次 summary 说明 Frida/主进程/模块/hook 链路正常。
+2. 日志全文中的 `X-Cylons`、`ackB`、`client_start_pack_time` 等计数可能来自脚本字段名、summary JSON key 或 ready/filter 文本；真实命中必须看 `v28-first-seen-*`、`v28-x-enter`、`v28-ack-enter`、`v28-ssl-x`、`v28-ssl-live` 与 summary counters。
+3. 若这些严格 tag/counter 全为 0，即使 `/webcast/`、`/ws/v2`、`webcast100-ws` 出现，也只能记为 live/frontier/webcast 上下文活跃，不是 `X-Cylons` 或 ACK 目标窗口。
+4. v28 负样本不能否定 v16/v20/v22 的真实证据；当前仍保持：`0x346bcc / 0x4cff5c` 是 IM ACK/uplink 包内 `X-Cylons` 强携带/打包点，`0x21e17c` 是上游传播层，`0x2107dc` 是 ACK 上下文点。
+5. v28 进程可能超过传入 duration 未自然退出；若已有 summary 和有效日志，可手动 kill 后分析，后续脚本需修复退出逻辑。
+6. 下一轮不要盲目扩大 hook；先确保真实直播间/WS 重连/ACK 事件复现，再分析 enter/leave first-seen。
+
+### 2026-05-12 v29 static sscronet offset analysis：静态巩固，不是算法还原完成
+
+v29 在 v28 连续负样本后转为静态巩固，避免目标事件未复现时继续空跑。沉淀文件：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_sscronet_offsets_0512.py
+/opt/data/home/reverse-tools/douyin_analysis/v29_static_sscronet_offset_analysis_0512.md
+/opt/data/home/reverse-tools/douyin_analysis/v29_static_sscronet_offset_analysis_conclusion_0512.md
+```
+
+目标 SO：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/native_libs/libsscronet.so
+ELF AArch64, .text addr=0x1f7044, size=0x3fad68
+```
+
+分析范围：
+
+```text
+ACK/uplink 包链：0x346bcc / 0x4cff5c / 0x4cff50 / 0x21e17c / 0x2107dc / 0x2235d8 / 0x302114 / 0x30ff40
+v22/v23 邻域：0x3404ac / 0x533650 / 0x5337d0 / 0x30fc84 / 0x30fbf8
+SSL/WebSocket 发送链：0x3ec4f0 / 0x3ec44c / 0x3a6b50 / 0x3a66b0 / 0x2d45f4 / 0x2d4a38 / 0x51997c / 0x388864
+```
+
+关键静态观察：
+
+1. `0x346bcc` 附近 prologue 为 `0x346b94`，表现为小型对象/字段搬运函数，不像复杂算法体：
+   ```text
+   0x346bc8: bl #0x1f9ff8
+   0x346bcc: ldrsb w8, [x21, #0x17]
+   0x346bd4: ldr x8, [x21, #8]
+   0x346bec: str x20, [x19, #0x10]
+   ```
+   这支持 v12/v16 动态判断：`0x346bcc` 是 header-list/protobuf-like 对象的携带/打包点，不是最上游 value 生成算法。
+2. `0x4cff50 / 0x4cff5c` 附近可见分配 `0x30` 大小对象并调用 `0x346b90`，随后引用计数和对象传递：
+   ```text
+   0x004cff4c: bl #0x33594c
+   0x004cff50: add x1, sp, #8
+   0x004cff58: bl #0x346b90
+   0x004cff5c: stur x21, [x29, #-0x20]
+   0x004d0060: blr x8
+   ```
+   这更像 ACK/uplink 包构建中的创建/包装/传递层。
+3. `0x21e17c / 0x2107dc` 静态 call 密集，符合动态上“上游传播/ACK 上下文层”特征；v22/v25 仍无 leave-new / first-seen 证据，不能升级为生成点。
+4. SSL 发送链 `0x3ec4f0 <- 0x3ec44c <- 0x3a6b50 <- 0x3a66b0 ...` 仍适合作为 WebSocket 握手最终发送链和 SSL 对齐链；静态窗口没有给出 value 生成算法证据。
+
+v29 结论边界：
+
+- 协议/接口链路：已确认。
+- `X-Cylons` 最终安全头/包内字段：已在 SSL 明文与 IM ACK/uplink 包真实出现。
+- 强携带/打包点：`0x346bcc / 0x4cff5c / 0x4cff50`。
+- 上游传播/ACK 上下文点：`0x21e17c / 0x2107dc`。
+- WebSocket 发送链：`0x3ec4f0 / 0x3ec44c / 0x3a6b50 / 0x3a66b0 ...`。
+- 算法本体 / value 生成点：仍未完整还原；v29 静态结果没有足够证据把任何已知点升级为生成算法入口。
+
+下一步建议：
+
+1. 不再单纯扩大 hook 面。
+2. 动态继续时，优先复现真实 `X-Cylons`/ACK 窗口，再只围绕 `0x4cff50 -> 0x346b90 -> 0x346bcc` 做 enter/leave object diff，确认 value 在调用前是否已存在。
+3. 静态继续时，以 `0x4cff50` 附近调用 `0x4d0238 / 0x51cd50 / blr x8` 为切入点，结合交叉引用和对象字段偏移，定位真正填充 `sp+8` / header 对象的上游路径。
+
+### 2026-05-12 v30 `0x346b90 / 0x4cff50` 深挖：确认是对象复制/传递，不是 X-Cylons value 生成
+
+v30 继续静态深挖 `0x346b90`、`0x346bcc`、`0x4cff50`、`0x4cff5c` 与 `sp+8` header/string 对象来源，沉淀文件：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v30_346b90_4cff50_deep_0512.py
+/opt/data/home/reverse-tools/douyin_analysis/v30_346b90_4cff50_deep_static_0512.md
+/opt/data/home/reverse-tools/douyin_analysis/v30_346b90_4cff50_conclusion_0512.md
+```
+
+关键反汇编证据：
+
+```text
+0x004cff3c: add x0, sp, #8
+0x004cff40: mov x1, x21
+0x004cff44: bl  #0x1ff5fc      # 最近填充/拷贝 sp+8
+0x004cff48: mov w0, #0x30
+0x004cff4c: bl  #0x33594c      # 分配/取得 0x30 字节目标对象
+0x004cff50: add x1, sp, #8
+0x004cff54: mov x21, x0
+0x004cff58: bl  #0x346b90      # 用 sp+8 源对象构造/复制新对象
+0x004cff5c: stur x21, [x29, #-0x20]
+0x004cffb0: mov x3, x21
+0x004cffb4: bl  #0x51cd50      # 消费/传递对象
+```
+
+`0x346b90 .. 0x346c04` 本身只表现为目标对象初始化、短字符串/对象布局标志检查与字段复制：
+
+```text
+x0 = 目标对象
+x1 = 源对象
+0x346bb4: str wzr, [x0,#8]
+0x346bbc: str xzr, [x0,#0x10]
+0x346bc8: bl #0x1f9ff8
+0x346bcc: ldrsb w8, [x21,#0x17]
+0x346bd4: ldr x8, [x21,#8]
+0x346bec: str x20, [x19,#0x10]
+```
+
+v30 判定：
+
+1. `0x346b90 / 0x346bcc` 不是 `X-Cylons` value 生成算法；它更像对象构造/源字符串对象复制函数。动态上 `0x346bcc` enter 已能看到完整 value，也支持“源对象已携带 value”。
+2. `0x4cff50 / 0x4cff5c` 不是算法本体；该层负责从 `sp+8` 源 header/string 对象复制到新对象、引用计数、局部保存，然后交给 `0x51cd50` 或 vtable/callback 消费。
+3. `sp+8` 的最近显式写入点是 `0x4cff3c -> 0x1ff5fc(x0=sp+8, x1=x21)`；因此来源还要继续向进入 `0x4cff3c` 前的 `x21` 上游追。
+4. v30 与 v16/v20/v22 动态证据兼容：ACK/uplink 携带/打包链已强确认，但 `X-Cylons` value 生成算法本体仍未完整还原。
+
+后续优先级：
+
+- 静态继续追 `0x4cf8a4 .. 0x4d0228` 内 `x21` 的 definition-use 链，尤其进入 `0x4cff3c` 前的来源。
+- 动态复现 ACK/X-Cylons 后，同时 dump：`0x4cff3c` before/after 的 `x1=x21` 与 `sp+8`、`0x4cff50/0x4cff58` enter/leave 的 `sp+8` 与新对象 `x21`、`0x51cd50` enter 的 `x3=x21`。
+- 若 `0x4cff3c` 前 `x21` 已含完整 value，则继续上追；若 `0x1ff5fc` leave 才出现 value，则把 `0x1ff5fc` 升级为写入/转换点继续分析。
+
+### 2026-05-12 v31 `x21` 来源 / `0x1ff5fc` 语义：来源上推到 `0x4cf8a4` 入参 `x2`
+
+v31 承接 v30，静态追 `0x4cff3c` 前 `x21` 来源与 `0x1ff5fc(x0=sp+8, x1=x21)` 语义。沉淀文件：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v31_x21_source_1ff5fc_0512.py
+/opt/data/home/reverse-tools/douyin_analysis/v31_x21_source_1ff5fc_static_0512.md
+/opt/data/home/reverse-tools/douyin_analysis/v31_x21_source_1ff5fc_static_0512.json
+/opt/data/home/reverse-tools/douyin_analysis/v31_x21_source_1ff5fc_conclusion_0512.md
+```
+
+关键证据：
+
+```text
+0x004cf8dc: mov x20, x0
+0x004cf8e0: add x0, sp, #0x20
+0x004cf8e4: mov x21, x2      # x21 来自函数入参 x2
+0x004cf8e8: mov w19, w1
+...
+0x004cff3c: add x0, sp, #8
+0x004cff40: mov x1, x21
+0x004cff44: bl  #0x1ff5fc    # copy/assign 入参 x2/x21 到 sp+8
+```
+
+`0x1ff5fc` 直接调用点约 `263` 个，函数体读取源对象 `x1` 的短字符串/对象布局标志（如 `[x1,#0x17]`），调用复制/析构/引用相关 helper，未见 hash/crypto/base64/查表/复杂循环特征。它更像高复用 string/object assign/copy helper，而不是 `X-Cylons` value 生成算法。
+
+v31 判定：
+
+1. `0x4cf8a4` 层没有本地生成 `X-Cylons`；`x21` 是调用方传入的第三参数 `x2`。
+2. `0x4cff3c -> 0x1ff5fc` 只是把上游源对象 `x2/x21` 复制/赋值到 `sp+8` 临时对象。
+3. `0x1ff5fc / 0x346b90 / 0x4cff50 / 0x4cff5c / 0x346bcc` 都应继续归类为对象复制、包装、携带、消费链，不是算法本体入口。
+4. 真正要继续追的是调用 `0x4cf8a4` 时传入的 `x2` 来源；动态复现时应在 `0x4cf8a4` enter dump `x2`，并在 `0x4cff3c/0x1ff5fc/0x346b90/0x51cd50` 做 enter/leave 对比。
+5. 只有观察到某点 enter 前无 value、leave 后出现 value，或定位到明确 sign/opaque callback 输出，才能称为 `X-Cylons` value 生成点；当前算法本体仍未完整还原。
+
+### 2026-05-12 v32 `0x4cf8a4` 调用方 / `x2` 来源：上推到 thunk 调用方传入的 `x1`
+
+v32 承接 v31，继续反查 `0x4cf8a4` 入口来源与保存为 `x21` 的 `x2`。沉淀文件：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v32_4cf8a4_callers_x2_source_0512.py
+/opt/data/home/reverse-tools/douyin_analysis/v32_4cf8a4_callers_x2_source_static_0512.md
+/opt/data/home/reverse-tools/douyin_analysis/v32_4cf8a4_callers_x2_source_static_0512.json
+/opt/data/home/reverse-tools/douyin_analysis/v32_4cf8a4_callers_x2_source_conclusion_0512.md
+```
+
+v32 静态发现：`.text` 内没有普通 `bl 0x4cf8a4` 直接调用，主要通过两个 tail-call thunk 进入：
+
+```asm
+0x004cf894: bti c
+0x004cf898: mov x2, x1
+0x004cf89c: mov w1, #1
+0x004cf8a0: b   #0x4cf8a4
+
+0x004d0128: bti c
+0x004d012c: mov x2, x1
+0x004d0130: mov w1, #2
+0x004d0134: b   #0x4cf8a4
+```
+
+直接跳入 thunk 的位置：
+
+```text
+0x210c80 -> 0x4cf894
+0x28a460 -> 0x4cf894
+0x210c94 -> 0x4d0128
+0x28a354 -> 0x4d0128
+```
+
+判定口径：
+
+1. `0x4cf8a4` 不是 `X-Cylons` value 生成点；它继续只是保存、复制、包装上游传入对象。
+2. `0x4cf894 / 0x4d0128` 也只是 wrapper/thunk：把上层调用方传入的 `x1` 转成共享实现的 `x2`，并设置类型 `w1=#1/#2`。
+3. `0x1ff5fc / 0x346b90 / 0x4cff50 / 0x4cff5c / 0x346bcc` 仍归类为对象复制、包装、携带、打包/消费链，不是算法本体入口。
+4. 当前来源链更新为：
+   ```text
+   upstream caller x1
+     -> 0x4cf894 / 0x4d0128 thunk: x2 = x1
+     -> 0x4cf8a4: x21 = x2
+     -> 0x1ff5fc: copy x21 to sp+8
+     -> 0x346b90 / 0x51cd50: 包装/消费
+   ```
+5. 下一步静态继续应沿 `0x210c80 / 0x210c94 / 0x28a354 / 0x28a460` 的调用方/函数入口追 `x1` 来源，重点判断它来自对象字段、回调返回还是 opaque/sign 输出。
+6. 动态复现时应在 `0x4cf894 / 0x4d0128` enter dump `x1`：若 enter 已含完整 `X-Cylons` value，就继续上追调用方；若 enter 无、leave/下游有，才把对应点升级为写入/生成候选。
+7. 对用户汇报继续保持边界：接口/协议链路已确认，ACK/uplink 强携带/打包点为 `0x346bcc / 0x4cff5c / 0x4cff50`，`0x21e17c / 0x2107dc` 是上游传播/上下文点；算法本体/value 生成点仍未完整还原。
