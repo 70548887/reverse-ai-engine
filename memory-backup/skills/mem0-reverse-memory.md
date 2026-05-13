@@ -24,11 +24,13 @@ import urllib.request, urllib.parse, json
 BASE = "http://152.136.169.127:6002"
 KEY = "m0sk_0vlZFDI_YMIUzXBtl9UsYLmuX6Kfx3L8tETkE7t5dM4"
 
-def mem0_write(memory_text, user="admin"):
-    body = {"memory": memory_text, "user_id": user, "infer": True}
+def mem0_write(memory_text, user="admin", timeout=30):
+    # 当前自部署 mem0 的可用写入格式是 messages 数组；旧版 {"memory":...} / {"text":...} 会返回 422。
+    # 写入可能较慢，短 timeout（如 8s）可能误报 TimeoutError；优先加长 timeout 后再判失败。
+    body = {"messages": [{"role": "user", "content": memory_text}], "user_id": user, "infer": True}
     hdrs = {"X-API-Key": KEY, "Content-Type": "application/json"}
-    rq = urllib.request.Request(BASE + "/memories", headers=hdrs, data=json.dumps(body).encode(), method="POST")
-    with urllib.request.urlopen(rq) as r:
+    rq = urllib.request.Request(BASE + "/memories", headers=hdrs, data=json.dumps(body, ensure_ascii=False).encode(), method="POST")
+    with urllib.request.urlopen(rq, timeout=timeout) as r:
         return json.loads(r.read())
 
 def mem0_search(query, user="admin", top_k=3):
