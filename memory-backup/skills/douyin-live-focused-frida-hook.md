@@ -1580,3 +1580,226 @@ v32 静态发现：`.text` 内没有普通 `bl 0x4cf8a4` 直接调用，主要�
 5. 下一步静态继续应沿 `0x210c80 / 0x210c94 / 0x28a354 / 0x28a460` 的调用方/函数入口追 `x1` 来源，重点判断它来自对象字段、回调返回还是 opaque/sign 输出。
 6. 动态复现时应在 `0x4cf894 / 0x4d0128` enter dump `x1`：若 enter 已含完整 `X-Cylons` value，就继续上追调用方；若 enter 无、leave/下游有，才把对应点升级为写入/生成候选。
 7. 对用户汇报继续保持边界：接口/协议链路已确认，ACK/uplink 强携带/打包点为 `0x346bcc / 0x4cff5c / 0x4cff50`，`0x21e17c / 0x2107dc` 是上游传播/上下文点；算法本体/value 生成点仍未完整还原。
+
+### 2026-05-13 v52 priority source-neighborhood 静态复核：`0x4cf8a0/0x4d0134/0x4fc0c0` 仍不能升级为生成点
+
+v52 对 v51 优先点做调用前 value-lane 与局部对象/record 槽来源复核，产物：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v52_priority_source_neighborhood_0513.py
+/opt/data/home/reverse-tools/douyin_analysis/v52_priority_source_neighborhood_static_0513.json
+/opt/data/home/reverse-tools/douyin_analysis/v52_priority_source_neighborhood_static_0513.md
+/opt/data/home/reverse-tools/douyin_analysis/v52_priority_source_neighborhood_conclusion_0513.md
+```
+
+核心分类：
+
+```text
+0x4cf8a0 -> 0x4cf8a4 : arg_x1_forwarded_to_shared_consumer_type1
+0x4d0134 -> 0x4cf8a4 : arg_x1_forwarded_to_shared_consumer_type2
+0x4fc0c0 -> 0x4d0128 : local_stack_payload_to_4d0128_with_arg_object_side_context
+```
+
+判定口径：
+
+1. `0x4cf8a0` 与 `0x4d0134` 都是把 live-in `x1` 转为 `x2` 后进入 `0x4cf8a4` 的 shared consumer thunk/type path（type=1/2），不是本地生成 `X-Cylons` value。
+2. `0x4fc0c0` 是调用 `0x4d0128` 的上游 probe：`x1=sp+8` 本地 payload，`x2` 来自入参对象链；仍属于 source-neighborhood / payload 传播邻域。
+3. v52 静态窗口没有发现新的 hash/crypto/base64/opaque loop，也没有 enter/leave first-seen 证据。
+4. 这些点只能作为动态 dump/first-seen probe；不能升级为 `X-Cylons` value 生成点。
+5. 当前总判断保持：接口/协议链路、SSL 明文、IM ACK/uplink 强携带/打包链已有进展；`X-Cylons` value 生成算法本体仍未完整还原。
+
+v40 从 v39 `dynamic_hook_plan_v39` 的 priority payload writer 出发，改用静态 backward slice 追 `+0x38` 写入源与 callback/function-pointer 形态，避免在目标事件难复现时继续空跑。沉淀文件示例：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v40_payload_writer_upstream_0513.py
+/opt/data/home/reverse-tools/douyin_analysis/v40_payload_writer_upstream_static_0513.md
+/opt/data/home/reverse-tools/douyin_analysis/v40_payload_writer_upstream_static_0513.json
+/opt/data/home/reverse-tools/douyin_analysis/v40_payload_writer_upstream_conclusion_0513.md
+```
+
+优先 writer：
+
+```text
+0x2c4478
+0x2b3754
+0x2aeb98
+0x2ba1e0
+```
+
+source 分类：
+
+```text
+caller_argument_copy: 2
+argument_or_input_copy: 1
+local_or_call_return_copy: 1
+```
+
+关键静态结论：
+
+1. `0x2c4478 / 0x2c44b0`：`stp x2, x1, [x23,#0x38]`，直接把 caller `x2/x1` 写入 stack-local callback record 的 `+0x38/+0x40`。
+2. `0x2b3754 / 0x2b3784`：`str x2, [sp,#0x38]`，保存 caller `x2` 到栈帧 `+0x38`，随后引用计数。
+3. `0x2aeb98 / 0x2aebd8`：从 caller argument `x1+0x18` 拷贝 16 字节到新分配 record 的 `+0x38`。
+4. `0x2ba1e0 / 0x2ba4f0`：把来自 caller `x3` 保存到 `x20` 后的 32-bit 值写入 allocated record `+0x38`。
+5. priority writer 直接 `b/bl` caller 仍基本为空，address materialization 扫描也未找到明确 callback 注册引用；这更像 callback/table/record 间接触发邻域。
+6. 这些点目前更应表述为 caller argument / caller-provided object field 的复制、包装、传播邻域，不能升级为 `X-Cylons` value 生成算法入口。没有 hash/crypto/base64/opaque 复杂算法体，也没有 first-seen 动态证据。
+
+后续动态验证建议：
+
+- Hook v40 writers：`0x2c4478 / 0x2b3754 / 0x2aeb98 / 0x2ba1e0`。
+- 同时保留 v37 dispatcher：`0x28c0f0 / 0x21197c / 0x2237ac / 0x2a7474 / 0x25d8c4 / 0x2111d0 / 0x2237d4 / 0x2239d4 / 0x223750 / 0x224998 / 0x224c1c / 0x20df58`。
+- 保留 wrapper：`0x210c74 / 0x210c88 / 0x28a348 / 0x28a454`。
+- 对 writer 记录 enter/leave `x0-x8`、record base、`+0x20/+0x30/+0x38/+0x50`、源参数指向内容；对 dispatcher 记录 target reg 与传给 wrapper 的 `x1`。
+- 判定标准继续使用 strict first-seen：只有 writer enter 前无 opaque/`X-Cylons` value，leave 后首次出现 value，并被后续 dispatcher/wrapper/`0x4cf8a4` 链消费，才可升级为生成点或生成点近邻。
+
+汇报边界：v40 只把调用链从 dispatcher/wrapper/callback record 进一步收窄到 priority payload writer 的 caller-argument/object-field copy 邻域；`X-Cylons` value 生成算法本体仍未完整还原。
+
+### 2026-05-14 v71 focused first-seen 后台 watch 通知判定经验
+
+当 Hermes background process 因 `watch_patterns=["hook-ok"]` 触发系统通知时，不要把通知中的 `hook-ok` 片段当成新的目标事件或采样结论。正确流程是先 poll/wait 后台进程，再读取 summary JSON 与完整 log 做严格判定。
+
+典型命令：
+
+```text
+cd /opt/data/home/reverse-tools/douyin_analysis && \
+ADB_SERVER_SOCKET=tcp:10.0.2.2:5037 PYTHONUNBUFFERED=1 \
+python3 run_v71_focused_firstseen_v70_probes_0513.py 240 \
+2>&1 | tee v71_run_active_$(date +%H%M%S)_0513.out
+```
+
+v71 典型结果：
+
+```text
+process exited, exit_code=0
+hook-ok=67
+hook-err=1
+v71-summary=8
+Traceback=0
+TransportError=0
+```
+
+严格目标事件仍可能全为 0：
+
+```text
+X-Cylons=0
+ackB=0
+client_start_pack_time=0
+/webcast/=0
+/ws/v2=0
+/bytelink/wss=0
+first_value_events=[]
+strong_events=[]
+ssl_events=[]
+```
+
+判定口径：
+
+1. `hook-ok` watch 通知只说明某些 Frida hook 安装成功，是中间状态信号，不是 `X-Cylons` / ACK / SSL 真实命中。
+2. 最终结论必须以脚本输出的 summary JSON 中 `first_value_events`、`strong_events`、`ssl_events` 等严格数组为准。
+3. 日志全文 raw counter 或系统通知片段只能做审计辅助；ready/filter/hook-label 文本不得计入真实请求或内存证据。
+4. 如果 summary 显示 strict arrays 为空，即使 hook 链健康，也只能归为“目标 first-seen 窗口未复现”的负样本。
+5. 对用户汇报时应明确：采样链路健康，但算法本体未还原，`algorithm_status=not_recovered`。
+
+### 2026-05-14 v72：v71 动态负样本后优先做静态 source expansion，而不是盲目扩 hook
+
+当 v71 focused first-seen 采样显示 hook 链健康但严格目标数组为空时，下一步不要继续盲目扩大动态 hook 面。更稳的可复用流程是：基于上一轮静态高价值 probes 做一层 source/caller/callee 静态扩展，重新确认边界与候选小集合。
+
+沉淀文件示例：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v72_twelfth_level_source_0514.py
+/opt/data/home/reverse-tools/douyin_analysis/v72_twelfth_level_source_static_0514.json
+/opt/data/home/reverse-tools/douyin_analysis/v72_twelfth_level_source_static_0514.md
+/opt/data/home/reverse-tools/douyin_analysis/v72_twelfth_level_source_conclusion_0514.md
+```
+
+v72 典型统计：
+
+```json
+{
+  "seed_count": 367,
+  "reviewed_target_count": 332,
+  "priority_followups": 40,
+  "new_value_source_evidence": false,
+  "proven_algorithm_evidence": false,
+  "algorithm_status": "not_recovered"
+}
+```
+
+分类结果可能仍集中在：
+
+```text
+algorithm_like_unproven_twelfth_level_probe
+object_vtable_indirect_dispatch_probe
+factory_return_indirect_dispatch_probe
+materializer_or_raw_table_boundary_probe
+lookup_copy_or_source_object_lane
+runtime_library_noise_lane
+twelfth_level_unknown_or_shared_boundary
+```
+
+判定口径：
+
+1. v71/v72 这类组合流程要把“采样链健康”与“目标事件复现”分开。hook-ok 很多但 strict first-seen / SSL / ACK 数组为空，只能说明目标窗口未复现。
+2. 动态目标窗口未复现时，优先做静态 source/caller/callee expansion 来收敛候选，而不是增加大范围 hooks。
+3. 静态 `algorithm_like_*`、indirect、materializer、copy/runtime/container lane 都只能作为 probe 候选；没有闭合 transform-to-`X-Cylons` 输出链或 strict first-seen 证据，不能升级为 value source。
+4. 当前边界仍应表述为：协议/SSL/IM ACK/uplink 链与强携带/打包点有进展，`0x346bcc / 0x4cff5c / 0x4cff50` 是强 carry/package 点，`0x21e17c / 0x2107dc` 是 upstream propagation/context，WebSocket send chain 可用 `0x3ec4f0 / 0x3ec44c / 0x3a6b50` 对齐；算法本体仍 `not_recovered`。
+5. 归档时同时写入 JSON、Markdown、conclusion、task status、project memory 与 `SESSION-STATE.md`，并在报告中明确“无 value-source upgrade”。
+
+下一步动态策略：只有先提高真实事件复现率（force-stop + early attach + 确认真直播间 + reconnect/cut-room/等待 WS 重连），才用 v72 priority probes 做小范围 focused hook。升级标准保持 strict first-seen：enter 前无 value、leave/downstream 出现同一个新 `X-Cylons`，或捕获明确 opaque/sign callback 输出。
+
+### 2026-05-14 v76 sixteenth-level focused static consolidation：收敛动态集合，但算法仍未还原
+
+v76 是在多轮动态 first-seen 负样本与静态 source expansion 之后做的 focused static consolidation，产物示例：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/v76_sixteenth_level_focused_consolidation_static_0514.json
+/opt/data/home/reverse-tools/douyin_analysis/v76_sixteenth_level_focused_consolidation_static_0514.md
+/opt/data/home/reverse-tools/douyin_analysis/v76_sixteenth_level_focused_consolidation_conclusion_0514.md
+```
+
+典型统计：
+
+```json
+{
+  "seed_count": 413,
+  "reviewed_target_count": 371,
+  "priority_followups": 48,
+  "demoted_helper_or_noise_lanes": 90,
+  "focused_dynamic_hook_set": 33,
+  "new_value_source_evidence": false,
+  "proven_algorithm_evidence": false,
+  "first_seen_evidence": false,
+  "algorithm_status": "not_recovered"
+}
+```
+
+判定口径：
+
+1. v76 只能说明静态候选进一步收敛到小动态集合；不能表述为 `X-Cylons` value 生成算法已还原。
+2. 强 carry/package 点仍是：
+   ```text
+   0x346bcc / 0x4cff5c / 0x4cff50
+   ```
+3. upstream propagation/context 仍是：
+   ```text
+   0x21e17c / 0x2107dc
+   ```
+4. WebSocket send chain alignment 仍是：
+   ```text
+   0x3ec4f0 / 0x3ec44c / 0x3a6b50
+   ```
+5. 如果 `new_value_source_evidence=false`、`proven_algorithm_evidence=false`、`first_seen_evidence=false`，任何 algorithm-like hint、raw ref、materializer、indirect dispatch context 都只能保留为 probe，不得升级为 value source。
+6. v76 focused dynamic hook set 可作为下一轮“小范围动态验证集合”，但运行前必须先提高真实直播间重连/ACK/X-Cylons/SSL first-seen 复现率；否则会继续得到 hook 健康但目标窗口未复现的负样本。
+
+v76 focused dynamic hook set：
+
+```text
+0x222b6c / 0x26ccbc / 0x2b8db4 / 0x1f95d0 / 0x1fc2a4 / 0x1fc694 /
+0x229588 / 0x2890d4 / 0x29348c / 0x2945f4 / 0x29e1e0 / 0x29e1ec /
+0x29ed14 / 0x2a24d4 / 0x2a2b6c / 0x1fa908 / 0x3266cc / 0x328d94 /
+0x21aecc / 0x21b108 / 0x224c14 / 0x1f7940 / 0x2025e4 / 0x21e418 /
+0x346bcc / 0x4cff5c / 0x4cff50 / 0x4cf8a4 / 0x21e17c / 0x2107dc /
+0x3ec4f0 / 0x3ec44c / 0x3a6b50
+```
+
+下一步优先级：不要继续盲目扩大静态层级或 hook 面；先 force-stop + early attach + 确认真直播间前台 + 切房/重连/等待 WS ACK，捕获真实 `X-Cylons` / ACK / SSL 窗口后再运行 v76 focused hook set。汇报时继续明确区分“接口/调用链进展”和“算法本体还原状态”：当前 `algorithm_status=not_recovered`。
