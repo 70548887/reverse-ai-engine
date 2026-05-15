@@ -67,11 +67,14 @@ def mem0_list(user="admin"):
 
 完成 APP/SO 逆向阶段性任务（尤其是动态负样本）时，除写入 mem0 外，还应同步验证本地归档层，避免“写了但未收尾”：
 
-1. 读取/确认 Markdown 结论文件与聚合 JSON 摘要存在，结论中明确区分“调用链/打包/传播进展”和“算法本体/value 生成点是否还原”。
-2. 检查任务状态 JSON、`SESSION-STATE.md`、本地 `memory/*.md` 是否包含同一边界结论。
-3. 用 `ps -ef | grep <run_script_or_tag>` 确认没有遗留采样/Frida 脚本进程。
-4. 更新当前 todo 状态为 completed，并将长期 memory 中同一项目的旧边界替换成最新边界。
-5. 对负样本要写清楚“不升级为生成点”的原因（如 `first_value_events=[]`、`ssl_events=[]`、未复现目标 ACK/SSL 窗口），避免后续把 hook-installed 误读为算法证据。
+1. 先用文件搜索确认本轮实际产物名，不要凭上轮命名模板硬猜；同系列静态产物可能是 `vNN_xxx_0514.json/.md`，而不是 `vNN_xxx_static_0514.json/.md`。若预期路径缺失，先 `search_files(target="files", pattern="*vNN*")` 或等价方式枚举目录，再验证真实路径。
+2. 读取/确认 Markdown 结论文件与聚合 JSON 摘要存在，结论中明确区分“调用链/打包/传播进展”和“算法本体/value 生成点是否还原”。
+3. 检查任务状态 JSON、`SESSION-STATE.md`、本地 `memory/*.md` 是否包含同一边界结论。
+4. 运行本地 `memory-sync.py sync` 后再用 `memory-sync.py search "<project keywords>"` 验证语义层可检索到最新项目归档。
+5. 用 `ps -ef | grep <run_script_or_tag>` 确认没有遗留采样/Frida 脚本进程。
+6. 写入 mem0 阶段总结；若返回 `200 {"results":[]}`，按服务端接受处理，但仍以本地 Markdown/JSON/SESSION + memory-sync 搜索命中作为可审计事实源。
+7. 更新当前 todo 状态为 completed，并将长期 memory 中同一项目的旧边界替换成最新边界。
+8. 对负样本要写清楚“不升级为生成点”的原因（如 `first_value_events=[]`、`ssl_events=[]`、未复现目标 ACK/SSL 窗口），避免后续把 hook-installed 误读为算法证据。
 
 ## 坑
 
