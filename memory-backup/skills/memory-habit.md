@@ -87,3 +87,16 @@ ls /opt/data/home/.openclaw/workspace/memory/projects/
 python3 memory-sync.py search "reverse-ai-engine"
 ```
 
+## 逆向阶段归档完成检查清单
+
+当用户要求“归档 status/memory/SESSION 并同步”或上下文压缩后只剩归档任务时，按以下顺序一次性闭环，不要只口头总结：
+
+1. 校验核心产物都存在且非空：`analysis/*.json`、`analysis/*.md`、`analysis/*conclusion*.md`、静态脚本、`tasks/status/*.json`、`memory/projects/*.md`、当日 daily memory、`SESSION-STATE.md`。
+2. 对 status JSON 做字段抽查，至少确认 `candidate_count`、hook/probe count、`algorithm_status`；若分析 JSON 不含这些汇总字段，以 status JSON 为准。
+3. 对 conclusion / project memory / daily / SESSION 做文本标记抽查，确认包含阶段号、`algorithm_status` 或关键结论。
+4. 执行 `cd /opt/data/home/.openclaw/workspace && python3 memory/scripts/memory-sync.py sync`。
+5. 立刻执行 `memory-sync.py search "<阶段号> <核心关键词> algorithm_status"`，确认新项目记忆 Top 命中。
+6. 检查无遗留阶段分析进程，例如 `ps -ef | grep -E 'static_vXX|run_vXX|vXX_' | grep -v grep || true`。
+7. 若有会话 todo，把归档项标记 completed，再向用户报告：文件、同步结果、搜索命中、算法状态、遗留进程状态。
+
+
