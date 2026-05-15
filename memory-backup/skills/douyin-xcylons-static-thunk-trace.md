@@ -1825,6 +1825,449 @@ v75 产物：
 
 v75 结论：本轮只完成第十五层候选扩展、helper/noise 降级和动态优先级整理；未发现 new value-source、proven algorithm 或 first-seen。`X-Cylons` value 生成算法本体仍未完整还原。
 
+## v80 后转向 focused interprocedural value-flow（v81 方向）
+
+当 v79/v80 已经把 focused hook set 固定并完成局部 source/value-lane 静态分类后，不要继续重复“单函数局部 value-lane 打分”或盲目扩大 hook 数量。v80 的有效边界是：
+
+```text
+candidate_count=30
+priority_value_lane_probe_count=24
+focused_value_lane_hook_set_count=36
+new_value_source_evidence=false
+proven_algorithm_evidence=false
+first_seen_evidence=false
+algorithm_status=not_recovered
+```
+
+v80 推荐 hook set 可作为 v81 输入，分为 24 个 priority probes 与 carry/context/SSL-send alignment controls。v81 应转向 focused interprocedural value-flow backtrace：
+
+1. 从 v80 priority probes 内的 `x1/x2` value-lane store、producer/copy/downstream callsite、indirect `blr/br` 出发。
+2. 对每个 value-lane 的最近定义做跨函数回溯：direct call return、indirect callback、table/materializer、buffer/object field load、bitop/transform block。
+3. 对 call return 继续追一至两层 direct callee/caller；对 materializer/raw pointer refs 聚合成 table/record cluster。
+4. 同时前推到已知下游消费链，检查是否形成：
+   ```text
+   transform block/callback output -> clean x1/x2 value -> 0x1ff5fc/copy -> 0x346b90/0x4cff50/carry -> SSL/WS send
+   ```
+5. 产物中必须明确区分：
+   - generator/algorithm-body-like candidate；
+   - copy/lookup/container/object-field source lane；
+   - consumer/carry/package/alignment control；
+   - unresolved indirect/materializer scout。
+6. 升级标准仍保持 strict first-seen 或 explicit opaque/sign callback output。静态跨函数 value-flow 只能提升动态优先级，不能单独证明算法本体。
+
+建议 v81 产物命名：
+
+```text
+static_v81_focused_interprocedural_value_flow_0514.py
+v81_focused_interprocedural_value_flow_0514.json
+v81_focused_interprocedural_value_flow_0514.md
+v81_focused_interprocedural_value_flow_conclusion_0514.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v81_0514.json
+```
+
+v81 报告结论如果仍没有 clean first-seen 或 explicit opaque/sign output，必须写：接口/调用链和 value-flow 边界进一步收窄，但 `X-Cylons` value 生成算法本体仍未完整还原。
+
+## v82 后转向 focused record-slot / producer-source slicing（v83 方向）
+
+当 v81 focused interprocedural value-flow 与 v82 focused value-source static mining 已经把候选收敛到 `record_slot_value_source_probe_unproven` / `focused_value_source_probe_unproven`，但仍没有 strict first-seen 或 explicit opaque/sign callback output 时，不要继续盲目扩大静态层级或全量动态 hook。v83 更适合做 **focused record-slot / producer-source slicing**。
+
+v82 典型分类统计：
+
+```text
+record_slot_value_source_probe_unproven: 20
+focused_value_source_probe_unproven: 4
+known_upstream_context_control_not_source: 2
+known_copy_or_downstream_helper_not_source: 1
+```
+
+v82 top probe 常见地址示例：
+
+```text
+0x1fc694 / 0x224c14 / 0x229588 / 0x2610b4 / 0x21aecc / 0x21b108
+0x1f95d0 / 0x2342ec / 0x234260 / 0x3266cc / 0x1fa908 / 0x1faa04
+0x328d94 / 0x26cc24 / 0x26ccbc / 0x2b03d8 / 0x2b8db4 / 0x3289a4
+0x26ccd8 / 0x26cd10
+```
+
+v83 静态拆解重点：
+
+1. 对每个 focused probe 的 record/object slot write 做精细枚举：
+   ```text
+   +0x20 / +0x28 / +0x30 / +0x38 / +0x40 / +0x50 / +0x730
+   ```
+2. 对每个 slot write 的源寄存器/源对象分类：
+   ```text
+   caller_argument
+   object_field_load
+   helper_return
+   stack_local
+   constant_or_zero_init
+   vtable_or_indirect_callback_result
+   lookup_container_copy_helper_return
+   ```
+3. 对 helper return / indirect `blr/br` source 继续追一至两层：记录 resolved target、target object/vtable/GOT/global memory、`x0-x7` 参数、return、record slots 与 backtrace。
+4. 前推同一 value 是否进入已知消费链：
+   ```text
+   0x1ff5fc / 0x346b90 / 0x4cff50 / 0x4cff5c / 0x346bcc / 0x51cd50
+   ```
+5. 输出小而可执行的 focused hook set，分组为：
+   - priority record-slot source probes；
+   - indirect callback / producer scouts；
+   - lookup/copy/container controls；
+   - downstream carry/package alignment controls。
+6. 每个候选都必须写明 positive signal 与 negative sample interpretation：
+   - positive：同一干净 `X-Cylons` value 在 candidate enter 前不存在，leave/producer return/下游首次出现，并被 carry/package 或 SSL-send 链消费；或捕获明确 opaque/sign callback output。
+   - negative：只有 slot store、helper return、algorithm-like static hint、raw/materializer ref、hook-ok、ready/filter 文本时，仍只能归类为 probe，不能升级。
+
+判定边界：v82/v83 只是在 focused set 内继续细分 record-slot / producer-source / callback-source lane。除非出现 strict first-seen 或 explicit opaque/sign callback output，仍必须保持：
+
+```json
+{
+  "new_value_source_evidence": false,
+  "proven_algorithm_evidence": false,
+  "first_seen_evidence": false,
+  "algorithm_status": "not_recovered"
+}
+```
+
+## v84 后转向 focused caller/source-slot（v85 方向）
+
+当 v83 focused record-slot / producer-source slicing 之后，v84 已经把候选内部的 slot-source、indirect `blr/br` producer/callback lane、direct producer-return helper lane 展开后，不要继续盲目扩大静态层级或把 `algorithm-like` 静态特征升级为算法点。v84 的有效边界是：
+
+```text
+candidate_count=18
+class_distribution:
+  producer_algorithm_like_probe_unproven: 13
+  slot_source_expanded_probe_unproven: 2
+  known_control_or_helper_not_source: 3
+slot_source_class_distribution:
+  unresolved_live_in: 49
+  constant_or_zero_init: 38
+  local_register_derived: 8
+  object_or_memory_load: 2
+  caller_or_local_forward: 8
+indirect_target_source_class_distribution:
+  object_or_memory_load: 8
+  constant_or_zero_init: 35
+new_value_source_evidence=false
+proven_algorithm_evidence=false
+first_seen_evidence=false
+algorithm_status=not_recovered
+```
+
+v84 典型高优先 probe：
+
+```text
+0x229588  # producer_algorithm_like_probe_unproven, slot source lanes expanded, producer/helper callees retained as runtime probes
+0x1fc694  # high-priority indirect callback/producer source scout, many stack/record slot stores
+0x224c14  # callback/dispatcher/slot-source neighborhood, includes x1=x0+0x38 / x2=[x0+0x50] / br x16 pattern
+```
+
+v85 的有效切入点应是 **focused caller/source-slot static mining**，目标是追这些 v84 probes 的调用方如何准备 source slot，而不是继续只看候选函数内部：
+
+1. 从 v84 的 `priority_slot_source_probes`、`priority_indirect_producer_scouts`、`priority_producer_return_scouts` 中取 focused seed，优先覆盖 `0x229588 / 0x1fc694 / 0x224c14` 以及同类高分项。
+2. 对每个 seed 查 direct caller；若 caller 为 0，不要判死路，继续查 ADR/ADRP/LDR literal materializer、raw pointer refs、callback/table registration 与 indirect caller。
+3. 在 caller 侧追调用前 `x0-x7` 来源，尤其区分：
+   - caller argument / caller object field；
+   - stack local；
+   - helper return / producer return；
+   - callback return / indirect `blr/br` target output；
+   - constant_or_zero_init / known control lane。
+4. 精查 source slot：
+   ```text
+   +0x20 / +0x28 / +0x30 / +0x38 / +0x40 / +0x48 / +0x50 / +0x730
+   sp+0x20 / sp+0x38 / sp+0x40 / sp+0x48 / sp+0x50
+   ```
+5. 前推同一 source 是否进入已知消费链：
+   ```text
+   0x1ff5fc / 0x4cf8a4 / 0x346b90 / 0x346bcc / 0x4cff50 / 0x4cff5c / 0x51cd50
+   ```
+   但这些仍是 copy/package/consume/alignment controls，不能单独作为生成点证据。
+6. 输出候选时必须分组：
+   - focused caller-side source-slot probes；
+   - indirect caller/materializer scouts；
+   - producer-return/callback-output scouts；
+   - lookup/copy/container controls；
+   - downstream carry/package alignment controls。
+7. 升级标准仍是 strict first-seen 或 explicit opaque/sign callback output：candidate/caller/producer enter 前无 value，leave/return/slot/callback 后首次出现同一 clean `X-Cylons` value，并被下游 carry/package/SSL/WS send 链消费。静态 caller/source-slot 证据只能提升动态优先级。
+
+建议 v85 产物命名：
+
+```text
+static_v85_focused_caller_source_slot_0514.py
+v85_focused_caller_source_slot_0514.json
+v85_focused_caller_source_slot_0514.md
+v85_focused_caller_source_slot_conclusion_0514.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v85_0514.json
+/opt/data/home/.openclaw/workspace/memory/projects/2026-05-14_project_douyin-xcylons-v85-focused-caller-source-slot.md
+```
+
+v85 报告如果仍无 strict first-seen 或 explicit opaque/sign output，必须写：接口/调用链、slot-source/caller-source 边界进一步收窄，但 `X-Cylons` value 生成算法本体仍未完整还原。
+
+## v86 focused caller/value-source 静态挖掘归档校验经验
+
+当 v85 caller/source-slot probes 之后继续推进到 caller-owner value-source preparation 层时，v86 的目标是整理 focused caller/value-source probes 与动态 first-seen 候选，不是直接宣称算法本体已还原。
+
+v86 典型产物：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v86_focused_caller_value_source_0514.py
+/opt/data/home/reverse-tools/douyin_analysis/v86_focused_caller_value_source_0514.json
+/opt/data/home/reverse-tools/douyin_analysis/v86_focused_caller_value_source_0514.md
+/opt/data/home/reverse-tools/douyin_analysis/v86_focused_caller_value_source_conclusion_0514.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v86_0514.json
+/opt/data/home/.openclaw/workspace/memory/projects/2026-05-14_project_douyin-xcylons-v86-focused-caller-value-source.md
+/opt/data/home/.openclaw/workspace/memory/2026-05-14.md
+/opt/data/home/.openclaw/workspace/SESSION-STATE.md
+```
+
+v86 closure check：
+
+1. 校验脚本、JSON、MD、conclusion、status、project memory、daily memory、`SESSION-STATE.md` 都存在且非空。
+2. 解析主 JSON 与 status JSON，确认类似字段：
+   ```json
+   {
+     "candidate_owner_count": 31,
+     "priority_caller_value_source_probe_count": 4,
+     "status": "completed_static"
+   }
+   ```
+3. judgement/status 必须保持：
+   ```json
+   {
+     "algorithm_status":"not_recovered",
+     "new_value_source_evidence":false,
+     "proven_algorithm_evidence":false,
+     "first_seen_evidence":false
+   }
+   ```
+4. conclusion、project memory、daily memory、`SESSION-STATE.md` 中必须能搜到 `v86` 与 `not_recovered` / `algorithm_status`。
+5. 归档后运行：
+   ```bash
+   cd /opt/data/home/.openclaw/workspace
+   python3 memory/scripts/memory-sync.py sync
+   python3 memory/scripts/memory-sync.py search "v86 focused caller value source algorithm_status not_recovered"
+   ps -ef | grep -E 'static_v86|run_v86|v86_' | grep -v grep || true
+   ```
+   搜索结果应命中 `2026-05-14_project_douyin-xcylons-v86-focused-caller-value-source`；进程检查应无残留 v86 分析进程。
+
+v86 汇报边界：
+
+- 新增价值：从 v85 caller/source-slot probes 推进到 caller-owner value-source preparation layer，识别 focused source-slot value lanes、producer-return scouts、indirect callback/vtable scouts、upstream caller argument-preparation probes。
+- 不能升级为 value source：这些仍为静态/probe-level 证据；没有 closed transform-to-`X-Cylons` output lane、没有 strict first-seen、没有 explicit opaque/sign callback output。
+- 当前强边界仍保持：
+  ```text
+  carry/package: 0x346bcc / 0x4cff5c / 0x4cff50
+  upstream propagation/context: 0x21e17c / 0x2107dc
+  WebSocket/SSL send alignment: 0x3ec4f0 / 0x3ec44c / 0x3a6b50
+  algorithm/value source: not_recovered
+  ```
+
+## v88 focused producer upstream caller-chain 静态挖掘经验
+
+当 v87 focused set 已经把候选推进到 producer / caller / source-slot 邻域后，v88 的有效方法是做 focused producer upstream caller-chain 静态挖掘：从 producer seeds 出发，枚举 direct caller、caller-side source slot、caller argument preparation、nested helper、second-hop caller/source context 与 indirect source scout，整理小 hook set，而不是盲目继续扩大静态层级或把 algorithm-like 静态信号升级为算法本体。
+
+v88 典型运行命令：
+
+```bash
+cd /opt/data/home/reverse-tools/douyin_analysis
+PYTHONPATH=/opt/data/home/.local/lib/python3.13/site-packages \
+  python3 -m py_compile static_v88_focused_producer_upstream_caller_chain_0514.py
+PYTHONPATH=/opt/data/home/.local/lib/python3.13/site-packages \
+  python3 static_v88_focused_producer_upstream_caller_chain_0514.py
+```
+
+v88 典型产物：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v88_focused_producer_upstream_caller_chain_0514.py
+/opt/data/home/reverse-tools/douyin_analysis/v88_focused_producer_upstream_caller_chain_0514.json
+/opt/data/home/reverse-tools/douyin_analysis/v88_focused_producer_upstream_caller_chain_0514.md
+/opt/data/home/reverse-tools/douyin_analysis/v88_focused_producer_upstream_caller_chain_conclusion_0514.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v88_0514.json
+```
+
+v88 典型摘要：
+
+```json
+{
+  "seed_producer_count": 20,
+  "reviewed_caller_chain_count": 47,
+  "priority_producer_caller_chain_probe_count": 24,
+  "hook_set_count": 49,
+  "algorithm_status": "not_recovered"
+}
+```
+
+典型 class distribution：
+
+```json
+{
+  "producer_caller_indirect_source_scout_unproven": 1,
+  "producer_caller_source_slot_probe_unproven": 15,
+  "producer_caller_argument_source_probe_unproven": 12,
+  "producer_caller_nested_helper_probe_unproven": 5,
+  "second_hop_caller_source_context_probe_unproven": 2,
+  "algorithm_like_producer_caller_probe_unproven": 5,
+  "focused_producer_caller_chain_probe_unproven": 7
+}
+```
+
+判定规则：
+
+1. `producer_caller_source_slot_probe_unproven` 与 `producer_caller_argument_source_probe_unproven` 只能说明 caller 侧 source/value lane 被继续解释；没有 first-seen 时不能升级为 value source。
+2. `producer_caller_indirect_source_scout_unproven`、nested helper、second-hop caller/source context 只作为动态 resolved-target / source-context scout。
+3. `algorithm_like_producer_caller_probe_unproven` 只代表静态窗口存在算法相似特征；没有 closed transform-to-`X-Cylons` output lane、strict first-seen 或 explicit opaque/sign callback output 时，不能称为算法本体。
+4. v88 后续动态 hook 应使用小 focused set：priority producer caller-chain probes + producer/copy chain + downstream carry/package controls。dump caller/prod `x0-x7`、producer returns、source/destination object fields、slot buffers、resolved indirect targets 与 downstream carry backtrace。
+5. 归档验证时需检查 JSON/MD/conclusion/status 存在且非空，解析确认 `algorithm_status=not_recovered`、`new_value_source_evidence=false`、`proven_algorithm_evidence=false`、`first_seen_evidence=false`，再同步 memory 并检查无残留 `static_v88|run_v88|v88_` 分析进程。
+
+v88 报告边界：本轮只完成 focused producer upstream caller-chain 静态挖掘和动态优先级整理；接口/调用链、source-slot/caller-chain 边界进一步收窄，但 `X-Cylons` value 生成算法本体仍未完整还原。
+
+## v90 focused helper/callback target provenance 静态挖掘与收尾经验
+
+当 v89/v90 已经把候选推进到 helper/callback target provenance 层时，v90 的有效方法是从 priority source-provenance probes 出发，继续审计非 control helper、callback target、producer-return、source-slot、indirect target 的来源与动态 first-seen 候选。该阶段仍属于 probe 收敛和动态计划整理，不是算法还原完成。
+
+v90 典型产物：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v90_focused_helper_callback_target_provenance_0514.py
+/opt/data/home/reverse-tools/douyin_analysis/v90_focused_helper_callback_target_provenance_0514.json
+/opt/data/home/reverse-tools/douyin_analysis/v90_focused_helper_callback_target_provenance_0514.md
+/opt/data/home/reverse-tools/douyin_analysis/v90_focused_helper_callback_target_provenance_conclusion_0514.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v90_0514.json
+/opt/data/home/.openclaw/workspace/memory/projects/2026-05-14_project_douyin-xcylons-v90-focused-helper-callback-target-provenance.md
+```
+
+v90 典型结论字段：
+
+```json
+{
+  "priority_helper_callback_target_probe_count": 32,
+  "v90_focused_helper_callback_hook_set_count": 57,
+  "new_value_source_evidence": false,
+  "proven_algorithm_evidence": false,
+  "first_seen_evidence": false,
+  "algorithm_status": "not_recovered"
+}
+```
+
+判定规则：
+
+1. helper/callback target provenance 只能说明 source/callback/producer 邻域进一步收敛；没有 strict first-seen 或 explicit opaque/sign callback output 时，不能升级为 `X-Cylons` value source。
+2. 静态上看到 callback target、producer return、source-slot、algorithm-like helper、indirect target、materializer/raw ref，都只能作为动态 probe 信号。
+3. v90 focused hook set 应只在真实直播间 ACK/X-Cylons/SSL 窗口已复现时运行；否则仍会得到 hook 健康但目标窗口未命中的负样本。
+4. 升级标准保持不变：同一个干净 `X-Cylons` value 在 helper/callback target enter 前不存在，return/slot/indirect callback output 后首次出现，并被 `0x346bcc/0x4cff5c/0x4cff50` carry/package 或 `0x3ec4f0/0x3ec44c/0x3a6b50` SSL/WS send 链消费；或捕获明确 opaque/sign callback 输出。
+5. 收尾归档必须校验 JSON/MD/conclusion/status/project memory/daily memory/SESSION 存在且非空，解析 status 确认 `algorithm_status=not_recovered`、probe/hook count 与主 JSON 一致，随后执行 memory sync 与 search 验证，并检查无残留 `static_v90|run_v90|v90_` 分析进程。
+
+v90 汇报边界：新增价值是 helper/callback target provenance 与动态 hook set 进一步收敛；不能宣称算法已挖出。当前强边界仍保持：
+
+```text
+carry/package: 0x346bcc / 0x4cff5c / 0x4cff50
+upstream propagation/context: 0x21e17c / 0x2107dc
+WebSocket/SSL send alignment: 0x3ec4f0 / 0x3ec44c / 0x3a6b50
+algorithm/value source: not_recovered
+```
+
+## v92 规划边界：从 v91 candidate mining 转向 target-output / first-seen readiness refinement
+
+当 v91 已完成 focused static/dynamic candidate mining，但当前目录中尚无 `*v92*` 产物时，不能把“读取/复核 v91 + 规划 v92”误报为 v92 已完成。应先明确状态：
+
+```text
+v92 artifacts: not generated yet
+algorithm_status: not_recovered
+```
+
+v92 的有效方向不是继续盲目扩大静态层级，而是基于 v91 的 32 个 focused candidates 做 **focused target-output / first-seen readiness refinement**：
+
+1. 输入以 v91 为准：
+   ```text
+   /opt/data/home/reverse-tools/douyin_analysis/v91_focused_static_dynamic_candidate_mining_0514.json
+   /opt/data/home/reverse-tools/douyin_analysis/static_v91_focused_static_dynamic_candidate_mining_0514.py
+   ```
+2. 对 v91 的两类候选分别细化：
+   - `resolved_indirect_callback_target_probe`：解析本地 `blr/br`、target reg、nearest defs、source slot，输出 runtime dump requirement：resolved target、callback return/output、slot before/after、backtrace。
+   - `first_seen_algorithm_like_helper_probe`：审计 algorithm-like helper 是否有明确 output lane；没有 closed transform-to-`X-Cylons` 输出链时仍降级为 probe。
+3. 固定 control/alignment anchors，不能误升级为算法点：
+   ```text
+   carry/package: 0x346bcc / 0x4cff5c / 0x4cff50
+   upstream/context: 0x21e17c / 0x2107dc
+   WebSocket/SSL send alignment: 0x3ec4f0 / 0x3ec44c / 0x3a6b50
+   ```
+4. v92 hook set 应优先保留 v91 phase1 probes，再补必要 carry/package、upstream/context、SSL-send controls；对每个候选写清 `positive_signal`、`negative_sample_interpretation`、`upgrade_rule`、`upgrade_to_value_source=false`。
+5. v92 默认 judgement 仍应保持：
+   ```json
+   {
+     "new_value_source_evidence": false,
+     "proven_algorithm_evidence": false,
+     "first_seen_evidence": false,
+     "algorithm_status": "not_recovered"
+   }
+   ```
+   除非静态/动态证据真的出现 closed transform-to-`X-Cylons` output lane、strict first-seen，或 explicit opaque/sign callback output。
+6. 若工具调用上限或中断只完成到“v91 复核 + v92 规划”，最终回复必须明确：`v92 artifacts not generated yet`，并保持 todo 为 `t2 in_progress / t3 pending`，不能暗示 v92 已生成或归档。
+
+建议 v92 产物命名：
+
+```text
+static_v92_focused_target_output_firstseen_readiness_0514.py
+v92_focused_target_output_firstseen_readiness_0514.json
+v92_focused_target_output_firstseen_readiness_0514.md
+v92_focused_target_output_firstseen_readiness_conclusion_0514.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v92_0514.json
+```
+
+## v95 规划边界：从 v94 upstream source-lane 转向 callback-output owner 静态挖掘
+
+当 v94 已完成 upstream callback-output/source-slot source-lane 静态分类，但当前目录中尚无 `*v95*` 产物时，不能把“读取/复核 v94 + 规划 v95”误报为 v95 已完成。应明确状态：
+
+```text
+v95 artifacts: not generated yet
+algorithm_status: not_recovered
+```
+
+v95 的有效方向是基于 v94 focused hook set / owner probes 做 **upstream source-lane / callback-output owner static mining**，目标是把 callback-output source、source-slot provenance、owner/caller preparation 再上推一层，生成更小、更明确的动态 first-seen 候选集合，而不是扩大静态层级或宣称算法还原。
+
+建议输入：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/v94_focused_upstream_callback_output_source_static_0514.json
+/opt/data/home/reverse-tools/douyin_analysis/static_v94_focused_upstream_callback_output_source_0514.py
+```
+
+建议产物命名：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v95_upstream_source_lane_callback_output_owner_0514.py
+/opt/data/home/reverse-tools/douyin_analysis/v95_upstream_source_lane_callback_output_owner_0514.json
+/opt/data/home/reverse-tools/douyin_analysis/v95_upstream_source_lane_callback_output_owner_0514.md
+/opt/data/home/reverse-tools/douyin_analysis/v95_upstream_source_lane_callback_output_owner_conclusion_0514.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v95_0514.json
+/opt/data/home/.openclaw/workspace/memory/projects/2026-05-14_project_douyin-xcylons-v95-upstream-source-lane-callback-output-owner.md
+```
+
+v95 输出应保留并强调这些 alignment/control anchors，不得升级为算法点：
+
+```text
+carry/package: 0x346bcc / 0x4cff5c / 0x4cff50
+upstream/context: 0x21e17c / 0x2107dc
+WebSocket/SSL send alignment: 0x3ec4f0 / 0x3ec44c / 0x3a6b50
+```
+
+默认 judgement 仍应保持：
+
+```json
+{
+  "new_value_source_evidence": false,
+  "proven_algorithm_evidence": false,
+  "first_seen_evidence": false,
+  "algorithm_status": "not_recovered"
+}
+```
+
+除非静态/动态证据真的出现 closed transform-to-`X-Cylons` output lane、strict first-seen，或 explicit opaque/sign callback output。
+
+如果工具调用上限或中断只完成到“v94 复核 + v95 规划”，最终回复必须明确：`v95 artifacts not generated yet`，并保持 todo 为 `t2 in_progress / t3 pending`，不能暗示 v95 已生成、已验证或已归档。
+
 ## 输出要求
 
 报告中必须明确区分：
