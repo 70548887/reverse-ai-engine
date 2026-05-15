@@ -1747,6 +1747,246 @@ twelfth_level_unknown_or_shared_boundary
 
 下一步动态策略：只有先提高真实事件复现率（force-stop + early attach + 确认真直播间 + reconnect/cut-room/等待 WS 重连），才用 v72 priority probes 做小范围 focused hook。升级标准保持 strict first-seen：enter 前无 value、leave/downstream 出现同一个新 `X-Cylons`，或捕获明确 opaque/sign callback 输出。
 
+### 2026-05-14 v77 focused-set source-neighborhood + r0capture 评估经验
+
+v77 在 v76 focused dynamic hook set 基础上停止继续扩大静态层级，改为只审计 focused set 及其 immediate source-neighborhood/control chains，并同步评估 r0capture 是否能改善动态验证。沉淀文件示例：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v77_focused_set_source_neighborhood_0514.py
+/opt/data/home/reverse-tools/douyin_analysis/v77_focused_set_source_neighborhood_static_0514.json
+/opt/data/home/reverse-tools/douyin_analysis/v77_focused_set_source_neighborhood_static_0514.md
+/opt/data/home/reverse-tools/douyin_analysis/v77_focused_set_source_neighborhood_conclusion_0514.md
+/opt/data/home/reverse-tools/douyin_analysis/r0capture_eval_for_xcylons_v77_0514.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v77_0514.json
+```
+
+v77 典型统计：
+
+```json
+{
+  "seed_count": 236,
+  "reviewed_target_count": 202,
+  "focused_review_count": 26,
+  "priority_followups": 39,
+  "demoted_or_control_lanes": 93,
+  "next_focused_dynamic_hook_set": 36,
+  "new_value_source_evidence": false,
+  "proven_algorithm_evidence": false,
+  "first_seen_evidence": false,
+  "algorithm_status": "not_recovered"
+}
+```
+
+v77 判定口径：
+
+1. focused source-neighborhood 只能作为可审计的小范围候选集收敛，不能把 algorithm-like hint、raw ref、materializer、indirect dispatch context 升级为 value source。
+2. 当前强边界仍保持：
+   ```text
+   carry/package: 0x346bcc / 0x4cff5c / 0x4cff50
+   upstream propagation/context: 0x21e17c / 0x2107dc
+   WebSocket send chain alignment: 0x3ec4f0 / 0x3ec44c / 0x3a6b50
+   algorithm/value source: not_recovered
+   ```
+3. v77 next focused dynamic hook set 应优先保留 priority probes + carry/package/control anchors，而不是继续扩大 hook 面。
+4. 升级标准不变：只有 strict first-seen（enter 前无 value、leave/downstream 出现同一个新 `X-Cylons`）或明确 opaque/sign callback 输出，才能称为 value source。
+5. 归档时需要同步 JSON/Markdown/conclusion/status，并在 `SESSION-STATE.md` 标注 `algorithm_status=not_recovered`，避免后续误把“候选收敛”当成“算法还原”。
+
+r0capture 评估结论：
+
+1. r0capture 对当前 X-Cylons 任务只能作为 **auxiliary_network_reproduction_probe**，用于旁路确认真实直播间是否发包、是否出现 `/webcast/im/push/*`、`/ws/v2`、WebSocket/SSL 明文窗口。
+2. r0capture 不能替代 focused Frida first-seen / enter-leave diff；它主要证明最终网络事件或明文存在，不能定位 `X-Cylons` value 生成函数或上游对象来源。
+3. 对 TTNet/Cronet/libsscronet/libttboringssl 这类高度定制链路，不能假设 r0capture 通杀；且其 hook 面可能偏宽，需避免触发抖音进程不稳定。
+4. 推荐使用方式：当 focused hook 多次 `hook-ok` 但无目标 SSL/ACK 时，短时 attach r0capture 作为旁路抓包/pcap/log；如果确认目标包存在，再回到 v77 focused hook set 做 strict first-seen。
+5. 即使 r0capture 抓到 `X-Cylons`，也只能增强“目标事件复现/最终头存在”证据，不能把 `algorithm_status` 从 `not_recovered` 升级。
+
+### 2026-05-14 v78 focused static/dynamic candidate audit：审计 focused 候选并固化下一轮动态计划
+
+v78 在 v77/v76 focused set 基础上不再继续扩大静态层级，而是做 focused 静态/动态候选审计：把 runnable first-seen probes、indirect/materializer scouts、carry/package controls、upstream context controls、WebSocket SSL send alignment controls、producer/copy controls 与 demoted helper/noise lanes 分开，生成下一轮更小、更可执行的 hook set。沉淀文件示例：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v78_focused_static_dynamic_candidate_audit_0514.py
+/opt/data/home/reverse-tools/douyin_analysis/v78_focused_static_dynamic_candidate_audit_0514.json
+/opt/data/home/reverse-tools/douyin_analysis/v78_focused_static_dynamic_candidate_audit_0514.md
+/opt/data/home/reverse-tools/douyin_analysis/v78_focused_static_dynamic_candidate_audit_conclusion_0514.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v78_0514.json
+```
+
+v78 可复用模式：
+
+1. 输入应至少包含上一轮 focused dynamic hook set 与 source-neighborhood 静态审计结果，例如 v76 `focused_dynamic_hook_set`、v77 `v77_next_focused_dynamic_hook_set` / `priority_followups`。
+2. 强边界继续固定为：
+   ```text
+   carry/package: 0x346bcc / 0x4cff5c / 0x4cff50
+   upstream context: 0x21e17c / 0x2107dc
+   WS/SSL send alignment: 0x3ec4f0 / 0x3ec44c / 0x3a6b50
+   ```
+3. 对每个候选输出 `dynamic_role`、`audit_score`、`seed_reasons`、静态摘要、runtime dump requirements 与 `upgrade_to_value_source=false`。
+4. hook set 选择应优先 probes，再补必要 alignment controls，demoted helper/noise lanes 只保留少量 sanity controls。
+5. 升级规则必须写进产物：只有同一个干净 `X-Cylons` value 在 enter 前不存在、leave/downstream 首次出现并被 carry/package 或 SSL-send 链消费，或捕获明确 opaque/sign callback 输出，才能升级为 value source。
+6. 如果没有 `new_value_source_evidence`、`proven_algorithm_evidence`、`first_seen_evidence`，结论必须保持：
+   ```json
+   {"algorithm_status":"not_recovered"}
+   ```
+7. 归档时同步 JSON、Markdown、conclusion、task status、project memory/daily memory/SESSION-STATE，并明确“focused audit / dynamic-plan consolidation，不是算法还原完成”。
+
+汇报边界：v78 只能说明候选审计与下一轮动态计划固化；即使生成了更小 focused hook set，也不能宣称 `X-Cylons` 算法本体已挖出。
+
+### 2026-05-14 v79 规划经验：从 v78 后转向 first-seen readiness，而不是继续扩层
+
+当 v78 已经完成 focused static/dynamic candidate audit，下一轮不要默认继续做更宽的静态 layer expansion，也不要直接全量动态 hook。更可复用的 v79 方向是 **focused first-seen readiness / dynamic-plan consolidation**：
+
+1. 输入以 v78 JSON 的 `v78_focused_dynamic_hook_set` / `candidates` 为主，不再盲目扩大到新一层 call graph。
+2. 对每个候选重新标注：
+   ```text
+   first_seen_probe
+   resolved_indirect_target_scout
+   materializer_or_raw_table_scout
+   carry_package_control
+   upstream_context_control
+   websocket_ssl_send_alignment_control
+   producer_copy_control
+   downstream_consumer_control
+   demoted_helper_or_noise
+   ```
+3. 输出 runtime dump requirements：`entry/leave x0-x7`、return、pointed buffer hex/ascii、resolved `blr/br` target、record slots `+0x20/+0x38/+0x40/+0x50`、backtrace、downstream same-value alignment。
+4. 为每个 probe 写清 positive signal 与 negative sample interpretation，避免把 hook-ok、ready/filter 文本、algorithm-like 静态提示、raw refs 或 materializer 误当成 value-source 证据。
+5. 生成可审计产物建议：
+   ```text
+   static_v79_focused_firstseen_readiness_0514.py
+   v79_focused_firstseen_readiness_0514.json
+   v79_focused_firstseen_readiness_0514.md
+   v79_focused_firstseen_readiness_conclusion_0514.md
+   /opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v79_0514.json
+   ```
+6. v79 结论默认仍应保持：
+   ```json
+   {
+     "new_value_source_evidence": false,
+     "proven_algorithm_evidence": false,
+     "first_seen_evidence": false,
+     "algorithm_status": "not_recovered"
+   }
+   ```
+   除非捕获到 strict first-seen 或明确 opaque/sign callback output。
+7. 升级标准不变：同一个干净 `X-Cylons` value 在 candidate enter 前不存在，leave/downstream 首次出现，并被 `0x346bcc/0x4cff5c/0x4cff50` carry/package 或 `0x3ec4f0/0x3ec44c/0x3a6b50` SSL-send 链消费；或捕获明确 sign/opaque callback 输出。
+
+汇报边界：v79 是动态前置与 first-seen 准备，不是算法还原完成。若没有真实目标窗口，仍只能报告“候选/计划固化，algorithm_status=not_recovered”。
+
+### 2026-05-14 v79 收尾验证与归档经验
+
+v79 产物生成后不要只口头汇报，应做一次机器可验证的 closure check，再归档并同步记忆层。推荐核验文件：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/v79_focused_firstseen_readiness_0514.json
+/opt/data/home/reverse-tools/douyin_analysis/v79_focused_firstseen_readiness_0514.md
+/opt/data/home/reverse-tools/douyin_analysis/v79_focused_firstseen_readiness_conclusion_0514.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v79_0514.json
+/opt/data/home/.openclaw/workspace/memory/projects/2026-05-14_project_douyin-xcylons-v79-focused-firstseen-readiness.md
+/opt/data/home/.openclaw/workspace/memory/2026-05-14.md
+/opt/data/home/.openclaw/workspace/SESSION-STATE.md
+```
+
+核验要点：
+
+1. 文件存在且 size > 0；主 JSON/status JSON 可解析。
+2. `candidate_count`、`focused_firstseen_hook_set_count`、status 中 hook set 计数应一致。本轮为：
+   ```json
+   {"candidate_count":36,"focused_firstseen_hook_set_count":36}
+   ```
+3. judgement/status 必须明确保持：
+   ```json
+   {
+     "algorithm_status":"not_recovered",
+     "new_value_source_evidence":false,
+     "proven_algorithm_evidence":false,
+     "first_seen_evidence":false
+   }
+4. conclusion、project memory、SESSION-STATE 中应包含 `v79` 与 `not_recovered`/`algorithm_status` 标记，避免后续把 readiness 误读为算法还原。
+5. 归档后运行：
+   ```bash
+   cd /opt/data/home/.openclaw/workspace
+   python3 memory/scripts/memory-sync.py sync
+   ```
+   确认 project/daily memory 已同步到 `reverse_engineering` collection。
+6. 最终对用户汇报时只说“候选/计划固化 + 动态前置完成”，不能说“算法已挖出”。边界仍是：无 new value source、无 proven algorithm、无 first-seen evidence。
+
+### 2026-05-14 v80 规划经验：从 v79 readiness 转向 focused source/value-lane 静态追踪
+
+当 v79 已经把 v78 focused set 固化为 first-seen readiness plan，但仍没有真实 first-seen / value-source / proven algorithm 证据时，下一轮不要只重复 readiness，也不要直接扩大动态 hook。更可复用的 v80 方向是 **focused source/value-lane static tracing**：以 v79 的 36 个 focused first-seen hook 为核心，回看 v78/v77 的 source-neighborhood 信息，沿参数、返回值、对象槽与 thunk/callback 传递链继续上追。
+
+推荐 v80 输入：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/v79_focused_firstseen_readiness_0514.json
+/opt/data/home/reverse-tools/douyin_analysis/v78_focused_static_dynamic_candidate_audit_0514.json
+/opt/data/home/reverse-tools/douyin_analysis/v77_focused_set_source_neighborhood_static_0514.json
+```
+
+推荐 v80 产物命名：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v80_focused_source_value_lane_0514.py
+/opt/data/home/reverse-tools/douyin_analysis/v80_focused_source_value_lane_0514.json
+/opt/data/home/reverse-tools/douyin_analysis/v80_focused_source_value_lane_0514.md
+/opt/data/home/reverse-tools/douyin_analysis/v80_focused_source_value_lane_conclusion_0514.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v80_0514.json
+```
+
+v80 分组建议：
+
+1. value-lane 深挖对象：优先 v79 phase1 中 readiness 分高、且 v78 标记为 `algorithm_like_unproven_probe` 的点，例如：
+   ```text
+   0x1fc694 / 0x229588 / 0x2a2b6c / 0x1f95d0 / 0x222b6c / 0x23b250 /
+   0x26ccbc / 0x2b8db4 / 0x3289a4 / 0x2342ec / 0x2610b4 / 0x26cc24 /
+   0x2a2c7c / 0x2b03d8 / 0x1fa908 / 0x1faa04 / 0x234260 / 0x26ccd8 / 0x26cd10
+   ```
+   静态追踪重点：`x0/x1/x2/x3` 参数来源、return value 走向、栈上 buffer / object slot 写入、是否有稳定 opaque/string/binary output、是否存在 hash/crypto/base64/encode 闭环、是否把同值传入 carry/package 或 SSL-send 控制点。
+2. indirect dispatch / callback source 深挖对象：
+   ```text
+   0x21aecc / 0x21b108 / 0x224c14 / 0x3266cc / 0x328d94
+   ```
+   重点解析 `blr/br` 真实目标、vtable slot、callback 输出和是否接近 sign/opaque callback；若只是对象方法分发或 helper，则继续降级。
+3. alignment / consumer 控制点只作为边界和 downstream same-value 对齐，不升级为算法：
+   ```text
+   carry/package: 0x346bcc / 0x4cff5c / 0x4cff50
+   upstream/context: 0x21e17c / 0x2107dc
+   websocket/SSL send: 0x3ec4f0 / 0x3ec44c / 0x3a6b50
+   producer/copy: 0x1f9fc8 / 0x1ff5fc / 0x329098 / 0x32964c
+   ```
+
+v80 静态输出字段建议：
+
+```text
+source_lane_score
+value_lane_score
+x0_x3_def_chain
+return_use_chain
+object_slot_writes
+stack_buffer_writes
+copy_or_assign_helpers
+indirect_call_targets
+candidate_upstream_sources
+downstream_alignment_targets
+upgrade_to_value_source=false
+```
+
+判定口径：
+
+1. v80 可把候选进一步拆成 source/value-lane、callback/indirect、copy/consumer/control，但没有 strict first-seen 或明确 opaque/sign callback 输出时，所有候选仍必须 `upgrade_to_value_source=false`。
+2. 静态 algorithm-like hints、raw refs、materializer、indirect dispatch、object copy/value-lane score 都只能作为 probe 信号。
+3. `0x346bcc / 0x4cff5c / 0x4cff50`、`0x21e17c / 0x2107dc`、`0x3ec4f0 / 0x3ec44c / 0x3a6b50` 继续是 carry/package、upstream/context、SSL-send alignment 边界，不是 value generation 证明。
+4. 结论默认保持：
+   ```json
+   {
+     "new_value_source_evidence": false,
+     "proven_algorithm_evidence": false,
+     "first_seen_evidence": false,
+     "algorithm_status": "not_recovered"
+   }
+   ```
+5. 对用户汇报时明确：v80 是 source/value-lane 静态深挖和下一轮动态候选准备；除非出现闭合 transform-to-`X-Cylons` 输出链或 first-seen 证据，否则不能宣称算法已挖出。
+
+
 ### 2026-05-14 v76 sixteenth-level focused static consolidation：收敛动态集合，但算法仍未还原
 
 v76 是在多轮动态 first-seen 负样本与静态 source expansion 之后做的 focused static consolidation，产物示例：
@@ -1803,3 +2043,335 @@ v76 focused dynamic hook set：
 ```
 
 下一步优先级：不要继续盲目扩大静态层级或 hook 面；先 force-stop + early attach + 确认真直播间前台 + 切房/重连/等待 WS ACK，捕获真实 `X-Cylons` / ACK / SSL 窗口后再运行 v76 focused hook set。汇报时继续明确区分“接口/调用链进展”和“算法本体还原状态”：当前 `algorithm_status=not_recovered`。
+
+### 2026-05-14 v80 执行前/收尾检查经验：脚本就绪不等于产物完成
+
+v80 focused source/value-lane static tracing 的脚本即使已经写好并通过语法检查，也不能在汇报中表述为“v80 已完成”。必须区分三种状态：
+
+1. **script_ready**：脚本存在、输入路径明确、`python3 -m py_compile` 通过。
+2. **artifacts_generated**：实际运行脚本并生成 JSON/MD/conclusion/status/memory/SESSION 产物。
+3. **closure_verified**：机器校验产物存在、size>0、JSON 可解析、计数一致、结论边界正确，并完成 memory sync。
+
+v80 推荐执行命令：
+
+```bash
+cd /opt/data/home/reverse-tools/douyin_analysis
+python3 -m py_compile static_v80_focused_source_value_lane_0514.py
+python3 static_v80_focused_source_value_lane_0514.py
+```
+
+v80 实际产物命名包含 `static` 后缀；不要误查无后缀文件名。已确认存在的 v80 产物为：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/v80_focused_source_value_lane_static_0514.json
+/opt/data/home/reverse-tools/douyin_analysis/v80_focused_source_value_lane_static_0514.md
+/opt/data/home/reverse-tools/douyin_analysis/v80_focused_source_value_lane_conclusion_0514.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v80_0514.json
+/opt/data/home/.openclaw/workspace/memory/projects/2026-05-14_project_douyin-xcylons-v80-focused-source-value-lane.md
+/opt/data/home/.openclaw/workspace/memory/2026-05-14.md
+/opt/data/home/.openclaw/workspace/SESSION-STATE.md
+```
+
+如果 `/opt/data/home/reverse-tools/douyin_analysis/v80_focused_source_value_lane_0514.json` 不存在，先检查 `v80_focused_source_value_lane_static_0514.json`，不要误判为 v80 未完成。
+
+v80 closure check 要点：
+
+1. 所有预期文件存在且 size > 0。
+2. 主 JSON 与 status JSON 可解析。
+3. `candidate_count`、`priority_value_lane_probe_count`、`v80_focused_value_lane_hook_set_count` 等核心计数要互相一致或能解释差异。
+4. judgement/status 必须保守保持：
+   ```json
+   {
+     "new_value_source_evidence": false,
+     "proven_algorithm_evidence": false,
+     "first_seen_evidence": false,
+     "algorithm_status": "not_recovered"
+   }
+   ```
+5. conclusion、project memory、daily memory、`SESSION-STATE.md` 中必须出现 `v80` 与 `not_recovered`/`algorithm_status`，避免后续误把 source/value-lane 静态深挖当成算法还原完成。
+6. 收尾后同步记忆层：
+   ```bash
+   cd /opt/data/home/.openclaw/workspace
+   python3 memory/scripts/memory-sync.py sync
+   ```
+
+若工具调用上限或中断只完成到 `script_ready`，最终回复必须明确说“v80 脚本就绪/语法通过，但尚未实际运行和验证产物”，并列出下一步，而不能暗示 v80 已完成。
+
+### 2026-05-14 v85 closure：focused caller/source-slot 归档校验经验
+
+v85 从 v84 focused slot-source / indirect-producer probes 继续外推到 caller/materializer-side source-slot mining。该阶段属于静态 probe 收敛与动态 first-seen 候选准备，不是算法还原完成。
+
+典型产物：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v85_focused_caller_source_slot_0514.py
+/opt/data/home/reverse-tools/douyin_analysis/v85_focused_caller_source_slot_0514.json
+/opt/data/home/reverse-tools/douyin_analysis/v85_focused_caller_source_slot_0514.md
+/opt/data/home/reverse-tools/douyin_analysis/v85_focused_caller_source_slot_conclusion_0514.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v85_0514.json
+/opt/data/home/.openclaw/workspace/memory/projects/2026-05-14_project_douyin-xcylons-v85-focused-caller-source-slot.md
+/opt/data/home/.openclaw/workspace/memory/2026-05-14.md
+/opt/data/home/.openclaw/workspace/SESSION-STATE.md
+```
+
+v85 closure check 要点：
+
+1. 校验所有产物存在且 size > 0。
+2. 解析主 JSON 与 status JSON，确认计数一致：
+   ```json
+   {"candidate_count":16,"priority_caller_source_slot_probe_count":5,"hook_set_count":27}
+   ```
+3. judgement/status 必须保持：
+   ```json
+   {
+     "algorithm_status":"not_recovered",
+     "new_value_source_evidence":false,
+     "proven_algorithm_evidence":false,
+     "first_seen_evidence":false
+   }
+   ```
+4. conclusion、project memory、daily memory、`SESSION-STATE.md` 中必须出现 `v85` 与 `not_recovered` / `algorithm_status`，避免把 caller/source-slot 静态收敛误读为算法已还原。
+5. 归档后运行：
+   ```bash
+   cd /opt/data/home/.openclaw/workspace
+   python3 memory/scripts/memory-sync.py sync
+   python3 memory/scripts/memory-sync.py search "v85 focused caller source slot algorithm_status not_recovered"
+   ps -ef | grep -E 'static_v85|run_v85|v85_' | grep -v grep || true
+   ```
+   搜索 Top 命中应包含 `2026-05-14_project_douyin-xcylons-v85-focused-caller-source-slot`；进程检查应无遗留 v85 分析进程。
+
+v85 汇报边界：
+
+- 新增价值：caller/source-slot、indirect materializer、producer-return scout 进一步收敛下一轮 first-seen hook set。
+- 不能升级为 value source：没有 closed transform-to-`X-Cylons` output lane、没有 strict first-seen、没有明确 opaque/sign callback output。
+- 当前强边界仍保持：
+  ```text
+  carry/package: 0x346bcc / 0x4cff5c / 0x4cff50
+  upstream propagation/context: 0x21e17c / 0x2107dc
+  WebSocket/SSL send alignment: 0x3ec4f0 / 0x3ec44c / 0x3a6b50
+  algorithm/value source: not_recovered
+  ```
+
+### 2026-05-14 v91 closure：focused static/dynamic candidate mining 收尾校验经验
+
+v91 基于 v90 helper/callback target provenance，把候选整理成 focused static/dynamic candidate mining plan，并固化下一轮动态 hook set。典型产物：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v91_focused_static_dynamic_candidate_mining_0514.py
+/opt/data/home/reverse-tools/douyin_analysis/v91_focused_static_dynamic_candidate_mining_0514.json
+/opt/data/home/reverse-tools/douyin_analysis/v91_focused_static_dynamic_candidate_mining_0514.md
+/opt/data/home/reverse-tools/douyin_analysis/v91_focused_static_dynamic_candidate_mining_conclusion_0514.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v91_0514.json
+/opt/data/home/.openclaw/workspace/memory/projects/2026-05-14_project_douyin-xcylons-v91-focused-static-dynamic-candidate-mining.md
+/opt/data/home/.openclaw/workspace/memory/2026-05-14.md
+/opt/data/home/.openclaw/workspace/SESSION-STATE.md
+```
+
+v91 closure check 要点：
+
+1. 检查脚本、JSON、MD、conclusion、status、project memory、daily memory、SESSION-STATE 均存在且 size > 0。
+2. 解析主 JSON 与 status JSON，确认核心计数：
+   ```json
+   {"candidate_count":32,"priority_candidate_count":32,"v91_focused_static_dynamic_hook_set_count":58}
+   ```
+3. 确认 dynamic role / phase 分布符合预期：
+   ```json
+   {
+     "resolved_indirect_callback_target_probe": 21,
+     "first_seen_algorithm_like_helper_probe": 11,
+     "phase1_resolve_indirect_callback_output": 21,
+     "phase1_target_first_seen": 11
+   }
+   ```
+4. judgement/status 必须继续保持：
+   ```json
+   {
+     "algorithm_status":"not_recovered",
+     "new_value_source_evidence":false,
+     "proven_algorithm_evidence":false,
+     "first_seen_evidence":false
+   }
+5. conclusion、project memory、daily memory、SESSION-STATE 中必须出现 `v91` 与 `not_recovered` / `algorithm_status`，避免把 focused static/dynamic candidate mining plan 误读成算法还原完成。
+6. 归档后运行：
+   ```bash
+   cd /opt/data/home/.openclaw/workspace
+   python3 memory/scripts/memory-sync.py sync
+   python3 memory/scripts/memory-sync.py search "v91 focused static dynamic candidate mining algorithm_status not_recovered"
+   ps -ef | grep -E 'static_v91|run_v91|v91_' | grep -v grep || true
+   ```
+   搜索 Top 命中应包含 `2026-05-14_project_douyin-xcylons-v91-focused-static-dynamic-candidate-mining`；进程检查应无遗留 v91 分析进程。
+
+v91 汇报边界：
+
+- 新增价值：从 v90 helper/callback target provenance 产出更可执行的 focused static/dynamic 候选计划，覆盖 indirect/callback output resolution 与 algorithm-like helper first-seen probes。
+- 不能升级为 value source：没有 closed transform-to-`X-Cylons` output lane、没有 strict first-seen、没有明确 opaque/sign callback output。
+- 当前强边界仍保持：
+  ```text
+  carry/package: 0x346bcc / 0x4cff5c / 0x4cff50
+  upstream propagation/context: 0x21e17c / 0x2107dc
+  WebSocket/SSL send alignment: 0x3ec4f0 / 0x3ec44c / 0x3a6b50
+  algorithm/value source: not_recovered
+  ```
+
+### 2026-05-14 v81 closure：interprocedural value-flow 仍是候选收敛，不是算法还原
+
+v81 在 v80 focused source/value-lane 之后做 focused interprocedural value-flow 静态深挖与闭环归档。收尾时不要只看当前 todo 或口头 summary，必须验证产物、状态与记忆同步。
+
+典型归档/校验目标：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/v81_*_0514.json
+/opt/data/home/reverse-tools/douyin_analysis/v81_*_0514.md
+/opt/data/home/reverse-tools/douyin_analysis/v81_*_conclusion_0514.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v81_0514.json
+/opt/data/home/.openclaw/workspace/memory/projects/2026-05-14_project_douyin-xcylons-v81-focused-interprocedural-value-flow.md
+/opt/data/home/.openclaw/workspace/memory/2026-05-14.md
+/opt/data/home/.openclaw/workspace/SESSION-STATE.md
+```
+
+收尾核验流程：
+
+1. 检查 v81 JSON/MD/conclusion/status/project memory/daily memory/SESSION 文件存在且 size > 0。
+2. 解析主 JSON 与 status JSON，确认核心 judgement 没有被误升级：
+   ```json
+   {
+     "algorithm_status": "not_recovered",
+     "new_value_source_evidence": false,
+     "proven_algorithm_evidence": false,
+     "first_seen_evidence": false
+   }
+   ```
+3. 确认 conclusion、project memory、daily memory、`SESSION-STATE.md` 中含 `v81` 与 `not_recovered` / `algorithm_status`，避免把 interprocedural value-flow 收敛误读为算法已还原。
+4. 归档后运行记忆同步：
+   ```bash
+   cd /opt/data/home/.openclaw/workspace
+   python3 memory/scripts/memory-sync.py sync
+   ```
+   成功输出中应看到 `projects/2026-05-14_project_douyin-xcylons-v81-focused-interprocedural-value-flow.md` 被同步到 `reverse_engineering` collection。
+5. 最终更新 todo 为 completed 后再汇报。
+
+v81 汇报边界：
+
+- v81 的价值是把 focused set 继续按跨过程 value-flow 收敛，区分 carry/package、propagation/context、SSL send alignment、indirect/value-lane probe、copy/helper/control lane。
+- 仍不能把静态 value-flow、algorithm-like hint、raw ref、copy/materializer、indirect dispatch 升级为 value source。
+- 当前强边界仍保持：
+  ```text
+  carry/package: 0x346bcc / 0x4cff5c / 0x4cff50
+  upstream propagation/context: 0x21e17c / 0x2107dc
+  WebSocket/SSL send alignment: 0x3ec4f0 / 0x3ec44c / 0x3a6b50
+  algorithm/value source: not_recovered
+  ```
+- 对用户明确回答：**算法还没有完整挖出**。只有捕获 strict first-seen（同一个干净 `X-Cylons` value 在 candidate enter 前不存在、leave/downstream 首次出现并被 carry/package 或 SSL-send 链消费）或明确 opaque/sign callback 输出，才能升级 `algorithm_status`。
+
+### 2026-05-14 v93 closure：callback-output/source-slot 静态挖掘归档校验经验
+
+v93 在 v92 target-output / first-seen readiness 后，继续下钻到 callback-output 与 source-slot 静态探针层。该阶段属于 focused static mining 与下一轮动态验证准备，不能表述为算法本体还原完成。
+
+典型产物：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v93_focused_callback_output_source_slot_mining_0514.py
+/opt/data/home/reverse-tools/douyin_analysis/v93_focused_callback_output_source_slot_mining_0514.json
+/opt/data/home/reverse-tools/douyin_analysis/v93_focused_callback_output_source_slot_mining_0514.md
+/opt/data/home/reverse-tools/douyin_analysis/v93_focused_callback_output_source_slot_mining_conclusion_0514.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v93_0514.json
+/opt/data/home/.openclaw/workspace/memory/projects/2026-05-14_project_douyin-xcylons-v93-focused-callback-output-source-slot-mining.md
+/opt/data/home/.openclaw/workspace/memory/2026-05-14.md
+/opt/data/home/.openclaw/workspace/SESSION-STATE.md
+```
+
+v93 closure check 要点：
+
+1. 检查脚本、JSON、MD、conclusion、status、project memory、daily memory、SESSION-STATE 均存在且 size > 0。
+2. 解析主 JSON 与 status JSON，确认核心计数与边界，例如：
+   ```json
+   {"candidate_count":32,"v93_focused_hook_set_count":55}
+   ```
+3. 确认 judgement/status 必须保持：
+   ```json
+   {
+     "algorithm_status":"not_recovered",
+     "new_value_source_evidence":false,
+     "proven_algorithm_evidence":false,
+     "first_seen_evidence":false,
+     "callback_output_source_slot_static_mining_evidence":true
+   }
+   ```
+4. conclusion、project memory、daily memory、SESSION-STATE 中必须出现 `v93` 与 `not_recovered` / `algorithm_status` / `new_value_source_evidence=false` / `first_seen_evidence=false`，避免把 callback-output/source-slot 静态探针扩展误读为算法已还原。
+5. 归档后运行：
+   ```bash
+   cd /opt/data/home/.openclaw/workspace
+   python3 memory/scripts/memory-sync.py sync
+   python3 memory/scripts/memory-sync.py search "v93 focused callback output source slot algorithm_status not_recovered"
+   ps -ef | grep -E 'static_v93|run_v93|v93_' | grep -v grep || true
+   ```
+   搜索 Top 命中应包含 `2026-05-14_project_douyin-xcylons-v93-focused-callback-output-source-slot-mining`；进程检查应无遗留 v93 分析进程。
+
+v93 汇报边界：
+
+- 新增价值：从 v92 readiness 下钻出 callback-output sites 与 source-slot sites，并固化更小 focused hook set。
+- 不能升级为 value source：没有 closed transform-to-`X-Cylons` output lane、没有 strict first-seen、没有明确 opaque/sign callback output。
+- 当前强边界仍保持：
+  ```text
+  carry/package: 0x346bcc / 0x4cff5c / 0x4cff50
+  upstream propagation/context: 0x21e17c / 0x2107dc
+  WebSocket/SSL send alignment: 0x3ec4f0 / 0x3ec44c / 0x3a6b50
+  algorithm/value source: not_recovered
+  ```
+
+### 2026-05-14 v94 closure：从 callback-output/source-slot 继续做 upstream source-lane 静态挖掘
+
+v94 在 v93 callback-output / source-slot mining 后继续分类 upstream source lanes。该阶段仍是 focused static mining 与下一轮动态 first-seen 准备，不是算法还原完成。
+
+典型产物：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v94_focused_upstream_callback_output_source_0514.py
+/opt/data/home/reverse-tools/douyin_analysis/v94_focused_upstream_callback_output_source_static_0514.json
+/opt/data/home/reverse-tools/douyin_analysis/v94_focused_upstream_callback_output_source_static_0514.md
+/opt/data/home/reverse-tools/douyin_analysis/v94_focused_upstream_callback_output_source_conclusion_0514.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v94_0514.json
+/opt/data/home/.openclaw/workspace/memory/projects/2026-05-14_project_douyin-xcylons-v94-focused-upstream-callback-output-source.md
+/opt/data/home/.openclaw/workspace/memory/2026-05-14.md
+/opt/data/home/.openclaw/workspace/SESSION-STATE.md
+```
+
+v94 closure check 要点：
+
+1. 检查脚本、JSON、MD、conclusion、status、project memory、daily memory、SESSION-STATE 均存在且 size > 0。
+2. 解析主 JSON 与 status JSON，确认核心计数与边界，例如：
+   ```json
+   {"owner_candidate_count":32,"high_priority_owner_count":32,"callback_output_source_probe_count":84,"source_slot_source_probe_count":128,"v94_focused_hook_set_count":59}
+   ```
+3. judgement/status 必须保持：
+   ```json
+   {
+     "algorithm_status":"not_recovered",
+     "new_value_source_evidence":false,
+     "proven_algorithm_evidence":false,
+     "first_seen_evidence":false
+   }
+   ```
+4. conclusion、project memory、daily memory、SESSION-STATE 中必须出现 `v94` 与 `not_recovered` / `algorithm_status` / `new_value_source_evidence=false` / `first_seen_evidence=false`。
+5. 归档后运行：
+   ```bash
+   cd /opt/data/home/.openclaw/workspace
+   python3 memory/scripts/memory-sync.py sync
+   python3 memory/scripts/memory-sync.py search "v94 focused upstream callback output source algorithm_status not_recovered"
+   ps -ef | grep -E 'static_v94|run_v94|v94_' | grep -v grep || true
+   ```
+   搜索 Top 命中应包含 `2026-05-14_project_douyin-xcylons-v94-focused-upstream-callback-output-source`；进程检查应无遗留 v94 分析进程。
+
+v94 判定口径：
+
+- 新增价值：把 v93 callback-output/source-slot probes 继续拆成 object/vtable target-source scouts、helper-return output-source scouts、caller/local forwarded source scouts 与 constant/init/housekeeping lanes，并转成具体 runtime dump requirements。
+- v94 focused hook set 应保留 carry/package、upstream/context、SSL/WS-send controls 作为 downstream same-value alignment，不要把 alignment control 升级为 value source。
+- 不能升级为 value source：没有 closed transform-to-`X-Cylons` output lane、没有 strict first-seen、没有明确 opaque/sign callback output。
+- 当前强边界仍保持：
+  ```text
+  carry/package: 0x346bcc / 0x4cff5c / 0x4cff50
+  upstream propagation/context: 0x21e17c / 0x2107dc
+  WebSocket/SSL send alignment: 0x3ec4f0 / 0x3ec44c / 0x3a6b50
+  algorithm/value source: not_recovered
+  ```
+- 下一轮动态规则：只有复现真实 live-room ACK/X-Cylons/SSL first-seen 窗口后才运行 v94 focused hook set；升级条件是 candidate/callback/caller enter 无干净 value，return/slot/callback output 首次出现同一个干净 `X-Cylons` value，并被 carry/package 或 SSL/WS-send 链消费，或捕获明确 opaque/sign callback 输出。静态 v94 证据仍只能算 probe。
