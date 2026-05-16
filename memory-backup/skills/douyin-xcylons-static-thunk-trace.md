@@ -51,6 +51,26 @@ tags: ["douyin", "x-cylons", "arm64", "static-analysis", "reverse-engineering"]
 
 则这些 wrapper 只是把对象字段 `[x0+offset]` 作为第一个参数传给 thunk，跳转前没有本地写入 `x1`。
 
+## v98 focused callee/lineage 扩展法
+
+当 v76/v97 已经得到 focused source/def-use 集合，但算法本体仍未证明时，可追加一轮静态“callee lineage / return-lane”扩展，目标是为下一轮动态窗口生成 hook 排名，而不是直接宣称算法恢复。
+
+步骤：
+
+1. 以已验证的 focused set 为 seed，枚举 direct callee、return-lane callee、callback/dispatch callee、transform-like callee、slot materializer 和已知 control callee。
+2. 对每个 callee 记录来源 seed、调用类型、是否处在返回值通道、是否像 transform/materializer，以及和 ACK/X-Cylons/SSL-send 已知点的距离。
+3. 生成两个产物：
+   - JSON：保留可机器读取字段，例如 `seed_count`、`unique_callee_count`、`high_priority_callee_count`、`return_lane_callee_count`、`callback_dispatch_callee_count`、`transform_callee_count`、`slot_materializer_callee_count`、`known_control_callee_count`、`hook_set_count`。
+   - Markdown/conclusion：给出 ranked hook set 和边界结论。
+4. 明确边界字段，避免把“下一轮 hook 候选”误报为算法已还原：
+   - `algorithm_status: not_recovered`
+   - `new_value_source_evidence: false`
+   - `proven_algorithm_evidence: false`
+   - `first_seen_evidence: false`
+5. 验证产物非空、status JSON 字段可解析、conclusion 中保留上述边界；再同步到项目记忆/SESSION 状态。
+
+经验数值参考：v98 一轮从 95 个 seed 扩展到 141 个 unique callee，其中 high_priority=108、return_lane=106、callback_dispatch=3、transform=1、slot_materializer=9、known_control=2、hook_set=77；该结果只证明下一轮动态验证优先级，不证明 value-source 或算法本体。
+
 ## 关键结论
 
 如果 wrapper/stub 只改写 `x0`，而 `x1` 在进入 thunk 前保持 unchanged：
@@ -2268,6 +2288,57 @@ WebSocket/SSL send alignment: 0x3ec4f0 / 0x3ec44c / 0x3a6b50
 
 如果工具调用上限或中断只完成到“v94 复核 + v95 规划”，最终回复必须明确：`v95 artifacts not generated yet`，并保持 todo 为 `t2 in_progress / t3 pending`，不能暗示 v95 已生成、已验证或已归档。
 
+## v97 source/def-use 静态挖掘收尾经验（2026-05-15）
+
+当基于 v96 owner/caller provenance 继续做下一层 source/def-use 静态挖掘时，推荐流程：
+
+1. 输入使用：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/v96_owner_caller_source_provenance_static_0514.json
+/opt/data/home/reverse-tools/douyin_analysis/native_libs/libsscronet.so
+```
+
+2. 产物命名保持：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v97_source_defuse_0515.py
+/opt/data/home/reverse-tools/douyin_analysis/v97_source_defuse_static_0515.json
+/opt/data/home/reverse-tools/douyin_analysis/v97_source_defuse_static_0515.md
+/opt/data/home/reverse-tools/douyin_analysis/v97_source_defuse_conclusion_0515.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v97_0515.json
+/opt/data/home/.openclaw/workspace/memory/projects/2026-05-15_project_douyin-xcylons-v97-source-defuse.md
+```
+
+3. Python 依赖坑：Hermes 默认 `/opt/hermes/.venv/bin/python3` 可能没有 `pip/pyelftools/capstone`；系统 `/usr/bin/python3` 已可 import `elftools` 和 `capstone`。运行 ELF/ARM64 分析脚本优先用：
+
+```bash
+/usr/bin/python3 static_v97_source_defuse_0515.py
+```
+
+4. v97 可复用的判定指标：
+
+```json
+{
+  "record_count": 100,
+  "high_priority_defuse_count": 66,
+  "transform_like_defuse_count": 65,
+  "indirect_callback_defuse_count": 4,
+  "tracked_slot_write_defuse_count": 13,
+  "tracked_slot_read_defuse_count": 2,
+  "xref_materializer_context_count": 0,
+  "v97_focused_source_defuse_hook_set_count": 59,
+  "new_value_source_evidence": false,
+  "proven_algorithm_evidence": false,
+  "first_seen_evidence": false,
+  "algorithm_status": "not_recovered"
+}
+```
+
+5. 归档后必须核对 daily memory / project memory / status JSON / SESSION-STATE 数字一致。曾出现 daily memory 保留旧值 `high_priority_defuse_count=0`、hook set=16，而 project/status 已是 66/59 的情况；应 patch daily memory 后再 `memory/scripts/memory-sync.py sync` 并 search 验证。
+
+6. v97 focused hook set 可以达到 59 地址，但它仍是 source/def-use probe set。除非真实 ACK/X-Cylons/SSL first-seen 窗口中出现 enter-absent → return/slot/callback-output 首次同值 → downstream consume 同值，或 explicit opaque/sign callback output，否则不得把 transform-like/slot/callback probe 升级为 value source 或算法本体。
+
 ## 输出要求
 
 报告中必须明确区分：
@@ -2276,3 +2347,28 @@ WebSocket/SSL send alignment: 0x3ec4f0 / 0x3ec44c / 0x3a6b50
 - `X-Cylons` value 生成算法本体是否已还原。
 
 若只证明了 wrapper/thunk/helper/lookup/container-index/copy lane，应写明“算法本体 / value 生成点仍未完整还原”。
+
+## v114 source-body nested/dominance follow-up 经验（2026-05-15）
+
+当 v113 已经把 fan-in body/source-lane 扩到 `source_callee_body_summary` 和 `source_context_summary` 后，下一轮静态挖掘可复用以下模式：
+
+1. **种子来源**：优先从 v113 的 `priority_source_body_bitmix_return_lane_probe`、`priority_source_repeated_return_lane_convergence_probe`、`priority_source_callback_virtual_bridge_probe`、`priority_source_slot_to_arg_materialized_probe`、`priority_records` 取记录。
+2. **展开对象**：对每条记录抽取：
+   - `source_callee_body_summary.calls` 里的 nested body calls；
+   - `source_context_summary.prior_calls` / `downstream_after_source_call`；
+   - `ret_to_arg_source_lanes` / `ret_to_slot_source_lanes` 里的 `producer_call`；
+   - `dominant_return_consumer_source_lanes` / `return_consumer_source_lanes` / `slot_to_arg_source_lanes` 作为 dominance context。
+3. **上下文扫描窗口**：对 nested callsite 做函数窗口内局部 dominance 扫描，建议 `site±0x280`，收集 `ret_to_arg`、`ret_to_slot`、`slot_to_arg`、`return_consumer`、`dominant_return_consumer`、`near_bitmix`、`callback_or_virtual`、slot read/write、prior/downstream calls。
+4. **优先级分类**：优先级最高的是同时满足 nested body bitmix/return-touch 与 dominance return/ret-to-arg 证据的点；其次是 repeated target/body signature convergence、callback/virtual bridge、prior return-to-arg/slot dominance、slot-to-arg materialized dominance。
+5. **输出边界必须保守**：此类 v114 结果只能标记为 static probe。即使 `high_priority_trace_count` 很高、hook set 很密，也不能升级为 `value_source` 或 `algorithm_recovered`，除非动态真实 live-room ACK/X-Cylons/SSL first-seen 证明：clean X-Cylons 在该点前不存在、在该 nested/dominance lane 首次出现，并同值流入 v113-v99 carry/package 或 SSL/WS-send controls。
+6. **归档检查**：生成 JSON/MD/conclusion/status/project memory 后，执行 `memory/scripts/memory-sync.py sync`，再 search 阶段号关键词确认 project memory Top5 命中；同时检查无遗留 `static_vXX` 进程。
+
+v114 本轮参考产物：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v114_focused_source_body_nested_dominance_followup_0515.py
+/opt/data/home/reverse-tools/douyin_analysis/v114_focused_source_body_nested_dominance_followup_static_0515.json
+/opt/data/home/reverse-tools/douyin_analysis/v114_focused_source_body_nested_dominance_followup_conclusion_0515.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v114_0515.json
+```
+
