@@ -81,3 +81,5 @@ def mem0_list(user="admin"):
 - `filters` GET参数必须URL编码，否则502
 - `infer=False` 时不生成向量，语义搜索失效
 - 自部署 mem0 写入 `/memories` 有时返回 `200 {"results":[]}`，这表示请求被服务端接受，不等同于搜索已可立即命中新内容；不要仅因随后语义搜索返回旧/无关结果就判定写入失败，需同时依赖本地 Markdown/JSON/SESSION 归档作为可审计事实源。
+- 收尾脚本里不要把 mem0 写入和其他较重检查（例如再调用 shell/ps、memory-sync）塞进同一个长 `execute_code` 脚本；一旦网络/服务端响应异常，整段可能超时并丢失后续检查结果。更稳的流程是：先完成本地 `memory-sync.py sync/search` 和进程检查，再用一个独立、短 timeout（20–45s）的 mem0 写入脚本；若超时，重试一次精简内容，成功返回 `200 {"results":[]}` 即可按接受处理。
+- 若已经发生“mem0 写入 + 后续验证”混在 `execute_code` 里导致 300s timeout，按失败恢复处理：不要复跑整段重脚本，改用 `terminal(timeout=60)` 单独运行一个最小 Python one-shot 写入 mem0；写入成功后再分别做 todo/memory 状态更新。
