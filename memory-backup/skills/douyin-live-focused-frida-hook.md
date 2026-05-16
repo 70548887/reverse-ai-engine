@@ -2375,3 +2375,34 @@ v94 判定口径：
   algorithm/value source: not_recovered
   ```
 - 下一轮动态规则：只有复现真实 live-room ACK/X-Cylons/SSL first-seen 窗口后才运行 v94 focused hook set；升级条件是 candidate/callback/caller enter 无干净 value，return/slot/callback output 首次出现同一个干净 `X-Cylons` value，并被 carry/package 或 SSL/WS-send 链消费，或捕获明确 opaque/sign callback 输出。静态 v94 证据仍只能算 probe。
+
+### 2026-05-16 v132 minimal pack 执行前状态判定经验
+
+v132 已生成 `run_v132_pack_sequence_0516.py` 与 `analyze_v132_dynamic_evidence_0516.py` 后，不要只因为设备 `Awake` 且 `mDreamingLockscreen=false` 就直接运行 minimal pack。执行前必须同时确认前台是真实直播间，而不是抖音启动页/闪屏页。
+
+一次现场检查中设备状态为：
+
+```text
+mWakefulness=Awake
+mDreamingLockscreen=false
+mShowingDream=false
+mCurrentFocus=Window{... com.ss.android.ugc.aweme/com.ss.android.ugc.aweme.splash.SplashActivity}
+mFocusedApp=ActivityRecord{... com.ss.android.ugc.aweme/.splash.SplashActivity}
+```
+
+判定口径：
+
+1. `Awake`、非锁屏、非 NotificationShade 只说明 ADB 输入不会被锁屏/通知栏拦截；不代表动态 pack 具备目标事件复现条件。
+2. 当前前台若是 `SplashActivity`，不能直接运行：
+   ```text
+   pack_00_guards_then_controls
+   pack_01_same_value_first_seen
+   ```
+   否则大概率只得到 `hook-ok`/ready 文本，但没有真实 `/webcast/*`、`/ws/v2`、ACK、SSL 或 `X-Cylons` 目标窗口。
+3. minimal pack 动态执行前的硬条件应包括：
+   - 前台 activity 已进入真实直播间/`LivePlayActivity` 或截图确认直播间 UI；
+   - 非 `SplashActivity`、非登录页、非搜索/直播榜骨架屏、非 NotificationShade/锁屏；
+   - 主进程与关键 so 已加载；
+   - Frida 最小 attach/create_script 验证通过。
+4. 若只停留在 `SplashActivity`，应判定 `dynamic_executable=false`，转入静态/执行包增强（例如为下一版 runner 增加 activity gate、live-room gate、strict analyzer），而不是硬跑 minimal pack。
+5. 对用户汇报时明确：v132 是 run-readiness，`dynamic_execution_performed=false`；未进入真实直播间时不能把“不跑”或“无目标事件”误读为算法负证据。`algorithm_status` 继续保持 `not_recovered`。
