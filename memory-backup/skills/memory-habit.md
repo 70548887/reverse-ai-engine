@@ -92,11 +92,18 @@ python3 memory-sync.py search "reverse-ai-engine"
 当用户要求“归档 status/memory/SESSION 并同步”或上下文压缩后只剩归档任务时，按以下顺序一次性闭环，不要只口头总结：
 
 1. 校验核心产物都存在且非空：`analysis/*.json`、`analysis/*.md`、`analysis/*conclusion*.md`、静态脚本、`tasks/status/*.json`、`memory/projects/*.md`、当日 daily memory、`SESSION-STATE.md`。
-2. 对 status JSON 做字段抽查，至少确认 `candidate_count`、hook/probe count、`algorithm_status`；若分析 JSON 不含这些汇总字段，以 status JSON 为准。
+2. 对 status JSON 做字段抽查，至少确认 `candidate_count` 或 `trace_record_count`、hook/probe count、`algorithm_status`；若分析 JSON 不含这些汇总字段，以 status JSON 为准。注意部分阶段不会有通用 `hook_set_count` 字段，而是版本前缀字段（如 `v123_focused_first_seen_downstream_fanin_source_backtrace_hook_set_count`），抽查时应搜索 `*hook_set_count` / `*hook*count`，不要因通用字段为 null 误判缺失。
 3. 对 conclusion / project memory / daily / SESSION 做文本标记抽查，确认包含阶段号、`algorithm_status` 或关键结论。
 4. 执行 `cd /opt/data/home/.openclaw/workspace && python3 memory/scripts/memory-sync.py sync`。
-5. 立刻执行 `memory-sync.py search "<阶段号> <核心关键词> algorithm_status"`，确认新项目记忆 Top 命中。
-6. 检查无遗留阶段分析进程，例如 `ps -ef | grep -E 'static_vXX|run_vXX|vXX_' | grep -v grep || true`。
-7. 若有会话 todo，把归档项标记 completed，再向用户报告：文件、同步结果、搜索命中、算法状态、遗留进程状态。
+5. 立刻执行 `python3 memory/scripts/memory-sync.py search "<阶段号> <核心关键词> algorithm_status" --category project`，确认新项目记忆命中；若 Top1 不是本轮文件，只要本轮 project memory 在 Top5 命中也可作为语义层可检索证据。注意当前 `memory/scripts/memory-sync.py` 的 CLI 会先把 `sys.argv[2:]` 拼成 query、再解析 `--category`，所以输出标题里的 query 可能包含 `--category project`；这是显示/embedding 噪声，不代表 category filter 未生效。若要避免该噪声，可不带 `--category`，改用结果路径中 `/memory/projects/` 与 `[project]` 标记人工确认。若 broad query（如 `<阶段号> <关键词> algorithm_status`）没有命中新项目记忆，立即追加一次精确 slug 搜索（例如 `python3 memory/scripts/memory-sync.py search "douyin-xcylons-v127-origin-firstseen-closure-value-flow"`）；精确 slug 命中 Top1 可作为同步验证通过，不要因 broad semantic search 被旧阶段相似文本稀释而误判归档失败。
+6. 注意 workspace 里存在两个同名脚本：`memory/scripts/memory-sync.py` 才支持 `sync/search`；`scripts/memory-sync.py` 是按任务 status id 镜像归档的脚本，误用 `scripts/memory-sync.py sync` 会报 `任务目录不存在: .../tasks/status/sync`。
+7. 检查无遗留阶段分析进程，例如 `ps -ef | grep -E 'static_vXX|run_vXX|vXX_' | grep -v grep || true`。
+8. 若有会话 todo，把归档项标记 completed，再向用户报告：文件、同步结果、搜索命中、算法状态、遗留进程状态。
+
+## 已知坑：长 Markdown 块写入方式
+
+- 不要在 `execute_code` 里手写一大段嵌套 shell heredoc + Python 三引号 + 反引号 Markdown；在多层转义下容易出现 `SyntaxError: unexpected character after line continuation character`，导致 daily/SESSION 追加失败。
+- 更稳的做法：优先用 `read_file` + `write_file` 或 `patch` 做文本追加/替换；若必须用 Python 脚本批量写入，先把 Markdown 块放进 Python 原生三引号字符串（不要再包一层 shell heredoc），或用 `json.dumps()`/`repr()` 注入字符串字面量。
+- 对归档写入失败的恢复流程：先确认目标文件未被部分写入，再用最小化的单步写入重试；不要把写入、`memory-sync.py sync/search`、mem0 写入塞在同一个复杂脚本里。
 
 
