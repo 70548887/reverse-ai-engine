@@ -368,6 +368,328 @@ ps -ef | grep -E 'static_v136|run_v136|analyze_v136|v136_' | grep -v grep || tru
 
 报告口径仍保持保守：`algorithm_status=not_recovered`，不要把证据 bundle 准备或 validator 通过误报为算法本体还原。
 
+## v136 → v137 interrupted preflight 经验
+
+当上下文压缩后 active task 已进入 `基于 v136 evidence bundle/contract 生成下一轮 v137 静态/动态增强产物`，但工具轮次只够做恢复性核验时，优先确认 v136 evidence bundle 输入层是否完整，再决定是否生成 v137。已知 v136 产物应包括：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v136_capture_contract_evidence_bundle_validator_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/v136_capture_contract_evidence_bundle_validator_static_0516.json
+/opt/data/home/reverse-tools/douyin_analysis/v136_capture_contract_evidence_bundle_validator_static_0516.md
+/opt/data/home/reverse-tools/douyin_analysis/v136_capture_contract_evidence_bundle_validator_conclusion_0516.md
+/opt/data/home/reverse-tools/douyin_analysis/v136_evidence_bundle_manifest_0516.json
+/opt/data/home/reverse-tools/douyin_analysis/run_v136_capture_contract_live_bundle_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/analyze_v136_evidence_bundle_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/v136_evidence_bundle_runbook_0516.md
+```
+
+若 `v137*` 在 `/opt/data/home/reverse-tools/douyin_analysis` 下不存在，且 status 也未确认存在，则不要暗示 v137 已生成；应报告“v136 输入完整，v137 尚未生成/归档”。注意 `search_files(target="files")` 的 `pattern` 是 glob，不是正则；不要用 `douyin_xcylons_v136*|douyin_xcylons_v137*` 这种管道表达式判断 status 不存在，应分别搜索 `douyin_xcylons_v136*` 与 `douyin_xcylons_v137*` 或用 shell/脚本做正则。
+
+v137 推荐方向不是继续扩 hook，而是基于 v136 evidence bundle validator 生成“strict evidence promotion gate / replayable audit package / live evidence triage enhancer”：增强 evidence bundle schema 校验、多日志 replay/triage、strict first-seen alignment 判定、人工升级门槛报告、可审计 evidence package manifest、runbook 与 status/memory 归档。
+
+v137 仍应保持保守算法口径：只有真实直播间日志在同一请求窗口同时满足 `absent_before_ok=true`、`first_after_ok=true`、`downstream_carry_ok=true`、`same_request_window_ok=true`，并且同一个干净 X-Cylons/ACK 值或稳定 hash 在 candidate 与下游 SSL/WS/webcast 控制点之间一致，才能进入 `candidate_dynamic_alignment_needs_algorithm_recovery`。即使满足也不能标记 proven algorithm；真正算法恢复仍要求闭合 opaque/sign callback 或 transform-to-X-Cylons 算法体。默认仍为：
+
+```json
+{
+  "algorithm_status": "not_recovered",
+  "new_value_source_evidence": false,
+  "proven_algorithm_evidence": false,
+  "first_seen_evidence": false
+}
+```
+
+## v137 完整生成/归档经验
+
+v137 的正确方向是基于 v136 evidence bundle validator 生成 “strict evidence promotion gate / replayable audit package”，把 evidence bundle schema、replay inputs、hard-negative rules、strict promotion criteria、audit manifest、dry-run runner、promotion-gate analyzer 与 runbook 打包为可复核门控层。它不是继续扩 hook，也不是算法恢复层。
+
+v137 生成与验证时应检查/产出这些文件：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v137_strict_evidence_promotion_gate_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/v137_strict_evidence_promotion_gate_static_0516.json
+/opt/data/home/reverse-tools/douyin_analysis/v137_strict_evidence_promotion_gate_static_0516.md
+/opt/data/home/reverse-tools/douyin_analysis/v137_strict_evidence_promotion_gate_conclusion_0516.md
+/opt/data/home/reverse-tools/douyin_analysis/v137_replayable_audit_manifest_0516.json
+/opt/data/home/reverse-tools/douyin_analysis/run_v137_replayable_audit_package_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/analyze_v137_strict_promotion_gate_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/v137_strict_evidence_promotion_gate_runbook_0516.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v137_0516.json
+/opt/data/home/.openclaw/workspace/memory/projects/2026-05-16_project_douyin-xcylons-v137-strict-evidence-promotion-gate.md
+```
+
+v137 成功产出后关键抽查字段：
+
+```text
+status_completed = true
+v137_pack_contract_count = 6
+v137_required_replay_artifact_count = 6
+v137_hard_negative_rule_count = 14
+v137_strict_evidence_event_count = 0
+session_state_has_v137_entry = true
+algorithm_status = not_recovered
+new_value_source_evidence = false
+proven_algorithm_evidence = false
+first_seen_evidence = false
+```
+
+验证命令模板：
+
+```bash
+cd /opt/data/home/reverse-tools/douyin_analysis
+python3 -m py_compile static_v137_strict_evidence_promotion_gate_0516.py
+python3 static_v137_strict_evidence_promotion_gate_0516.py
+python3 -m py_compile run_v137_replayable_audit_package_0516.py analyze_v137_strict_promotion_gate_0516.py
+python3 run_v137_replayable_audit_package_0516.py --dry-run --bundle-name dryrun_minimal
+cd /opt/data/home/.openclaw/workspace
+python3 memory/scripts/memory-sync.py sync
+python3 memory/scripts/memory-sync.py search "douyin-xcylons-v137-strict-evidence-promotion-gate"
+python3 memory/scripts/memory-sync.py search "v137 strict evidence promotion gate algorithm_status not_recovered"
+ps -ef | grep -E 'static_v137|run_v137|analyze_v137|v137_' | grep -v grep || true
+```
+
+报告口径：v137 是“replayable audit package + strict evidence promotion gate”，用于把 v136 evidence bundle 升级为可复核、可重放、可人工审计的证据门控层；没有真实直播间动态执行日志时，`v137_strict_evidence_event_count=0` 是预期边界，不代表算法已恢复。只有真实直播间日志在同一请求窗口同时满足 `absent_before_ok=true`、`first_after_ok=true`、`downstream_carry_ok=true`、`same_request_window_ok=true`，且同一个干净 X-Cylons/ACK 值或稳定 hash 在 candidate 与下游 SSL/WS/webcast 控制点之间一致，才能进入人工升级候选；即使满足也不能标记 proven algorithm，真正算法恢复仍要求闭合 opaque/sign callback 或 transform-to-X-Cylons 算法体。
+
+## v137 → v138 经验教训
+
+v138 的正确方向是基于 v137 strict evidence promotion gate 生成“live-evidence triage / dynamic execution decision”层：读取既有 live log，按 v137 严格门槛做证据分级，生成 dynamic execution decision matrix、triage analyzer、decision runner 与 runbook。它不是继续扩 hook，也不是算法恢复层；hook-only/context-only 日志只能归为 context/partial signal。
+
+v138 生成与验证时应检查/产出这些文件：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v138_live_evidence_triage_dynamic_decision_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/v138_live_evidence_triage_dynamic_decision_static_0516.json
+/opt/data/home/reverse-tools/douyin_analysis/v138_live_evidence_triage_dynamic_decision_static_0516.md
+/opt/data/home/reverse-tools/douyin_analysis/v138_live_evidence_triage_dynamic_decision_conclusion_0516.md
+/opt/data/home/reverse-tools/douyin_analysis/v138_dynamic_execution_decision_matrix_0516.json
+/opt/data/home/reverse-tools/douyin_analysis/run_v138_live_evidence_triage_decision_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/analyze_v138_live_evidence_triage_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/v138_live_evidence_triage_runbook_0516.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v138_0516.json
+/opt/data/home/.openclaw/workspace/memory/projects/2026-05-16_project_douyin-xcylons-v138-live-evidence-triage-dynamic-decision.md
+```
+
+v138 成功产出后关键抽查字段：
+
+```text
+status = completed
+v137_pack_contract_count = 6
+v137_required_replay_artifact_count = 6
+v137_hard_negative_rule_count = 14
+v137_strict_evidence_event_count = 0
+v138_existing_live_log_count = 1
+v138_triaged_log_count = 1
+v138_existing_event_total = 98
+v138_existing_hook_ok_count = 89
+v138_existing_hook_err_count = 7
+v138_existing_target_related_event_count = 98
+v138_existing_all_gate_true_event_count = 0
+v138_dynamic_decision_level = context_or_partial_signal_only
+v138_generated_analyzer_count = 1
+v138_generated_runner_count = 1
+v138_generated_matrix_count = 1
+v138_dynamic_execution_performed = false
+v138_strict_evidence_event_count = 0
+v137_strict_promotion_gate_ready = true
+v138_live_evidence_triage_ready = true
+v138_dynamic_execution_decision_ready = true
+algorithm_status = not_recovered
+new_value_source_evidence = false
+proven_algorithm_evidence = false
+first_seen_evidence = false
+```
+
+验证命令模板：
+
+```bash
+cd /opt/data/home/reverse-tools/douyin_analysis
+python3 -m py_compile static_v138_live_evidence_triage_dynamic_decision_0516.py run_v138_live_evidence_triage_decision_0516.py analyze_v138_live_evidence_triage_0516.py
+python3 static_v138_live_evidence_triage_dynamic_decision_0516.py
+python3 run_v138_live_evidence_triage_decision_0516.py --dry-run --decision-name verify_v138 v132_live_logs_0516/*.jsonl
+cd /opt/data/home/.openclaw/workspace
+python3 memory/scripts/memory-sync.py sync
+python3 memory/scripts/memory-sync.py search "douyin-xcylons-v138-live-evidence-triage-dynamic-decision"
+python3 memory/scripts/memory-sync.py search "v138 live evidence triage dynamic decision algorithm_status not_recovered"
+ps -ef | grep -E 'static_v138|run_v138|analyze_v138|v138_' | grep -v grep || true
+```
+
+报告口径：v138 是“live evidence triage + dynamic execution decision”层；当既有日志仅有 hook_ok/hook_err/context events 且 `v138_existing_all_gate_true_event_count=0` 时，结论必须保持 `context_or_partial_signal_only` 与 `algorithm_status=not_recovered`。下一步真实直播间执行仍应优先 `pack_00_guards_then_controls`，再跑 `pack_01_same_value_first_seen`，只有同一请求窗口满足 absent-before / first-after / downstream-carry / same-window 全门槛并出现同值 X-Cylons/ACK/SSL 对齐，才可进入人工候选升级；proven algorithm 仍要求闭合 opaque/sign callback 或 transform-to-X-Cylons 算法体。
+
+## v138 → v139 经验教训
+
+v139 的正确方向是基于 v138 live-evidence triage 生成 “live-log gap closure / targeted rerun package”：读取 v138 静态产物、status 与现有 live logs，识别具体缺口（例如既有日志只覆盖 `pack_00_guards_then_controls`，缺少 `pack_01_same_value_first_seen`），然后生成 targeted rerun matrix、runner wrapper、gap-closure analyzer、runbook、JSON/MD/conclusion/status/project memory。它不是继续扩 hook，也不是算法恢复层。
+
+v139 生成与验证时应检查/产出这些文件：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v139_live_log_gap_closure_targeted_rerun_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/v139_live_log_gap_closure_targeted_rerun_static_0516.json
+/opt/data/home/reverse-tools/douyin_analysis/v139_live_log_gap_closure_targeted_rerun_static_0516.md
+/opt/data/home/reverse-tools/douyin_analysis/v139_live_log_gap_closure_targeted_rerun_conclusion_0516.md
+/opt/data/home/reverse-tools/douyin_analysis/v139_targeted_rerun_matrix_0516.json
+/opt/data/home/reverse-tools/douyin_analysis/run_v139_targeted_live_rerun_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/analyze_v139_gap_closure_evidence_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/v139_live_log_gap_closure_targeted_rerun_runbook_0516.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v139_0516.json
+/opt/data/home/.openclaw/workspace/memory/projects/2026-05-16_project_douyin-xcylons-v139-live-log-gap-closure-targeted-rerun.md
+```
+
+v139 成功产出后关键抽查字段：
+
+```text
+status = completed
+v138_dynamic_decision_level = context_or_partial_signal_only
+v138_existing_live_log_count = 1
+v138_existing_event_total = 98
+v138_existing_hook_ok_count = 89
+v138_existing_hook_err_count = 7
+v138_existing_all_gate_true_event_count = 0
+v139_existing_log_count = 1
+v139_pack_config_count = 6
+v139_observed_pack_names = ['pack_00_guards_then_controls']
+v139_unexecuted_priority_pack_count = 5
+v139_primary_gap = missing_pack_01_same_value_first_seen
+v139_targeted_rerun_pack_count = 6
+v139_minimal_rerun_pack_count = 2
+v139_generated_runner_count = 1
+v139_generated_analyzer_count = 1
+v139_generated_matrix_count = 1
+v139_dynamic_execution_performed = false
+v139_strict_evidence_event_count = 0
+algorithm_status = not_recovered
+new_value_source_evidence = false
+proven_algorithm_evidence = false
+first_seen_evidence = false
+```
+
+验证命令模板：
+
+```bash
+cd /opt/data/home/reverse-tools/douyin_analysis
+python3 -m py_compile static_v139_live_log_gap_closure_targeted_rerun_0516.py
+python3 static_v139_live_log_gap_closure_targeted_rerun_0516.py
+python3 -m py_compile run_v139_targeted_live_rerun_0516.py analyze_v139_gap_closure_evidence_0516.py
+python3 run_v139_targeted_live_rerun_0516.py --dry-run --packs minimal
+python3 run_v139_targeted_live_rerun_0516.py --dry-run --packs narrow
+cd /opt/data/home/.openclaw/workspace
+python3 memory/scripts/memory-sync.py sync
+python3 memory/scripts/memory-sync.py search "douyin-xcylons-v139-live-log-gap-closure-targeted-rerun"
+python3 memory/scripts/memory-sync.py search "v139 live log gap closure targeted rerun algorithm_status not_recovered"
+ps -ef | grep -E 'static_v139|run_v139|analyze_v139|v139_' | grep -v grep || true
+```
+
+v139 minimal dry-run 应展开为 `pack_00_guards_then_controls` 与 `pack_01_same_value_first_seen`；narrow 应继续包含 `pack_03_producer_consumer_boundary` 与 `pack_04_return_slot_bridge`。若生成器写入嵌套 Python 脚本时使用外层三引号，注意 `PROJECT.write_text(md+'\n\n'+conclusion)`、`SESSION.write_text(... '\n' ...)` 必须保留转义换行，避免生成脚本出现 `SyntaxError: unterminated string literal`。
+
+报告口径：v139 是“live-log gap closure + targeted rerun package”。当 v138/v139 既有日志只证明 hook health/context 且缺少 `pack_01_same_value_first_seen` 时，必须明确 `v139_primary_gap=missing_pack_01_same_value_first_seen`，并保持 `algorithm_status=not_recovered`。下一步真实直播间执行优先 `pack_00`→`pack_01`；只有同一 `request_context_id` 同时满足 absent-before / first-after / downstream-carry / same-window 且同一个干净 X-Cylons/ACK/hash 在 candidate 与 downstream/SSL/WS/webcast 控制点一致，才可进入人工候选升级；proven algorithm 仍要求闭合 opaque/sign callback 或 transform-to-X-Cylons 算法体。
+
+## v140 → v141 经验教训
+
+v141 的正确方向是基于 v140 targeted execution hardening / first-seen closure 生成“live-room gate + same-value preflight”层：在调用 v140 hardened runner 前增加真实直播间前台 gate，避免在 Splash/login/search/NotificationShade/launcher 等非直播间状态误跑 pack_00/pack_01，导致只得到 hook health/context 而没有 ACK/X-Cylons/SSL first-seen 窗口。
+
+v141 生成与验证时应检查/产出这些文件：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v141_live_room_gate_same_value_preflight_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/v141_live_room_gate_same_value_preflight_static_0516.json
+/opt/data/home/reverse-tools/douyin_analysis/v141_live_room_gate_same_value_preflight_static_0516.md
+/opt/data/home/reverse-tools/douyin_analysis/v141_live_room_gate_same_value_preflight_conclusion_0516.md
+/opt/data/home/reverse-tools/douyin_analysis/v141_live_room_gate_same_value_preflight_matrix_0516.json
+/opt/data/home/reverse-tools/douyin_analysis/run_v141_live_room_gate_same_value_preflight_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/analyze_v141_same_value_preflight_logs_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/v141_live_room_gate_same_value_preflight_runbook_0516.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v141_0516.json
+/opt/data/home/.openclaw/workspace/memory/projects/2026-05-16_project_douyin-xcylons-v141-live-room-gate-same-value-preflight.md
+```
+
+v141 成功产出后关键抽查字段：
+
+```text
+v141_pack_config_count = 6
+v141_existing_log_count = 1
+v141_existing_observed_pack_names = ['pack_00_guards_then_controls']
+v141_existing_strict_gate_shape_count = 0
+v141_generated_runner_count = 1
+v141_generated_analyzer_count = 1
+v141_generated_matrix_count = 1
+v141_dry_run_checked = true
+v141_live_room_gate_ready = true
+v141_same_value_preflight_ready = true
+v141_dynamic_execution_performed = false
+v141_strict_evidence_event_count = 0
+algorithm_status = not_recovered
+new_value_source_evidence = false
+proven_algorithm_evidence = false
+first_seen_evidence = false
+```
+
+验证命令模板：
+
+```bash
+cd /opt/data/home/reverse-tools/douyin_analysis
+python3 -m py_compile static_v141_live_room_gate_same_value_preflight_0516.py run_v141_live_room_gate_same_value_preflight_0516.py analyze_v141_same_value_preflight_logs_0516.py
+python3 static_v141_live_room_gate_same_value_preflight_0516.py
+cd /opt/data/home/.openclaw/workspace
+python3 memory/scripts/memory-sync.py sync
+python3 memory/scripts/memory-sync.py search "douyin-xcylons-v141-live-room-gate-same-value-preflight"
+python3 memory/scripts/memory-sync.py search "v141 live room gate same value preflight algorithm_status not_recovered"
+ps -ef | grep -E 'static_v141|run_v141|analyze_v141|v141_' | grep -v grep || true
+```
+
+注意：精确 slug 语义检索可能被 v134 live-room-gate readiness 等相似项目抢占 Top1；若 slug 搜索 v141 不是 Top1，但补充 `v141 live room gate same value preflight algorithm_status not_recovered` 后 v141 Top1，即可认为同步验证通过。
+
+v141 报告口径：这是“真实直播间 gate + same-value preflight”增强层，不是算法恢复。dry-run 中 `adb devices` 可见但 `focus` 为空/非 live activity 时，`live_room_gate_passed=false`、`dynamic_executable=false` 是正确阻断。只有用户已手动进入真实直播间且 gate 通过，才去掉 `--dry-run` 运行 minimal_closure；后续仅当 `pack_01_same_value_first_seen` 出现 candidate same-value hash 时再进入 `narrow_with_downstream`。算法升级门槛仍是同一请求窗口同时满足 absent-before / first-after / downstream-carry / same-window 且同一个干净 X-Cylons/ACK/hash 在 candidate 与下游控制点一致；proven algorithm 仍要求闭合 opaque/sign callback 或 transform-to-X-Cylons 算法体。
+
+## v146 operator-handoff verification 经验
+
+当 context compaction 后 active task 只剩“验证 v146 产物、同步记忆并检查残留进程”时，不要重新执行真实动态捕获；v146 的定位是 operator-handoff live proof capture 包，除非真实直播间 gate 已明确通过且用户要求运行，否则只做产物完整性和归档验证。
+
+v146 验证清单：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v146_operator_handoff_live_proof_capture_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/run_v146_operator_handoff_live_proof_capture_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/analyze_v146_live_proof_capture_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/v146_operator_handoff_live_proof_capture_static_0516.json
+/opt/data/home/reverse-tools/douyin_analysis/v146_operator_handoff_live_proof_capture_static_0516.md
+/opt/data/home/reverse-tools/douyin_analysis/v146_operator_handoff_live_proof_capture_conclusion_0516.md
+/opt/data/home/reverse-tools/douyin_analysis/v146_operator_handoff_live_proof_capture_matrix_0516.json
+/opt/data/home/reverse-tools/douyin_analysis/v146_operator_handoff_live_proof_capture_runbook_0516.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v146_0516.json
+/opt/data/home/.openclaw/workspace/memory/projects/2026-05-16_project_douyin-xcylons-v146-operator-handoff-live-proof-capture.md
+```
+
+验证命令模板：
+
+```bash
+cd /opt/data/home/reverse-tools/douyin_analysis
+python3 -m py_compile static_v146_operator_handoff_live_proof_capture_0516.py run_v146_operator_handoff_live_proof_capture_0516.py analyze_v146_live_proof_capture_0516.py
+python3 run_v146_operator_handoff_live_proof_capture_0516.py --help
+python3 analyze_v146_live_proof_capture_0516.py --help
+cd /opt/data/home/.openclaw/workspace
+python3 memory/scripts/memory-sync.py sync
+python3 memory/scripts/memory-sync.py search "douyin-xcylons-v146-operator-handoff-live-proof-capture"
+python3 memory/scripts/memory-sync.py search "v146 operator handoff live proof capture algorithm_status not_recovered"
+ps -ef | grep -E 'static_v146|run_v146|analyze_v146|v146_' | grep -v grep || true
+```
+
+v146 status 关键抽查字段应保持：
+
+```json
+{
+  "status": "completed",
+  "algorithm_status": "not_recovered",
+  "new_value_source_evidence": false,
+  "proven_algorithm_evidence": false,
+  "first_seen_evidence": false,
+  "v146_dynamic_execution_allowed": false,
+  "v146_dynamic_execution_performed": false,
+  "v146_strict_evidence_event_count": 0,
+  "v146_generated_runner_count": 1,
+  "v146_generated_analyzer_count": 1
+}
+```
+
+注意：`v146_operator_handoff_ready` 可能只存在于 md/memory 口径或为空，不应因此误判失败；以 status completed、runner/analyzer 生成数、dynamic_execution_performed=false、strict_evidence_event_count=0、memory 精确 slug 可检索、无残留进程为 closure 条件。报告时明确：v146 产物验证通过，但没有真实动态执行，算法本体仍 `not_recovered`。
+
 ## 报告口径
 
 最终报告应包含：文件路径、核心计数、`algorithm_status`、是否已 sync、检索命中证据、遗留进程检查结果。若算法未恢复，要直接说明：本轮只收敛 hook/first-seen/value-flow 边界，仍需真实窗口动态同值验证。
