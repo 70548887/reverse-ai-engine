@@ -2406,3 +2406,255 @@ mFocusedApp=ActivityRecord{... com.ss.android.ugc.aweme/.splash.SplashActivity}
    - Frida 最小 attach/create_script 验证通过。
 4. 若只停留在 `SplashActivity`，应判定 `dynamic_executable=false`，转入静态/执行包增强（例如为下一版 runner 增加 activity gate、live-room gate、strict analyzer），而不是硬跑 minimal pack。
 5. 对用户汇报时明确：v132 是 run-readiness，`dynamic_execution_performed=false`；未进入真实直播间时不能把“不跑”或“无目标事件”误读为算法负证据。`algorithm_status` 继续保持 `not_recovered`。
+
+### 2026-05-16 v143 unlock live-entry blocker：screen_off_or_lockscreen 优先于动态 pack
+
+v143 在 v141/v142 live-room gate 基础上进一步把动态执行阻塞点从泛化的 launcher/system foreground 收敛到更明确的：
+
+```text
+screen_off_or_lockscreen
+```
+
+典型产物：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v143_unlock_live_entry_blocker_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/run_v143_unlock_probe_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/v143_unlock_live_entry_blocker_static_0516.json
+/opt/data/home/reverse-tools/douyin_analysis/v143_unlock_live_entry_blocker_static_0516.md
+/opt/data/home/reverse-tools/douyin_analysis/v143_unlock_live_entry_blocker_conclusion_0516.md
+/opt/data/home/reverse-tools/douyin_analysis/v143_unlock_live_entry_blocker_matrix_0516.json
+/opt/data/home/reverse-tools/douyin_analysis/v143_unlock_live_entry_blocker_runbook_0516.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v143_0516.json
+```
+
+v143 判定口径：
+
+1. 动态 pack 执行前不能只看 `screen_off=false` 或设备已唤醒；必须同时确认没有 `Keyguard`、`NotificationShade`、`SECURE_SYSTEM_OVERLAY` 等锁屏/系统遮罩捕获输入。
+2. 如果状态类似：
+   ```json
+   {
+     "screen_off": false,
+     "keyguard_or_shade": true,
+     "aweme_foreground": false,
+     "live_room_entry_ready_now": false,
+     "dynamic_execution_allowed": false
+   }
+   ```
+   则应明确判定当前 blocker 为 `screen_off_or_lockscreen`，不要强行运行 `pack_00_guards_then_controls` 或 `pack_01_same_value_first_seen`。
+3. 锁屏/通知栏/系统遮罩状态下硬跑 focused hook 只会得到锁屏、Splash、ready/filter 或 `hook-ok` 污染数据，不能推进 `X-Cylons` same-value / first-seen / ACK / SSL 证据链。
+4. 正确下一步是人工物理解锁并进入真实抖音直播间，再重新跑 live-room gate；只有 `live_room_entry_ready=true` 后才能执行 v140/v141/v142/v143 相关 pack。
+5. v143 只定位并归档动态执行环境阻塞，不是算法还原。若没有真实 same-value、proven transform、first-seen 或 opaque/sign callback 输出，继续保持：
+   ```json
+   {
+     "algorithm_status": "not_recovered",
+     "new_value_source_evidence": false,
+     "proven_algorithm_evidence": false,
+     "first_seen_evidence": false
+   }
+6. 收尾需校验 `static_v143...py` 与 `run_v143...py` 均 `py_compile` 通过，确认 status/conclusion/matrix/runbook/project memory 已归档，再向用户说明“当前阻塞是解锁/真实直播间入口”，而不是把未执行动态 pack 解读为算法负证据。
+
+### 2026-05-16 v145 manual-unlock real-live-room proof gate：人工解锁是动态执行硬前置
+
+v145 在 v144/v143 的锁屏与 live-room gate 基础上，把动态执行 gate 进一步固化为“人工解锁 + 真实直播间 ready”证明门。该阶段的价值是防止在 screen-off、Keyguard/NotificationShade、SplashActivity 等状态下误跑 focused pack，产生 hook-ok/ready 文本污染，并把“未执行动态包”错误解释为算法负证据。
+
+典型产物：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v145_manual_unlock_real_live_room_proof_gate_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/run_v145_manual_unlock_real_live_room_proof_gate_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/analyze_v145_manual_unlock_live_room_proof_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/v145_manual_unlock_real_live_room_proof_gate_static_0516.json
+/opt/data/home/reverse-tools/douyin_analysis/v145_manual_unlock_real_live_room_proof_gate_static_0516.md
+/opt/data/home/reverse-tools/douyin_analysis/v145_manual_unlock_real_live_room_proof_gate_conclusion_0516.md
+/opt/data/home/reverse-tools/douyin_analysis/v145_manual_unlock_real_live_room_proof_gate_matrix_0516.json
+/opt/data/home/reverse-tools/douyin_analysis/v145_manual_unlock_real_live_room_proof_gate_runbook_0516.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v145_0516.json
+/opt/data/home/.openclaw/workspace/memory/projects/2026-05-16_project_douyin-xcylons-v145-manual-unlock-real-live-room-proof-gate.md
+```
+
+v145 典型 status：
+
+```json
+{
+  "status": "completed",
+  "algorithm_status": "not_recovered",
+  "new_value_source_evidence": false,
+  "proven_algorithm_evidence": false,
+  "first_seen_evidence": false,
+  "v145_dynamic_execution_allowed": false,
+  "v145_dynamic_execution_performed": false,
+  "v145_manual_proof_blocker": "manual_unlock_required_screen_or_keyguard",
+  "v145_screen_off": true,
+  "v145_keyguard_or_shade": true,
+  "v145_splash_activity": true,
+  "v145_aweme_foreground": true,
+  "v145_real_live_room_ready_now": false,
+  "v145_strict_evidence_event_count": 0
+}
+```
+
+v145 判定口径：
+
+1. `aweme_foreground=true` 不足以允许动态执行；如果同时 `screen_off=true`、`keyguard_or_shade=true`、`splash_activity=true` 或 `real_live_room_ready_now=false`，必须判定 `dynamic_execution_allowed=false`。
+2. `manual_unlock_required_screen_or_keyguard` 是硬 blocker：需要用户人工/物理解锁设备，并进入真实直播间 UI 后再 rerun gate；不要用 ADB 盲点/滑动强行跑 pack。
+3. 当前状态下不得执行 `pack_00_guards_then_controls`、`pack_01_same_value_first_seen` 或 v140/v141 focused pack；否则大概率只产生锁屏/Splash/ready/hook-ok 噪声。
+4. v145 是 proof gate / runbook / analyzer 包，不是算法还原。没有真实 same-value、first-seen、ACK/X-Cylons/SSL strict evidence 时，继续保持 `algorithm_status=not_recovered`。
+5. v145 closure check 应包括：产物存在且 size>0、3 个 Python 脚本 `py_compile` 通过、status JSON 可解析且 blocker/algorithm 边界正确、conclusion/project memory/daily/SESSION 含 `v145` 与 `not_recovered`/`algorithm_status` marker。
+6. 收尾后运行：
+   ```bash
+   cd /opt/data/home/.openclaw/workspace
+   python3 memory/scripts/memory-sync.py sync
+   python3 memory/scripts/memory-sync.py search "v145 manual unlock real live room proof gate algorithm_status not_recovered"
+   ps -ef | grep -E 'static_v145|run_v145|analyze_v145|v145_' | grep -v grep || true
+   ```
+   搜索应能命中 `2026-05-16_project_douyin-xcylons-v145-manual-unlock-real-live-room-proof-gate`，残留进程检查应为空。
+
+汇报边界：v145 完成的是动态执行前置条件证明与阻塞归档；下一步是用户人工解锁并进入真实直播间后再运行 real-live-room proof / focused pack。不能把 `dynamic_execution_performed=false` 说成算法负证据，也不能把 gate 完成说成 `X-Cylons` 算法已挖出。
+
+### 2026-05-16 v150 foreground recovery live gate 收尾校验经验
+
+v150 在前台恢复/NotificationShade/statusbar recovery 与 live-room execution gate 包装后，重点是闭环校验而不是直接动态执行。典型产物：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/run_v150_foreground_recovery_live_gate_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/analyze_v150_foreground_recovery_evidence_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/v150_foreground_recovery_live_gate_static_0516.json
+/opt/data/home/reverse-tools/douyin_analysis/v150_foreground_recovery_live_gate_static_0516.md
+/opt/data/home/reverse-tools/douyin_analysis/v150_foreground_recovery_live_gate_conclusion_0516.md
+/opt/data/home/reverse-tools/douyin_analysis/v150_foreground_recovery_live_gate_matrix_0516.json
+/opt/data/home/reverse-tools/douyin_analysis/v150_foreground_recovery_live_gate_runbook_0516.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v150_0516.json
+/opt/data/home/.openclaw/workspace/memory/projects/2026-05-16_project_douyin-xcylons-v150-foreground-recovery-live-gate.md
+```
+
+v150 closure check 要点：
+
+1. 校验 runner/analyzer/static JSON/MD/conclusion/matrix/runbook/status/project memory/daily memory/SESSION-STATE 均存在且 size > 0。
+2. 对 runner/analyzer 执行：
+   ```bash
+   cd /opt/data/home/reverse-tools/douyin_analysis
+   python3 -m py_compile run_v150_foreground_recovery_live_gate_0516.py analyze_v150_foreground_recovery_evidence_0516.py
+   ```
+3. 解析主 JSON、matrix JSON、status JSON，确认边界保持：
+   ```json
+   {
+     "status":"completed",
+     "algorithm_status":"not_recovered",
+     "new_value_source_evidence":false,
+     "proven_algorithm_evidence":false,
+     "first_seen_evidence":false,
+     "v150_dynamic_execution_allowed":false,
+     "v150_dynamic_execution_performed":false,
+     "v150_strict_evidence_event_count":0
+   }
+   ```
+   status 中可能出现：
+   ```json
+   {"v150_current_blocker":"not_runtime_sampled_in_static_packaging"}
+   ```
+   这表示本轮是静态包装/门控归档，未做真实 runtime sample；不能当作算法负证据。
+4. conclusion、project memory、daily memory、SESSION-STATE 中必须出现 `v150`、`algorithm_status`、`not_recovered` marker。
+5. 同步并搜索验证：
+   ```bash
+   cd /opt/data/home/.openclaw/workspace
+   python3 memory/scripts/memory-sync.py sync
+   python3 memory/scripts/memory-sync.py search "v150 foreground recovery live gate algorithm_status not_recovered"
+   ```
+   Top 命中应包含 `2026-05-16_project_douyin-xcylons-v150-foreground-recovery-live-gate`。
+6. 检查无残留进程：
+   ```bash
+   ps -ef | grep -E 'static_v150|run_v150|analyze_v150|v150_' | grep -v grep || true
+   ```
+
+v150 汇报边界：完成的是 foreground / NotificationShade / statusbar recovery + live-room execution gate 包装与归档验证；没有真实 same-value、first-seen、ACK/X-Cylons/SSL strict evidence，也没有明确 opaque/sign callback output，因此 `X-Cylons algorithm_status=not_recovered`。
+
+
+### 2026-05-16 v141 live-room gate + same-value preflight 经验
+
+v141 在 v140 live-log grounded same-value pack 之后增加 **live-room foreground gate** 和同值 preflight 分析，目标是防止在 Splash/login/search/NotificationShade 等非直播间状态下硬跑动态包，反复得到 hook 健康但无 ACK/X-Cylons/SSL 目标窗口的负样本。
+
+典型产物：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v141_live_room_gate_same_value_preflight_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/run_v141_live_room_gate_same_value_preflight_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/analyze_v141_same_value_preflight_logs_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/v141_live_room_gate_same_value_preflight_static_0516.json
+/opt/data/home/reverse-tools/douyin_analysis/v141_live_room_gate_same_value_preflight_static_0516.md
+/opt/data/home/reverse-tools/douyin_analysis/v141_live_room_gate_same_value_preflight_matrix_0516.json
+/opt/data/home/reverse-tools/douyin_analysis/v141_live_room_gate_same_value_preflight_runbook_0516.md
+/opt/data/home/reverse-tools/douyin_analysis/v141_live_room_gate_same_value_preflight_conclusion_0516.md
+/opt/data/home/reverse-tools/douyin_analysis/v141_same_value_preflight_analysis_0516.json
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v141_0516.json
+```
+
+v141 判定口径：
+
+1. 动态执行前必须通过 live-room gate：前台应为真实直播间/`LivePlayActivity` 或截图确认直播间 UI；不得是 `SplashActivity`、登录页、搜索/直播榜骨架屏、NotificationShade/锁屏。
+2. `hook-ok` 很多只说明 Frida/hook 安装健康；`hook-err` 中个别 `unable to intercept function` 只要不影响核心目标，可记录但不能当成算法负证据。
+3. analyzer 必须只统计真实 jsonl tag/counter：`strict_same_value_alignment`、`repeated_value_hash_count`、目标 ACK/X-Cylons/SSL tag；ready/filter/hook-label 文本不得计入真实命中。
+4. 若 analyzer 输出类似：
+   ```json
+   {"repeated_value_hash_count":0,"strict_same_value_alignment":false,"algorithm_status":"not_recovered"}
+   ```
+   即使 `event_total`、`hook_ok_count` 很高，也只能判定为“未形成同值 first-seen/下游消费闭环”。
+5. v141 的价值是把 v140 pack 变成可安全执行/可审计的 preflight 包；它不是算法还原完成。只有同一个干净 `X-Cylons` value 在 candidate enter 前不存在，leave/return/callback/downstream 首次出现，并被 carry/package 或 SSL-send 链消费，或捕获明确 opaque/sign callback 输出，才能升级为 value source。
+6. 收尾归档仍需检查 JSON/MD/conclusion/status/memory/SESSION，确认 `algorithm_status=not_recovered`、`new_value_source_evidence=false`、`proven_algorithm_evidence=false`、`first_seen_evidence=false`，并同步记忆层。
+
+### 2026-05-16 v140 live-log grounded same-value pack 归档经验
+
+当连续动态采样受 UI/直播间复现率影响，且已有真实 live 日志中包含 `X-Cylons` / ACK / SSL 证据时，可以先转为 **live-log grounded same-value pack plan**，不要继续盲目扩大 hook 面。v140 的作用是把已有真实日志样本转成可执行的两阶段最小动态验证包，而不是宣称算法已还原。
+
+典型产物：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v140_live_log_grounded_same_value_pack_0516.py
+/opt/data/home/reverse-tools/douyin_analysis/v140_live_log_grounded_same_value_pack_0516.json
+/opt/data/home/reverse-tools/douyin_analysis/v140_live_log_grounded_same_value_pack_0516.md
+/opt/data/home/reverse-tools/douyin_analysis/v140_live_log_grounded_same_value_pack_conclusion_0516.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v140_0516.json
+/opt/data/home/.openclaw/workspace/memory/projects/2026-05-16_project_douyin-xcylons-v140-live-log-grounded-same-value-pack.md
+```
+
+v140 典型计数与判定：
+
+```json
+{
+  "live_sample_count": 15,
+  "same_value_candidate_count": 12,
+  "pack_plan_count": 2,
+  "pack_00_guards_then_controls_count": 23,
+  "pack_01_same_value_first_seen_count": 32,
+  "same_value_pack_plan_ready": true,
+  "algorithm_status": "not_recovered",
+  "new_value_source_evidence": false,
+  "proven_algorithm_evidence": false,
+  "first_seen_evidence": false
+}
+```
+
+两阶段 pack 语义：
+
+1. `pack_00_guards_then_controls`：先验证真实直播间、ACK/SSL/WS 目标窗口、carry/package、upstream/context 与 SSL send alignment controls 是否同窗活跃。
+2. `pack_01_same_value_first_seen`：只在 pack_00 目标窗口成立后，追同一个干净 `X-Cylons` value 的 candidate enter/leave/return/callback/downstream first-seen。
+
+升级标准保持严格：只有同一个干净 `X-Cylons` value 在 candidate enter 前不存在，leave/return/callback/downstream 首次出现，并被 `0x346bcc / 0x4cff5c / 0x4cff50` carry/package 或 `0x3ec4f0 / 0x3ec44c / 0x3a6b50` SSL-send 链消费，或捕获明确 opaque/sign callback 输出，才能升级为 value source。否则即使 `same_value_pack_plan_ready=true`，也必须保持：
+
+```text
+algorithm_status=not_recovered
+```
+
+v140 closure check：
+
+1. 检查 static script、JSON、MD、conclusion、status、project memory、daily memory、SESSION-STATE 存在且 size > 0。
+2. 解析主 JSON/status JSON，确认 `pack_plan_count=2`、pack_00/pack_01 计数、`same_value_pack_plan_ready=true` 与 `algorithm_status=not_recovered`。
+3. conclusion/project memory/daily/SESSION 必须包含 `v140` 与 `not_recovered` / `algorithm_status`，避免把执行包计划误读成算法还原。
+4. 运行：
+   ```bash
+   cd /opt/data/home/.openclaw/workspace
+   python3 memory/scripts/memory-sync.py sync
+   python3 memory/scripts/memory-sync.py search "v140 live log grounded same value pack algorithm_status not_recovered"
+   ps -ef | grep -E 'static_v140|run_v140|v140_' | grep -v grep || true
+   ```
+5. 最终汇报边界：v140 固化了同值 first-seen 动态执行计划；`X-Cylons` value 生成算法本体仍未完整挖出。
