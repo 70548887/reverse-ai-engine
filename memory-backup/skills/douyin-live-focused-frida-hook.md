@@ -24,6 +24,8 @@ triggers: ["抖音直播动态hook", "douyin Frida SSL", "webcast im push", "x-s
    - `libmetasec_ml.so`
    - `libEncryptor.so`
 3. 不要全局 hook libc/system-wide 的 `write/send/read/recv/open/openat`。
+
+   **执行/归档判据（2026-05-19 v156 经验）**：如果真实直播间 gate 已 clear（前台是 `com.ss.android.ugc.aweme/.live.LivePlayActivity`、`stable_real_live_room_ready=true`、blocker 为 `none`），必须继续执行 focused pack，而不是继续把 gate 当阻塞。执行后要同时归档 raw jsonl、strict analyzer JSON、任务 status JSON/Markdown。`hook-ok`/`hook-err` 只能证明 hook 安装，不能证明算法；只有 strict analyzer 提升出的 same-value first-seen、ACK/X-Cylons、SSL/WS downstream control 等事件才可作为 `first_seen_evidence/new_value_source_evidence/proven_algorithm_evidence`。若长时间只产出 hook 安装事件且日志大小稳定，可以杀掉 runner 并归档为 `algorithm_status=not_recovered`，但要明确这不是 gate blocker。
 4. 只 hook 关键网络出口：
    - `libttboringssl.so!SSL_write`
    - `libttboringssl.so!SSL_read`
@@ -2658,3 +2660,52 @@ v140 closure check：
    ps -ef | grep -E 'static_v140|run_v140|v140_' | grep -v grep || true
    ```
 5. 最终汇报边界：v140 固化了同值 first-seen 动态执行计划；`X-Cylons` value 生成算法本体仍未完整挖出。
+
+### 2026-05-19 v152 NotificationShade blocker reprobe：Keyguard 解除后仍要拦截状态栏/通知栏前台
+
+v152 是在 v151/v150 之后对前台恢复 gate 的补充：即使设备可见、`isKeyguardShowing=false`，如果 `mCurrentFocus` 或窗口栈仍显示 `NotificationShade` / `StatusBar`，也不能运行 focused pack。该状态属于 `notification_shade_or_statusbar_foreground` blocker，而不是 live-room ready。
+
+典型输入/产物：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/v150_foreground_recovery_captures_0516/v152_recover_probe_0519.jsonl
+/opt/data/home/reverse-tools/douyin_analysis/v150_foreground_recovery_captures_0516/v152_feed_probe_0519.jsonl
+/opt/data/home/reverse-tools/douyin_analysis/static_v152_notification_shade_blocker_reprobe_0519.py
+/opt/data/home/reverse-tools/douyin_analysis/v152_notification_shade_blocker_reprobe_decision_0519.json
+/opt/data/home/reverse-tools/douyin_analysis/v152_notification_shade_blocker_reprobe_decision_0519.md
+/opt/data/home/reverse-tools/douyin_analysis/v152_notification_shade_blocker_reprobe_decision_conclusion_0519.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v152_0519.json
+/opt/data/home/.openclaw/workspace/memory/projects/2026-05-19_project_douyin-xcylons-v152-notification-shade-blocker-reprobe.md
+```
+
+v152 判定口径：
+
+1. `device` 可见、屏幕非 Keyguard、抖音前台进程存在都不足以放行动态执行；还必须确认当前焦点不是 `NotificationShade` / `StatusBar`，并且不是单纯 `SplashActivity`。
+2. 若状态类似：
+   ```text
+   mCurrentFocus = com.ss.android.ugc.aweme/.splash.SplashActivity
+   isKeyguardShowing=false
+   # 但窗口/状态仍含 NotificationShade 或 StatusBar
+   ```
+   则应判定：
+   ```json
+   {
+     "foreground_recovery_clear": false,
+     "dynamic_execution_allowed": false,
+     "dynamic_execution_performed": false,
+     "blocker": "notification_shade_or_statusbar_foreground"
+   }
+   ```
+3. 该状态下不得运行 `pack_00_guards_then_controls` / `pack_01_same_value_first_seen`；否则只会得到 Splash/通知栏/hook-ok/ready 文本噪声，不能作为 `X-Cylons` 算法负证据。
+4. 只有同时满足：非 Keyguard、非 NotificationShade/StatusBar、非 SplashActivity/登录页/骨架屏，并有真实直播间 UI / `LivePlayActivity` / live keyword proof，才允许继续动态 pack。
+5. v152 只是 blocker reprobe 与 gate 归档；如果没有 ACK/X-Cylons/SSL/same-value/first-seen strict evidence，必须保持：
+   ```json
+   {
+     "algorithm_status":"not_recovered",
+     "new_value_source_evidence":false,
+     "proven_algorithm_evidence":false,
+     "first_seen_evidence":false,
+     "strict_evidence_event_count":0
+   }
+   ```
+6. v152 closure check：`py_compile` 静态脚本，确认 decision JSON/conclusion/status/project memory 存在且非空，status JSON 可解析，且 conclusion 中明确 `dynamic_execution_performed=false` 与 `algorithm_status=not_recovered`。
