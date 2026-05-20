@@ -105,5 +105,6 @@ python3 memory-sync.py search "reverse-ai-engine"
 - 不要在 `execute_code` 里手写一大段嵌套 shell heredoc + Python 三引号 + 反引号 Markdown；在多层转义下容易出现 `SyntaxError: unexpected character after line continuation character`，导致 daily/SESSION 追加失败。
 - 更稳的做法：优先用 `read_file` + `write_file` 或 `patch` 做文本追加/替换；若必须用 Python 脚本批量写入，先把 Markdown 块放进 Python 原生三引号字符串（不要再包一层 shell heredoc），或用 `json.dumps()`/`repr()` 注入字符串字面量。
 - 对归档写入失败的恢复流程：先确认目标文件未被部分写入，再用最小化的单步写入重试；不要把写入、`memory-sync.py sync/search`、mem0 写入塞在同一个复杂脚本里。
+- 如果 `execute_code` 返回 Python 解析期错误（例如 `IndentationError` / `SyntaxError`）且显示 `tool_calls_made=0`，通常代表脚本在执行前已失败、不会产生部分写入；可直接修正缩进/字符串后重跑完整的幂等归档脚本。为降低此类错误，批量归档脚本中避免长文件末尾残留单个缩进空格，先定义路径/文本，再统一写入和验证。
 
 
