@@ -25,7 +25,13 @@ triggers: ["抖音直播动态hook", "douyin Frida SSL", "webcast im push", "x-s
    - `libEncryptor.so`
 3. 不要全局 hook libc/system-wide 的 `write/send/read/recv/open/openat`。
 
-   **执行/归档判据（2026-05-19 v156 经验）**：如果真实直播间 gate 已 clear（前台是 `com.ss.android.ugc.aweme/.live.LivePlayActivity`、`stable_real_live_room_ready=true`、blocker 为 `none`），必须继续执行 focused pack，而不是继续把 gate 当阻塞。执行后要同时归档 raw jsonl、strict analyzer JSON、任务 status JSON/Markdown。`hook-ok`/`hook-err` 只能证明 hook 安装，不能证明算法；只有 strict analyzer 提升出的 same-value first-seen、ACK/X-Cylons、SSL/WS downstream control 等事件才可作为 `first_seen_evidence/new_value_source_evidence/proven_algorithm_evidence`。若长时间只产出 hook 安装事件且日志大小稳定，可以杀掉 runner 并归档为 `algorithm_status=not_recovered`，但要明确这不是 gate blocker。
+   **v182 focused gate + SSL enhanced 经验（2026-05-19）**：真实直播间 gate 通过且 candidate hook 有命中时，仍不能把算法状态升级；若 `ssl_ready installed=0`、`ssl_event_count=0`、`same_window_carry=0`，下一轮应优先枚举 `libsscronet.so` / `libttboringssl.so` / Cronet HTTP2/QUIC 的非导出 SSL/read/write/send/ACK 路径，而不是继续堆 Java candidate hook。Hook template 中所有 Java helper 必须先判断 `typeof Java !== 'undefined'`，避免 native-only context 报 `ReferenceError: Java is not defined`；runner 到达采样时长后要显式 detach/exit，避免外层进程挂住需手动 kill。
+
+   **v197/v198 SSL plaintext 经验（2026-05-19）**：`libttboringssl.so` 的 `SSL_read`/`SSL_write` export hook 可同时捕获 read onLeave 与 write onEnter/onLeave；若 write 方向样本形如 `82 fe ...`，很可能是 WebSocket client-to-server masked binary frame。不要直接用原始 ascii 搜索 `ackB`/`X-Cylons`/安全 header 后判定无命中；应在 `SSL_write` onEnter 中解析 WebSocket header（opcode、masked、payload_len、mask_key、header_len），对 payload unmask 后再做 terms/hex/ascii 诊断。v197 已证明 `/webcast`/IM push SSL 明文链路可捕获，但 masked write 未 unmask 前不能排除 ACK/X-Cylons 藏在客户端上行 payload 中。
+
+   **执行/归档判据（2026-05-19 v156 经验）**：如果真实直播间 gate 已 clear（前台是 `com.ss.android.ugc.aweme/.live.LivePlayActivity`、`stable_real_live_room_ready=true`、blocker 为 `none`），必须继续执行 focused pack，而不是继续把 gate 当阻塞。执行后要同时归档 raw jsonl、strict analyzer JSON、任务 status JSON/Markdown。`hook-ok`/`hook-err` 只能证明 hook 安装，不能证明算法；只有 strict analyzer 提升出的 same-value first-seen、ACK/X-Cylons、SSL/WS downstream control 等事件才可作为 `first_seen_evidence/new_value_source_evidence/proven_algorithm_evidence`。
+
+   **attach timeout 归档判据（2026-05-19 v158 经验）**：如果 runner 已写入 `*-runner-attach`，但 `frida.attach(pid)` 随后报 `frida.TimedOutError: unexpectedly timed out while waiting for stop from process`，不要把它算作 successful dynamic sample。应单独标记 `dynamic_attach_failed_static_ready`（或同义状态），记录 PID/设备/错误，运行 analyzer 验证只含 attach 元数据时 `strict_value_event_count=0`，并在 conclusion/status/project memory 中明确：harness ready 但 `v*_dynamic_execution_performed=false`、`algorithm_status=not_recovered`。若长时间只产出 hook 安装事件且日志大小稳定，可以杀掉 runner 并归档为 `algorithm_status=not_recovered`，但要明确这不是 gate blocker。
 4. 只 hook 关键网络出口：
    - `libttboringssl.so!SSL_write`
    - `libttboringssl.so!SSL_read`
