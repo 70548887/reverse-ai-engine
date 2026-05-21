@@ -1161,6 +1161,52 @@ v125 closure check 参考：
 4. 归档后运行 `memory/scripts/memory-sync.py sync`，再搜索 `v125 focused origin producer closure value boundary algorithm_status not_recovered`，确认项目记忆可检索。
 5. 检查无遗留 `static_v125|run_v125|v125_focused|frida.*v125` 进程。
 
+## v213 经验值参考
+
+2026-05-20 v213 在 v212 Java callee/body-transform/header audit 之后，改走 ultra-focused query encrypt bridge 收敛：把静态入口从泛化 upstream/value-lane 缩到 `QueryFilterEngine.filterQuery -> QueryFilterEngine.tryEncryptRequest -> RequestEncryptUtils.tryEncryptRequest -> EncryptorUtil.LIZ/ttEncrypt`。目标是同请求对齐 before/after URL、`x-tt-encrypt-queries` header 搬运、`ss_queries` / `X-SS-QUERIES` 生成与 native `ttEncrypt` 输入输出边界；仍不能把 Java wrapper 或 header 搬运证据误判为 X-Cylons 算法本体。
+
+产物命名参考：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/v213_ultra_focused_query_encrypt_bridge_matrix_20260520.json
+/opt/data/home/reverse-tools/douyin_analysis/v213_ultra_focused_query_encrypt_bridge_hook_template_20260520.js
+/opt/data/home/reverse-tools/douyin_analysis/run_v213_ultra_focused_query_encrypt_bridge_dynamic_hook_package_20260520.py
+/opt/data/home/reverse-tools/douyin_analysis/analyze_v213_ultra_focused_query_encrypt_bridge_logs_20260520.py
+/opt/data/home/reverse-tools/douyin_analysis/runbook/v213_ultra_focused_query_encrypt_bridge_runbook_20260520.md
+/opt/data/home/reverse-tools/douyin_analysis/static/v213_ultra_focused_query_encrypt_bridge_conclusion_20260520.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v213_20260520.json
+```
+
+关键计数：
+
+```json
+{
+  "v213_unique_target_count": 6,
+  "v213_pack_counts": {
+    "minimal_query_encrypt_bridge": 5,
+    "query_filter_same_request_alignment": 2,
+    "ttencrypt_boundary_inputs_outputs": 4,
+    "body_query_encrypt_compare": 3
+  },
+  "dynamic_execution_performed": false,
+  "strict_evidence_event_count": 0,
+  "new_value_source_evidence": false,
+  "proven_algorithm_evidence": false,
+  "first_seen_evidence": false,
+  "algorithm_status": "not_recovered"
+}
+```
+
+v213 的可复用判断规则：
+
+- `QueryFilterEngine.filterQuery` 是同请求桥的关键上游：它从 URL query 中抽出 `x-tt-encrypt-queries`、移除 query 参数，再调用 `tryEncryptRequest(builder, request, encryptedQuery)`，最后 rebuild URL。Hook 时同时 dump 原 request 与 return request，才能证明 before/after URL 与 header 搬运关系。
+- `QueryFilterEngine.tryEncryptRequest` 只证明把非空 encrypted-query 参数搬到 header `x-tt-encrypt-queries`；它不是算法本体。
+- `RequestEncryptUtils.tryEncryptRequest` 是 legacy/core query encrypt 壳：收集 `device_id/device_type/device_brand/uuid/openudid`，`format(false)` 后调用 `EncryptorUtil.LIZ -> ttEncrypt`，再 `Base64.NO_WRAP`，生成 `ss_queries` / `X-SS-QUERIES`。它能提供 native 边界输入输出，但 Java 静态仍止步于 native。
+- `EncryptorUtil.LIZ` 是 guarded wrapper：校验 byte array 与 length 后调用 native `ttEncrypt`。若 Java hook 捕到输入/输出，下一步才转 `libEncryptor.so` native 还原或纯算拟合；不要因捕获 wrapper 调用就宣称算法恢复。
+- 动态 runner 必须复用真实直播间 gate：若设备停在 `SplashActivity`、通知栏/锁屏、非直播间，输出 `refuse_dynamic_hooks_gate_blocked`，保持 `dynamic_execution_performed=false`。
+- 推荐动态 pack 顺序：`minimal_query_encrypt_bridge` -> `query_filter_same_request_alignment` -> `ttencrypt_boundary_inputs_outputs` -> `body_query_encrypt_compare`；先证明同请求桥，再采集 `ttEncrypt` 明文/密文边界。
+- closure check 除 py_compile/json/list-packs 外，还要 dry-run gate；即使 dry-run 因真实直播间 proof 缺失拒绝执行，也算 gate 策略验证通过，但 `strict_evidence_event_count=0`、`algorithm_status=not_recovered` 必须写入 status/conclusion/project memory/SESSION。
+
 ## 收尾检查
 
 1. 校验 `.json/.md/conclusion/status` 和脚本都存在且非空。
