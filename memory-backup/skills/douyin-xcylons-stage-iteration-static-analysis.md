@@ -10,6 +10,35 @@ tags: ["douyin", "x-cylons", "static-analysis", "reverse-engineering", "workflow
 
 当用户说“继续”“基于 vXX focused set 继续做下一轮”“实现并运行 vYY 静态挖掘并归档”时使用。尤其适合从上一轮 JSON/脚本派生下一轮分析脚本，例如 v126 → v127 origin-firstseen closure/value-flow。
 
+也适用于 native VM/dispatcher 深挖阶段（例如 v216 → v217）：从上一轮 dispatcher/bytecode JSON 派生 handler semantic slicing、动态 trace package、status/project memory 归档。此类阶段要特别区分“handler family 静态提示”和“算法本体已恢复”：未完成 opcode 精确语义、动态 PC/word trace、纯算 input/output 对齐前，必须保持 `algorithm_status=not_recovered`。
+
+## 核心流程
+
+### Native VM handler slicing 补充流程（v216/v217 类）
+
+当上一轮已经识别出 VM dispatcher、bytecode blob、dispatch tables 后，下一轮可按以下方式推进：
+
+1. 从上一轮 JSON 读取 dispatcher/bytecode 常量与 table base；同时直接解析 `libEncryptor.so` ELF section，做 VA→file offset 映射。
+2. 读取 dispatch table 的 signed relative offsets，汇总所有 unique `.text` targets；不要只看 primary table，secondary/sub/tertiary tables 也要纳入。
+3. 用 Capstone 对每个 unique target 做 bounded slice（直到 `br/ret/blr` 或小型 unconditional `b`），提取：mnemonic counts、load/store/branch 数、register 频率、memory operands、immediates、branch targets。
+4. 做保守 family classification：`shared_fetch_next_or_dispatch_epilogue`、`vm_register_file_access`、`memory_load_or_vm_reg_read`、`memory_store_or_vm_reg_write`、`signed_load_width_conversion`、`bitfield_or_packed_operand_decode`。这些只是语义提示，不能直接等同 opcode 精确语义。
+5. 将 first-N bytecode word 的 low6 opcode 映射到 primary target，标注为“static prefix target use”，不可当作 runtime path proof。
+6. 生成动态 trace package（matrix + Frida JS + runner + analyzer + runbook）：至少包含 dispatcher PC/word trace pack、top-prefix handlers pack、store/width handlers pack、all-unique-handlers light pack。
+7. 验证必须包括 `py_compile`、static/matrix/status JSON parse、runner `--list-packs`、dry-run、analyzer dry-run log parse、status/project memory/SESSION-STATE 归档、memory-sync 搜索命中。
+8. 结论模板必须明确：`dynamic_execution_performed=false`、`strict_evidence_event_count=0`、`algorithm_status=not_recovered`，除非已有真实动态 trace 和纯算复现。
+
+### VM slot-write def-use dominance 补充流程（v228/v229 → v230 类）
+
+当上一轮已经有 opcode transition/slotflow sequencer（如 v228）、prefix slot-effect concretizer（如 v226/v225）和 control-flow reconciliation windows（如 v229）后，下一轮可把 slot-boundary 从“控制流窗口”推进为“数据流验证优先级”：
+
+1. 输入至少 join：`v229.dynamic_trace_packs.slot_boundary_controlflow_windows`、`v228.slotflow_nearest_dispatch_pairs`、`v226.concrete_prefix_projection`、`v225.handler_transfer_records`。
+2. 以 slot word index 为主键，收集 prev/next dispatch、slot handler target、predicted mem_write/mem_read、handler mem reads/writes、final register expressions、runtime assertions。
+3. 为每条 slot-write 生成 def-use window：`idx±3` 加上 prev/next dispatch；consumer candidate 优先选择 next dispatch 以及后续几个有 `computed-dispatch-transfer` 或 predicted mem_read 的 prefix word。
+4. 优先级规则要偏向可动态验证的 slot：有 predicted mem_write、存在 next dispatch consumer、slot edge leaves to dispatch、寄存器表达式丰富。输出 dynamic packs：`high_priority_slot_def_use`、`all_slot_write_def_use_windows`、`first_dispatch_after_slot_consumers`、`slot_target_0x3048_focus`、`slot_write_runtime_capture_schema`。
+5. 运行时采集 schema 必须明确：slot handler PC/word、pre/post `x13/x18/x21/x22/x25`、slot `mem_write_address/value`、next dispatch handler PC、next mem_read addresses/values、next PC/branch target。
+6. 验收标准是绑定 concrete `slot mem_write address/value` 到下一 dispatch/table-read 的 `mem_read`，或证明该 slot write 是 terminal/output state 并继续桥接到 `0x2bd8` ttEncrypt IO。静态 def-use dominance 只能说明“下一步动态验证位置”，不能证明算法恢复。
+7. Python 聚合表达式时注意类型：`final_register_expressions` 往往是 dict，和 `memw+memr` 这类 list 拼接前要包成 `[dict]`，否则会触发 `TypeError: can only concatenate list (not "dict") to list`。生成包含 Markdown code fence 的脚本时，优先用 `write_file` 或避免外层 raw triple string 与内层三引号冲突。
+
 ## 核心流程
 
 1. **确定上一轮输入与本轮输出**
@@ -1507,6 +1536,252 @@ summary.proven_algorithm_evidence = false
 - memory-sync 精确 slug 搜索应命中新建 project memory；补充 broad query `v208 multihop callchain transform candidate algorithm_status not_recovered` 可验证语义检索。最后必须检查残留进程。
 
 报告口径：v208 是“Java bridge 多跳调用链 / transform-to-header candidate 静态收敛”，不是算法本体还原。没有真实 live-room 同请求窗口 ACK/X-Cylons/SSL/downstream 同值 first-seen/carry 证据时，继续保持 `algorithm_status=not_recovered`。下一步可基于 `focused_v208_dynamic_hook_candidate_methods` 与 `direct_header_or_ss_queries_transform_paths` 生成 v209 focused Java multihop dynamic hook package，或在真实直播间窗口优先验证 `RequestEncryptUtils/tryEncryptRequest -> tryAddQuery/parseQueries/EncryptorUtil` 链路。
+
+## v209 → v210 callee-body/smali-slice 静态收敛与压缩恢复经验
+
+当 v209 focused Java multihop dynamic hook package 已完成，但仍没有真实 live-room ACK/X-Cylons/SSL/downstream 同请求窗口同值证据时，v210 的正确方向可以是“Java multihop callee body / smali slice static convergence”：把 v209 focused Java multihop targets 解析到具体 smali 方法体、one-hop callee slices 与 high-score smali-slice packs，用于下一轮 v211 focused Java callee-body dynamic hook package 或人工 transform-to-header 审计。它仍是静态候选层，不是算法恢复。
+
+v210 产物实际命名中使用 `...smali_slice_convergence...`，不是较长的 `...smali_slice_static_convergence...`。上下文压缩后恢复验证时，如果先按预期长 slug 找不到文件，不要误判产物缺失；应先枚举：
+
+```bash
+find /opt/data/home/reverse-tools/douyin_analysis -maxdepth 2 -name '*v210*' -printf '%p %s bytes\n' | sort
+python3 -m json.tool /opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v210_20260520.json | sed -n '1,220p'
+find /opt/data/home/.openclaw/workspace/memory/projects -maxdepth 1 -name '*v210*' -printf '%p %s bytes\n' | sort
+```
+
+v210 生成与验证时应检查/产出这些文件：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v210_java_multihop_callee_body_smali_slice_convergence_20260520.py
+/opt/data/home/reverse-tools/douyin_analysis/v210_java_multihop_callee_body_smali_slice_convergence_static_20260520.json
+/opt/data/home/reverse-tools/douyin_analysis/v210_java_multihop_callee_body_smali_slice_convergence_static_20260520.md
+/opt/data/home/reverse-tools/douyin_analysis/v210_java_multihop_callee_body_smali_slice_convergence_conclusion_20260520.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v210_20260520.json
+/opt/data/home/.openclaw/workspace/memory/projects/2026-05-20_project_douyin-xcylons-v210-java-multihop-callee-body-smali-slice-convergence.md
+```
+
+v210 成功验证后的关键字段示例：
+
+```text
+summary.status = completed
+summary.v209_focused_java_multihop_dynamic_hook_package_ready = true
+summary.v209_unique_target_count = 40
+summary.v209_pack_count = 7
+summary.v209_dynamic_execution_performed = false
+summary.v209_strict_evidence_event_count = 0
+summary.v210_unique_input_target_count = 40
+summary.v210_smali_resolved_target_count = 40
+summary.v210_method_body_record_count = 40
+summary.v210_callee_candidate_count = 82
+summary.v210_resolved_callee_body_count = 56
+summary.v210_category_counts.direct_header_or_ss_queries_body_slice = 2
+summary.v210_category_counts.crypto_security_callee_body_slice = 20
+summary.v210_category_counts.map_header_mutation_body_slice = 20
+summary.v210_category_counts.string_json_query_transform_body_slice = 8
+summary.v210_category_counts.live_webcast_context_body_slice = 7
+summary.v210_pack_counts.direct_header_or_ss_queries_body_slice = 2
+summary.v210_pack_counts.crypto_security_callee_body_slice = 24
+summary.v210_pack_counts.map_header_mutation_body_slice = 33
+summary.v210_pack_counts.live_webcast_context_body_slice = 0
+summary.v210_pack_counts.string_json_query_transform_body_slice = 17
+summary.v210_pack_counts.high_score_multihop_smali_slice_candidates = 96
+summary.v210_static_smali_slice_convergence_completed = true
+summary.dynamic_execution_performed = false
+summary.strict_evidence_event_count = 0
+summary.algorithm_status = not_recovered
+summary.first_seen_evidence = false
+summary.new_value_source_evidence = false
+summary.proven_algorithm_evidence = false
+```
+
+验证/归档命令模板：
+
+```bash
+cd /opt/data/home/reverse-tools/douyin_analysis
+python3 -m py_compile static_v210_java_multihop_callee_body_smali_slice_convergence_20260520.py
+python3 -m json.tool v210_java_multihop_callee_body_smali_slice_convergence_static_20260520.json >/tmp/v210_static.pretty.json
+python3 -m json.tool /opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v210_20260520.json >/tmp/v210_status.pretty.json
+cd /opt/data/home/.openclaw/workspace
+python3 memory/scripts/memory-sync.py sync
+python3 memory/scripts/memory-sync.py search "douyin-xcylons-v210-java-multihop-callee-body-smali-slice-convergence"
+python3 memory/scripts/memory-sync.py search "v210 java multihop callee body smali slice algorithm_status not_recovered"
+ps -ef | grep -E 'static_v210|run_v210|analyze_v210|v210_' | grep -v grep || true
+```
+
+注意事项：
+
+- v210 status/static JSON 的核心字段位于 `summary` 下；抽查时不要只看顶层。
+- 如果 status 只有 `validation.generated=true`，收尾时可补充 `py_compile_ok/static_json_tool_ok/status_json_tool_ok/artifact_files_present/algorithm_boundary_checked` 以及顶层 `algorithm_status/dynamic_execution_performed/strict_evidence_event_count` 等 breadcrumbs，便于后续快速恢复。
+- 精确 slug 搜索应 Top1 命中 v210 project memory；broad query 可能被 v109/v113 等早期 callee/body 项目稀释，只要 v210 在 Top5 命中且精确 slug Top1 命中即可视为同步验证通过。
+- 报告口径：v210 是“Java multihop callee body / smali slice 静态收敛”，不是算法本体还原。没有真实 live-room 同请求窗口 ACK/X-Cylons/SSL/downstream 同值 first-seen/carry 证据时，继续保持 `algorithm_status=not_recovered`。下一步可基于 `high_score_multihop_smali_slice_candidates`、`crypto_security_callee_body_slice`、`map_header_mutation_body_slice` 生成 v211 focused Java callee-body dynamic hook package，或对 top resolved callees 做人工 smali transform-to-header 审计。
+
+## v211 → v212 Java callee-body transform-to-header audit 静态收敛经验
+
+当 v211 focused Java callee-body dynamic hook package 已完成但仍因真实直播间 proof 缺失而未执行动态 hook，下一轮 v212 可以转为“Java callee-body transform-to-header audit”：从 v211 matrix 的 74 个 Java callee-body 候选回读 smali 方法体，提取 const-string、invoke、Map.put/HashMap.put、局部寄存器常量流、header/query/crypto/live/string-json 分类窗口，形成可人工审计或后续 ultra-focused hook 的 transform-to-header packs。它仍是静态审计/收敛层，不是算法恢复。
+
+v212 产物建议路径：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v212_java_callee_body_transform_to_header_audit_20260520.py
+/opt/data/home/reverse-tools/douyin_analysis/v212_java_callee_body_transform_to_header_audit_static_20260520.json
+/opt/data/home/reverse-tools/douyin_analysis/v212_java_callee_body_transform_to_header_audit_static_20260520.md
+/opt/data/home/reverse-tools/douyin_analysis/v212_java_callee_body_transform_to_header_audit_conclusion_20260520.md
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v212_20260520.json
+/opt/data/home/.openclaw/workspace/memory/projects/2026-05-20_project_douyin-xcylons-v212-java-callee-body-transform-to-header-audit.md
+```
+
+推荐 pack 分层与已验证计数：
+
+```text
+direct_xcylons_ss_queries_header_transform_audit: 3
+request_encrypt_utils_transform_body_audit: 12
+map_put_register_flow_header_mutation_audit: 10
+crypto_security_string_json_transform_audit: 11
+live_webcast_context_header_audit: 10
+high_score_transform_to_header_manual_audit: 74
+```
+
+v212 成功验证后的关键字段示例：
+
+```text
+status = completed
+v211_focused_java_callee_body_dynamic_hook_package_ready = true
+v211_dynamic_execution_performed = false
+v211_strict_evidence_event_count = 0
+v212_unique_input_target_count = 74
+v212_resolved_method_body_count = 74
+v212_transform_audit_record_count = 74
+v212_category_counts.value_or_xcylons_terms = 3
+v212_category_counts.crypto_security_transform = 22
+v212_category_counts.header_query_map_mutation = 33
+v212_category_counts.string_json_sort_transform = 27
+v212_category_counts.live_webcast_context = 15
+v212_static_transform_to_header_audit_completed = true
+dynamic_execution_performed = false
+strict_evidence_event_count = 0
+algorithm_status = not_recovered
+first_seen_evidence = false
+new_value_source_evidence = false
+proven_algorithm_evidence = false
+```
+
+Top audit methods may converge on:
+
+```text
+com.bytedance.frameworks.core.encrypt.RequestEncryptUtils.tryEncryptRequest
+com.ss.android.ugc.aweme.homepage.touch.mob.MsgReachMobHelper.LJIIJ
+com.bytedance.android.live.room.discovery.AnchorPerfMonitorWidget.onDestroy
+com.bytedance.frameworks.core.encrypt.RequestEncryptUtils.format
+com.bytedance.frameworks.core.encrypt.RequestEncryptUtils.parseQueries
+com.bytedance.frameworks.core.encrypt.RequestEncryptUtils.tryAddQuery
+com.bytedance.frameworks.core.encrypt.RequestEncryptUtils.tryEncryptRequestBody
+```
+
+验证/归档命令模板：
+
+```bash
+cd /opt/data/home/reverse-tools/douyin_analysis
+python3 -m py_compile static_v212_java_callee_body_transform_to_header_audit_20260520.py
+python3 static_v212_java_callee_body_transform_to_header_audit_20260520.py
+python3 -m json.tool v212_java_callee_body_transform_to_header_audit_static_20260520.json >/tmp/v212_static.pretty.json
+python3 -m json.tool /opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v212_20260520.json >/tmp/v212_status.pretty.json
+ps -ef | grep -E 'static_v212|run_v212|analyze_v212|v212_' | grep -v grep || true
+```
+
+注意事项：
+
+- v212 是静态 method-body audit；即使 `RequestEncryptUtils.tryEncryptRequest` 命中 `ss_queries` / `X-SS-QUERIES` / encrypt / header/query，也只能说明 transform-to-header 主线强，不能升级算法状态。
+- 用 `execute_code` 生成长 Python 脚本时，外层 Python 字符串嵌套多行 Markdown/结论容易出现 `IndentationError` 或三引号冲突；更稳妥做法是直接用 `write_file` 写完整脚本，内部 Markdown 用 `"\n".join([...])` 拼接，然后立即 `py_compile`。
+- v212 的 closure 条件可以是：主 JSON/status JSON 可解析、markdown/conclusion/project memory 存在、status validation 全 true、无残留 v212 进程、`algorithm_status=not_recovered` 与 strict evidence 0 明确写入。
+- 下一步若继续动态方向，应基于 v212 最强候选生成 v213 ultra-focused entry/return hook：`RequestEncryptUtils.tryEncryptRequest`、`tryEncryptRequestBody`、`parseQueries`、`tryAddQuery`、`format`；仍需真实直播间同请求窗口 X-Cylons/ACK/SSL/downstream 同值 first-seen/carry 证据。
+
+报告口径：v212 是“Java callee-body transform-to-header 静态审计收敛”，不是算法本体还原。没有真实 live-room 同请求窗口 ACK/X-Cylons/SSL/downstream 同值 first-seen/carry 证据时，继续保持 `algorithm_status=not_recovered`。
+
+## v225 → v226 VM register-transfer / prefix slot-effect concretizer 经验
+
+当 v224 已经把 handler micro-semantics、operand-lift fields、bytecode prefix words 合成为静态 operand equations，后续 v225/v226 可继续沿 native VM 静态深化：先把 handler equations 转成 register-transfer / slot-effect atlas，再把 128 个 bytecode prefix word 具体投影到 handler target、low6 opcode、slot-write / computed-dispatch 预期与动态 trace assertions。此类阶段仍是静态 concretization，不是算法恢复。
+
+v226 典型产物路径：
+
+```text
+/opt/data/home/reverse-tools/douyin_analysis/static_v226_vm_prefix_slot_effect_concretizer_20260520.py
+/opt/data/home/reverse-tools/douyin_analysis/v226_vm_prefix_slot_effect_concretizer_static_20260520.json
+/opt/data/home/reverse-tools/douyin_analysis/static/v226_vm_prefix_slot_effect_concretizer_conclusion_20260520.md
+/opt/data/home/reverse-tools/douyin_analysis/archive_v226_vm_prefix_slot_effect_concretizer_20260520.py
+/opt/data/home/.openclaw/workspace/tasks/status/douyin_xcylons_v226_20260520.json
+/opt/data/home/.openclaw/workspace/memory/projects/2026-05-20_project_douyin-xcylons-v226-vm-prefix-slot-effect-concretizer.md
+```
+
+v226 成功验证后的关键字段/计数示例：
+
+```text
+prefix_word_count = 128
+opcode_low6_count = 10
+handler_target_count = 7
+slot_write_prefix_word_count = 20
+computed_dispatch_prefix_word_count = 107
+dynamic_pack_count = 4
+first_slot_write_word_index = 0
+first_slot_write_word_hex = 0xdfbdfc28
+first_slot_write_target = 0x3048
+first_slot_write_low6 = 40
+dynamic_execution_performed = false
+strict_evidence_event_count = 0
+algorithm_status = not_recovered
+```
+
+推荐 dynamic packs 命名/分层：
+
+```text
+prefix_slot_write_concrete_words: 20
+prefix_dispatch_tail_concrete_words: 24
+low_confidence_guard_gap_words: 24
+handler_address_focus: 5
+```
+
+关键经验：
+
+- v225/v226 的价值是把 operand equations 落到 concrete prefix words 和 handler effects，给下一轮真实 runtime trace 提供精确断言；`slot_write_prefix_word_count`、`computed_dispatch_prefix_word_count`、`handler_target_count` 只是静态预期，不是 runtime opcode semantic proof。
+- 输出 JSON 中应同时保留 `word_index`、`word_hex`、`low6`、`target`、effect class、slot-write expectation、computed-dispatch expectation、runtime trace assertion，方便 Frida tracer 直接比对 `pc/x12/x13-x18/x21/mem_reads/mem_writes/next_pc`。
+- dynamic pack 应优先覆盖 concrete slot-write words 与 dispatch-tail words；低置信 guard-gap words 可单独成包，避免污染最小验证包。
+- 归档验证应覆盖：`py_compile`、静态脚本运行、static JSON `json.tool`、归档脚本 `py_compile`、status JSON `json.tool`、`memory/scripts/memory-sync.py sync`、SESSION 追加、残留进程检查（如 `static_v226|archive_v226|run_v226|analyze_v226|v226_`）。常驻 `frida-mobile-mcp` 或设备侧 frida-server 不应算本轮残留。
+- 没有真实 `LivePlayActivity/webcast` 动态 attach、runtime VM sequence、`0x2bd8` ttEncrypt input/output、key/mode/IV/padding、pure reproduction 前，必须保持 `algorithm_status=not_recovered`；报告中要明确“prefix/slot-effect concretization ≠ 算法本体还原”。
+
+建议 status 字段：
+
+```text
+phase=vm-prefix-slot-effect-concretizer-static
+v*_vm_prefix_slot_effect_concretizer_static_completed=true
+counts.prefix_word_count
+counts.opcode_low6_count
+counts.handler_target_count
+counts.slot_write_prefix_word_count
+counts.computed_dispatch_prefix_word_count
+counts.dynamic_pack_count
+dynamic_pack_counts.prefix_slot_write_concrete_words
+dynamic_pack_counts.prefix_dispatch_tail_concrete_words
+dynamic_pack_counts.low_confidence_guard_gap_words
+dynamic_pack_counts.handler_address_focus
+validation.py_compile_ok=true
+validation.static_script_run_ok=true
+validation.static_json_tool_ok=true
+validation.archive_script_py_compile_ok=true
+validation.status_json_tool_ok=true
+validation.memory_sync_ok=true
+validation.session_state_appended=true
+validation.no_residual_process=true
+dynamic_execution_performed=false
+real_live_room_proof_present=false
+strict_evidence_event_count=0
+algorithm_status=not_recovered
+algorithm_boundary_status=static_prefix_slot_effect_concretization_ready_for_dynamic_validation
+opcode_semantics_recovered=false
+vm_runtime_sequence_recovered=false
+tt_encrypt_input_output_bound=false
+key_mode_iv_padding_bound=false
+pure_reproduction_ready=false
+next_step=real LivePlayActivity/webcast foreground; run prefix_slot_write_concrete_words then prefix_dispatch_tail_concrete_words, capture pc/x12/x13-x18/x21/mem_reads/mem_writes/next_pc, then bind 0x2bd8 ttEncrypt IO and key/mode/IV/padding
+```
 
 ## 报告口径
 
