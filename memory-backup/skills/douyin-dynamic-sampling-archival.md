@@ -465,6 +465,39 @@ for item in analysis.get('logs', []):
 - `algorithm_status=not_recovered`
 - `next_step=real-live-room foreground then execute packs in order: minimal_intercept_header_valueflow -> explicit_security_header_valueflow -> map_put_header_builder_valueflow -> combined_java_bridge_valueflow_narrow`
 
+### v211 focused Java callee-body dynamic hook package 归档
+
+当一轮基于上一阶段 callee-body smali slice / 方法体内字符串、Map/Header mutation、crypto/security transform 线索收敛结果，生成更窄的 focused Java callee-body Frida 动态 hook 包（例如 v211：`minimal_encrypt_header_callee_body`、`crypto_security_callee_body`、`map_header_mutation_callee_body`、`string_json_query_transform_callee_body`、`live_webcast_context_callee_body`、`high_score_callee_body_candidates`、`combined_java_callee_body_narrow`），但只完成静态包生成、dry-run gate 与归档验证，应归档为“focused Java callee-body dynamic hook package ready”，不是算法恢复。
+
+关键经验：
+
+- v211 这类阶段的价值是把 v210 callee-body slice convergence 转成可执行 Java hook matrix/runner/JS/analyzer/runbook；`pack_counts`、`unique_target_count`、callee body 命中规模只是下一轮采样规模，不是 X-Cylons value-source 证据。
+- runner 应复用 focused live-room gate；dry-run 若日志出现 `v*-operator-handoff-required`、`reason=real_live_room_proof_missing`、`hard_blockers=["splash"]`，这是正确安全行为，必须保持 `dynamic_execution_performed=false`，不能因 hook package ready 或 dry-run OK 写成动态采样成功。
+- 验证收尾应覆盖：`py_compile`、matrix/static/status JSON `json.tool`、`--list-packs`、至少一个最小 pack 的 dry-run、analyzer JSON `json.tool`、`memory-sync.py sync`、精确 slug/count search Top1/Top5 命中、残留进程检查（如 `static_v211|run_v211|analyze_v211|v211_|frida.*aweme`）。
+- 如果本轮没有真实直播间动态执行、没有 Java hook hit、没有同请求窗口 X-Cylons/ACK/header/downstream/SSL or WS carry 对齐，必须保守写：`algorithm_status=not_recovered`、`strict_evidence_event_count=0`、`first_seen_evidence=false`、`new_value_source_evidence=false`、`proven_algorithm_evidence=false`。
+- `memory-sync.py search` 精确 query（例如 `v211 focused java callee body dynamic hook package unique_target_count 74`）Top1 命中新 project memory，即可作为语义层可检索验证。
+
+建议字段：
+
+- `v*_focused_java_callee_body_dynamic_hook_package_ready=true`
+- `v*_pack_count`
+- `v*_pack_counts`
+- `v*_unique_target_count`
+- `v*_generated_runner_count`
+- `v*_generated_hook_template_count`
+- `v*_generated_analyzer_count`
+- `v*_generated_matrix_count`
+- `validation.py_compile_ok=true`
+- `validation.list_packs_ok=true`
+- `validation.dry_run_ok=true`
+- `validation.analyzer_json_ok=true`
+- `validation.memory_search_top1_v*_slug=true`
+- `validation.no_residual_process=true`
+- `dynamic_execution_performed=false`（若仅包生成/dry-run gate）
+- `strict_evidence_event_count=0`
+- `algorithm_status=not_recovered`
+- `next_step=real-live-room foreground then execute packs in order: minimal_encrypt_header_callee_body -> crypto_security_callee_body -> map_header_mutation_callee_body -> string/json/query/live context -> high-score/combined`
+
 ### v209 focused Java multihop dynamic hook package 归档
 
 当一轮基于上一阶段 Java 多跳调用链 / transform-to-header candidate convergence，把多跳候选节点转换成 focused Java Frida 动态 hook 包（例如 v209：`minimal_direct_tryencrypt_header_path`、`crypto_security_transform_multihop`、`map_header_to_encrypt_candidates`、`resolved_second_third_hop_algorithm_nodes`、`high_score_transform_to_header_candidates`、`focused_v208_dynamic_hook_candidate_methods`、`combined_java_multihop_narrow`），但只完成静态包生成、dry-run gate 与归档验证，应归档为“focused Java multihop dynamic hook package ready”，不是算法恢复。
@@ -497,6 +530,933 @@ for item in analysis.get('logs', []):
 - `strict_evidence_event_count=0`
 - `algorithm_status=not_recovered`
 - `next_step=real-live-room foreground then execute packs in order: minimal_direct_tryencrypt_header_path -> crypto_security_transform_multihop -> map_header_to_encrypt_candidates -> resolved/high-score/combined`
+
+### v219 focused VM PC/word trace package 归档
+
+当一轮基于已识别的 native VM dispatcher/handler slicing，生成 focused Frida VM PC/word trace 包（例如 v219：`0x2d2c` dispatcher/PC-word sequence、`0x3c28` fetch epilogue、`0x34dc/0x34ec/0x3560/0x3570` width stores、`0x328c/0x3398` predicate stores、`0x2ff0/0x3048/0x33d4/0x33e4/0x3458` VM-reg write/conversion helpers），但只完成 py_compile、dry-run、empty-log analyzer、status/project memory/SESSION 归档验证，应归档为“focused VM PC/word trace package ready”，不是算法恢复。
+
+关键经验：
+
+- 这类阶段的价值是把 static VM handler/CFG/def-use 结果转成可在真实直播间执行的窄 native trace package；`target_count`、offset/role matrix、template/runner/analyzer/runbook ready 只是采样包准备度，不是 opcode 语义或纯算复现。
+- runner 应显式拒绝真实 attach，除非同时传入 `--i-understand-dynamic-hook` 和非空 `--live-room-proof`；dry-run OK 只能证明包可加载和参数门控正常。
+- analyzer 可用 `/dev/null` 或空日志生成 baseline JSON；若 `event_count=0`、`dynamic_execution_performed=false`、`strict_evidence_event_count=0`、`promotion_allowed=false`，这是 readiness 验证结果，应保守写 `algorithm_status=not_recovered`。
+- 归档验证应覆盖：generator/runner/analyzer `py_compile`，generator dry-run，runner dry-run，matrix/status/analysis JSON `json.tool`，`memory-sync.py sync`，精确 slug search Top1 命中，残留进程检查（如 `static_v219|run_v219|analyze_v219|v219_|frida.*aweme`）。
+- 如果 broad memory search 被历史阶段稀释没有命中新项目记忆，立即追加精确 slug 搜索（例如 `douyin-xcylons-v219-focused-vm-pc-word-trace-package`）；精确 Top1 命中即可视为语义层可检索。
+- status/project memory/SESSION 必须明确区分：package ready ≠ dynamic attach；没有真实 ttEncrypt input/output、完整 VM PC/word runtime sequence、AES mode/key schedule/IV/padding 绑定、pure reproduction 前，不能升级算法状态。
+
+建议字段：
+
+- `v*_archived=true`
+- `phase=focused-vm-pc-word-trace-package-dryrun-validation`
+- `algorithm_boundary_status=vm_pc_word_trace_package_ready_not_executed`
+- `counts.target_count`
+- `counts.analysis_event_count=0`
+- `counts.analysis_hook_error_count=0`
+- `validation.py_compile_ok=true`
+- `validation.generator_dry_run_ok=true`
+- `validation.runner_dry_run_ok=true`
+- `validation.matrix_json_tool_ok=true`
+- `validation.status_json_tool_ok=true`
+- `validation.analyzer_empty_log_ok=true`
+- `validation.analyzer_json_ok=true`
+- `validation.dynamic_attach_executed=false`
+- `validation.real_live_room_proof_present=false`
+- `dynamic_execution_performed=false`
+- `strict_evidence_event_count=0`
+- `first_seen_evidence=false`
+- `new_value_source_evidence=false`
+- `proven_algorithm_evidence=false`
+- `algorithm_status=not_recovered`
+- `next_step=place real LivePlayActivity/webcast live room in foreground, run guarded VM PC/word trace, then recover opcode/key/mode/IV/padding and pure reproduction`
+
+### v221 handler/opcode dynamic semantic tracer package 归档
+
+当一轮基于 v220 VM opcode handler micro-semantics 与 v219 PC/word trace 输入，生成 handler/opcode dynamic semantic tracer package（例如 v221：Frida JS template、runner、analyzer、matrix、runbook、static conclusion），但只完成 dry-run、empty-log analyzer、status/project memory/SESSION 归档验证，应归档为“handler/opcode dynamic semantic tracer package ready”，不是算法恢复。
+
+关键经验：
+
+- 这类阶段的价值是把静态 handler opcode 线索转成可在真实直播间执行的动态语义 tracer；`target_count`、matrix/template/runner/analyzer ready 只是采样包准备度，不是 opcode 语义恢复。
+- runner 应显式要求双重门控：`--i-understand-dynamic-hook` 与非空 `--live-room-proof`；dry-run OK 只能证明门控/参数/包加载正常。
+- analyzer 可用空 jsonl 生成 baseline；若 `event_count=0`、`hook_error_count=0`、`dynamic_execution_performed=false`、`strict_evidence_event_count=0`、`promotion_allowed=false`，这是 readiness 验证，应保守写 `algorithm_status=not_recovered`。
+- 归档 status 建议补 `analysis_baseline`，记录 empty log path、analysis JSON、event/hook_error/promotion/dynamic/strict counts；`algorithm_boundary.status=handler_opcode_semantic_trace_package_ready_not_executed`，并显式写 `opcode_semantics_recovered=false`、`vm_runtime_sequence_recovered=false`、`tt_encrypt_input_output_bound=false`、`aes_mode_key_iv_padding_bound=false`、`pure_reproduction_ready=false`。
+- `execute_code` 内不要把长 Markdown triple-quoted string 嵌进另一个 Python heredoc/字符串；容易因引号提前闭合把 `Date: 2026-05-20` 等 Markdown 当 Python 解析而 SyntaxError。更稳妥：先用 `write_file` 写 `/tmp/archive_v*.py`，再执行脚本。
+- `memory-sync.py search` 即使使用精确 slug，也可能因历史 VM 阶段相似度高而不是 Top1；只要本轮 project memory 在 Top5 命中且本地 status/project memory/SESSION 均已写入，可记录 `memory_search_v*_slug_hit=true`，不要强行写 Top1。
+- 残留进程检查建议覆盖 `static_v221|run_v221|analyze_v221|v221_|frida.*aweme`；没有本轮脚本/frida aweme 残留后再标 `no_residual_process=true`。
+- 没有真实 `LivePlayActivity/webcast` 动态 attach、dispatcher/fetch/store runtime sequence、ttEncrypt concrete input/output、opcode-level semantic closure、AES mode/key/IV/padding binding、pure reproduction 前，必须保持 `algorithm_status=not_recovered`。
+
+建议字段：
+
+- `phase=handler-opcode-dynamic-semantic-tracer-package-dryrun-validation`
+- `target_count`
+- `analysis_baseline.event_count=0`
+- `analysis_baseline.hook_error_count=0`
+- `analysis_baseline.promotion_allowed=false`
+- `validation.py_compile_ok=true`
+- `validation.generator_dry_run_ok=true`
+- `validation.runner_dry_run_ok=true`
+- `validation.matrix_json_tool_ok=true`
+- `validation.status_json_tool_ok=true`
+- `validation.analyzer_empty_log_ok=true`
+- `validation.analyzer_json_ok=true`
+- `validation.memory_sync_ok=true`
+- `validation.memory_search_v*_slug_hit=true`
+- `validation.no_residual_process=true`
+- `algorithm_boundary.status=handler_opcode_semantic_trace_package_ready_not_executed`
+- `dynamic_execution_performed=false`
+- `strict_evidence_event_count=0`
+- `algorithm_status=not_recovered`
+- `next_step=place real LivePlayActivity/webcast live room in foreground, run guarded handler/opcode semantic tracer, then recover opcode semantics, VM state transitions, key/mode/IV/padding and pure reproduction`
+
+### v215 native Encryptor/ttEncrypt VM boundary 归档
+
+当一轮从 Java/Cronet/header 路径切到 `libEncryptor` / `ttEncrypt` native 层，并确认 JNI wrapper 之后的 VM 边界（例如 v215：`0x7d8c` JNI wrapper、`0x2bd8` byte-pointer transform callee、`0x2d2c` VM dispatcher、`0xb2d0` bytecode blob、AES T-table / inverse S-box 常量），应归档为“native VM byte-pointer boundary identified”，不是算法恢复。
+
+关键经验：
+
+- 不要把 JNI wrapper 当算法主体：`0x7d8c` 参数为 `JNIEnv* / class-or-object / jbyteArray / jint`，内部通过 JNIEnv vtable 取 byte[] 元素、分配输出，再调用更底层 callee。
+- 动态 hook 应优先抓 `0x2bd8(x0=byte_ptr, x1=int_arg, x2=out_buf, x3=&out_len)` 的入参/出参，而不是在 `0x7d8c` 误读 jobject / jbyteArray 内存。
+- `0x2bd8` prologue 若写入 `vm_bytecode_blob=0xb2d0`、context/table（如 `0x17ce0`）并进入 `0x2d2c`，可将边界状态写为 `native_vm_byte_pointer_boundary_identified`。
+- `0x2d2c` 出现大量 `ldrsw + br xN`、dispatch tables（如 `0xa970/0xaa70/0xab50/0xad38`）时，只能证明 VM dispatcher/interpreter 存在；还需要 opcode 语义、key/mode/IV/padding 与 input-output 复现才能升级算法状态。
+- AES T-table / inverse S-box（如 `0x8970`、`0xdf50`）只能证明 AES-family / whitebox-table 参与，不能单独证明完整 ttEncrypt/X-Cylons 算法。
+- 若本轮只生成 static/matrix/Frida runner/analyzer/runbook，且 dry-run/analyzer 验证通过但未执行真实直播间动态采样或未还原 VM opcode，必须保守写：`dynamic_execution_performed=false`、`strict_evidence_event_count=0`、`algorithm_status=not_recovered`、`first_seen_evidence=false`、`new_value_source_evidence=false`、`proven_algorithm_evidence=false`。
+- 归档验证要覆盖：`py_compile`、static/matrix/status JSON `json.tool`、`--list-packs`、最小 pack `--dry-run`、analyzer、`memory-sync.py sync`、精确 slug/offset 搜索 Top1 命中、残留进程检查（如 `static_v215|run_v215|analyze_v215|v215_native_encryptor|frida.*aweme`）。
+- `SESSION-STATE.md` 摘要必须明确区分：已识别 native VM 边界，但“VM opcode/key/mode/IV/padding/pure reproduction not recovered”。
+
+建议字段：
+
+- `v*_archived=true`
+- `phase=native-encryptor-vm-boundary-static-and-dryrun-validation`
+- `algorithm_boundary_status=native_vm_byte_pointer_boundary_identified`
+- `key_offsets.jni_wrapper_rva=0x7d8c`
+- `key_offsets.byte_pointer_transform_callee_rva=0x2bd8`
+- `key_offsets.vm_dispatcher_rva=0x2d2c`
+- `key_offsets.vm_bytecode_blob_va=0xb2d0`
+- `key_offsets.dispatch_tables=[...]`
+- `key_offsets.aes_ttable_va` / `key_offsets.aes_inv_sbox_va`
+- `validation.py_compile_ok=true`
+- `validation.static_json_tool_ok=true`
+- `validation.matrix_json_tool_ok=true`
+- `validation.status_json_tool_ok=true`
+- `validation.list_packs_ok=true`
+- `validation.dry_run_ok=true`
+- `validation.analyzer_ok=true`
+- `validation.memory_search_top1_v*_slug=true`
+- `validation.no_residual_v*_process=true`
+- `dynamic_execution_performed=false`（若仅 static/dry-run 验证）
+- `strict_evidence_event_count=0`
+- `algorithm_status=not_recovered`
+- `next_step=hook 0x2bd8 input/output and trace 0x2d2c VM dispatcher/opcode semantics, then prove key/mode/IV/padding and pure reproduction`
+
+### v222 VM opcode-family/value-flow atlas 静态深化归档
+
+当一轮基于 v220 micro-semantics 与 v221 handler/opcode dynamic tracer matrix，继续做 VM opcode-family / handler value-flow atlas 静态深化（例如 v222：primary low6 opcode、bytecode prefix 字段分布、四张 dispatch table、handler value-flow hints、dynamic priority target scoring），但未执行真实直播间动态 attach，应归档为“static VM opcode-family/value-flow atlas completed”，不是算法恢复。
+
+关键经验：
+
+- v222 这类阶段的价值是把静态 handler micro-semantics、dispatch table、bytecode prefix observations 与 v221 tracer target set 合并成 table-aware atlas；`handler_valueflow_count`、`primary_opcode_rows`、`dispatch_table_unique_targets`、`dynamic_priority_targets` 都是静态收敛/下一轮动态优先级，不是 runtime opcode 语义闭合。
+- 典型计数字段：`handler_valueflow_count=36`、`primary_opcode_rows=64`、`primary_prefix_observed_opcodes=10`、`dispatch_table_count=4`、`dispatch_table_unique_targets=45`、`dynamic_priority_targets=24`。这些可以写入 status/project memory，但不能升级算法状态。
+- Top dynamic targets 可作为下一轮 tracer 输入，例如 `0x2e54/0x3c28/0x2f74/0x2ed0/0x3340/0x318c/0x3048`；归档时明确它们是 prioritized runtime trace targets，而不是已验证算法节点。
+- 如果只生成 static JSON / conclusion MD / status / project memory，并完成 `py_compile`、`json.tool`、`memory-sync.py sync/search`、SESSION append、残留进程检查，必须保守写：`dynamic_execution_performed=false`、`real_live_room_proof_present=false`、`strict_evidence_event_count=0`、`algorithm_status=not_recovered`。
+- `memory-sync.py search` 的 broad/slug query 可能被 v216-v221 相似 VM 阶段稀释；追加包含 v222、handlers/primary opcode 精确计数的 query（例如 `v222 VM opcode family valueflow atlas handlers 36 primary opcodes 64`）可验证 Top1 命中新 project memory。
+- 归档脚本建议单独写到 `/tmp/archive_v222_*.py` 后执行，避免长 Markdown/JSON 拼接在 shell heredoc 中引号错乱；归档后再 patch status validation 字段补齐 `memory_sync_ok`、`memory_search_v222_top1_hit`、`no_residual_process`、`session_state_appended`。
+- 没有真实 `LivePlayActivity/webcast` 动态 attach、runtime PC/word sequence、`0x2bd8` ttEncrypt input/output binding、opcode-level semantic closure、key/mode/IV/padding binding、pure reproduction 前，必须保持 `algorithm_status=not_recovered`。
+
+建议字段：
+
+- `phase=vm-opcode-family-valueflow-atlas-static`
+- `counts.handler_valueflow_count`
+- `counts.primary_opcode_rows`
+- `counts.primary_prefix_observed_opcodes`
+- `counts.dispatch_table_count`
+- `counts.dispatch_table_unique_targets`
+- `counts.dynamic_priority_targets`
+- `primary_family_counts`
+- `top_dynamic_priority_targets`
+- `validation.py_compile_ok=true`
+- `validation.static_json_tool_ok=true`
+- `validation.status_json_tool_ok=true`
+- `validation.memory_sync_ok=true`
+- `validation.memory_search_v222_top1_hit=true`
+- `validation.no_residual_process=true`
+- `dynamic_execution_performed=false`
+- `real_live_room_proof_present=false`
+- `strict_evidence_event_count=0`
+- `algorithm_status=not_recovered`
+- `opcode_semantics_recovered=false`
+- `vm_runtime_sequence_recovered=false`
+- `tt_encrypt_input_output_bound=false`
+- `key_mode_iv_padding_bound=false`
+- `pure_reproduction_ready=false`
+- `next_step=run guarded v221/v222 VM PC/word/handler tracer in real LivePlayActivity/webcast foreground, then backfill v222 atlas and bind ttEncrypt input/output + key/mode/IV/padding`
+
+### v223 VM operand-lifter trace plan 静态/动态准备归档
+
+当一轮基于 v222 VM opcode-family/value-flow atlas，把 priority targets 转换成 operand-lifter runtime trace matrix、Frida JS template、runner、analyzer、runbook（例如 v223：capture handler before/after regs、word low6、bits[6:11]、high nibble、VM base regs、memory operands），但只完成 static generation、dry-run、empty-log analyzer、status/project memory/SESSION 归档验证，应归档为“VM operand-lifter trace plan ready”，不是算法恢复。
+
+关键经验：
+
+- v223 这类阶段的价值是把 v222 的静态 atlas 转成可执行 runtime operand-lifter 计划；`matrix_target_count`、`operand_lift_field_count`、`pack_counts` 只是 trace plan / package readiness，不是 opcode semantic closure。
+- 典型字段可写入 status/project memory：`selected_priority_target_count=24`、`anchor_target_count=6`、`matrix_target_count=30`、`operand_lift_field_count=34`、`handler_family_count=4`、`dynamic_pack_count=4`，以及 pack counts（如 minimal/core、dispatch-tail、state-memory、high-score）。
+- runner dry-run 中 pack 声明数量与实际 `targets` 过滤后数量可能不一致（例如 pack list 14，但 target_count 17），因为 anchors/selected 可能存在 target 重复；归档时保留真实输出，不要把它当 strict evidence。
+- 在 Hermes `execute_code` 中生成长 Python 脚本时，避免外层 raw triple-quoted string 与内层 Markdown triple-quoted f-string 混用；若出现 `SyntaxError: invalid character '。'` 或 `leading zeros in decimal integer literals`，说明 Markdown 被提前闭合当成 Python 解析。更稳妥做法是分段 `write_file` 生成 static script / JS / runner / analyzer，或直接在 `execute_code` 当前 Python 中完成归档写入。
+- empty-log analyzer baseline 若 `event_count=0`、`handler_enter_count=0`、`strict_evidence_event_count=0`、`promotion_allowed=false`，这是准备包验证结果，应保守写 `dynamic_execution_performed=false` 和 `algorithm_status=not_recovered`。
+- 归档验证应覆盖：generator/runner/analyzer `py_compile`，generator dry-run，static/matrix/status/analysis JSON `json.tool`，`--list-packs`，最小 pack runner dry-run，empty-log analyzer JSON，`memory-sync.py sync`，本地 project memory 搜索命中，SESSION 追加，残留进程检查（如 `v223_vm_operand_lifter|run_v223|frida.*aweme`）。常驻 `frida-mobile-mcp` 或设备侧 `/data/local/tmp/frida-server` 不应算 v223 runner 残留。
+- 没有真实 `LivePlayActivity/webcast` 动态 attach、runtime handler word/state delta、`0x2bd8` ttEncrypt input/output binding、opcode-level semantic closure、key/mode/IV/padding binding、pure reproduction 前，必须保持 `algorithm_status=not_recovered`。
+
+建议字段：
+
+- `phase=vm-operand-lifter-trace-plan-static-and-dryrun-validation`
+- `counts.selected_priority_target_count`
+- `counts.anchor_target_count`
+- `counts.matrix_target_count`
+- `counts.operand_lift_field_count`
+- `counts.handler_family_count`
+- `counts.dynamic_pack_count`
+- `pack_counts`
+- `top_operand_lifter_targets`
+- `analysis_baseline.event_count=0`
+- `analysis_baseline.handler_enter_count=0`
+- `analysis_baseline.handler_leave_count=0`
+- `analysis_baseline.strict_evidence_event_count=0`
+- `analysis_baseline.promotion_allowed=false`
+- `validation.py_compile_ok=true`
+- `validation.generator_dry_run_ok=true`
+- `validation.static_json_tool_ok=true`
+- `validation.matrix_json_tool_ok=true`
+- `validation.list_packs_ok=true`
+- `validation.runner_dry_run_ok=true`
+- `validation.analyzer_empty_log_ok=true`
+- `validation.analyzer_json_ok=true`
+- `validation.status_json_tool_ok=true`
+- `validation.memory_sync_ok=true`
+- `validation.memory_search_v223_hit=true`
+- `validation.no_residual_process=true`
+- `validation.session_state_appended=true`
+- `dynamic_execution_performed=false`
+- `real_live_room_proof_present=false`
+- `strict_evidence_event_count=0`
+- `algorithm_status=not_recovered`
+- `algorithm_boundary_status=vm_operand_lifter_trace_plan_ready_not_executed`
+- `opcode_semantics_recovered=false`
+- `vm_runtime_sequence_recovered=false`
+- `tt_encrypt_input_output_bound=false`
+- `key_mode_iv_padding_bound=false`
+- `pure_reproduction_ready=false`
+- `next_step=place real LivePlayActivity/webcast live room in foreground, run guarded minimal_operand_lifter_core, capture handler word/state deltas, then bind 0x2bd8 ttEncrypt IO and key/mode/IV/padding for pure reproduction`
+
+### v224 VM operand equation synthesizer 静态深化归档
+
+当一轮基于 v223 operand-lifter trace plan，继续把 handler micro-semantics / operand-lift fields / bytecode prefix words 合成为可动态校验的 VM operand equations（例如 v224：`and/ubfx/bfxil/orr/shift/load` 到 word-field/state-carry symbolic equations、128 prefix words concrete assertions、dynamic packs `operand_equation_core` / `state_carry_bfxil_chain` 等），但未执行真实直播间动态 attach，应归档为“VM operand equation synthesizer static analysis completed”，不是算法恢复。
+
+关键经验：
+
+- v224 这类阶段的价值是把 v223 runtime trace plan 进一步静态转成可验证方程；`handler_equation_count`、`prefix_word_count`、`symbolic_fact_count`、confidence counts 与 dynamic pack counts 都是静态收敛/下一轮动态验证输入，不是 runtime opcode 语义闭合。
+- 典型字段可写入 status/project memory：`handler_equation_count=24`、`prefix_word_count=128`、`high_confidence_handler_count=4`、`medium_confidence_handler_count=7`、`low_confidence_handler_count=13`、`symbolic_fact_count=34`、`dynamic_pack_count=4`。
+- Top targets（例如 `0x2e54`、`0x3c28`、`0x2f74`、`0x2ed0`、`0x3048`）应标注为 dynamic validation priority targets，而不是已证明算法节点。
+- 如果只生成 static script / static JSON / conclusion MD / status / project memory，并完成 `json.tool`、`memory-sync.py sync/search`、SESSION append、残留进程检查，必须保守写：`dynamic_execution_performed=false`、`real_live_room_proof_present=false`、`strict_evidence_event_count=0`、`algorithm_status=not_recovered`。
+- 归档验证建议用精确 query（例如 `v224 VM operand equation synthesizer handlers 24 prefix_words 128 algorithm_status not_recovered`）；Top1 命中新 project memory 可作为语义层可检索证据。
+- 在 `execute_code` 中生成归档脚本时，不要把外层 raw triple-quoted string、shell heredoc 和内层 Markdown triple-quoted f-string 混用；实测会把 `Date: 2026-05-20` 当 Python 解析并触发 `SyntaxError: leading zeros in decimal integer literals`。更稳妥做法：先用 `write_file` 写 `/tmp/archive_v224.py`，Markdown 模板用占位符 + `replace()` 注入 JSON/路径，再用 terminal 执行与验证。
+- 没有真实 `LivePlayActivity/webcast` 动态 attach、runtime word/state deltas、`0x2bd8` ttEncrypt input/output binding、opcode-level semantic closure、key/mode/IV/padding binding、pure reproduction 前，必须保持 `algorithm_status=not_recovered`。
+
+建议字段：
+
+- `phase=vm-operand-equation-synthesizer-static`
+- `v*_vm_operand_equation_synthesizer_static_completed=true`
+- `counts.handler_equation_count`
+- `counts.prefix_word_count`
+- `counts.high_confidence_handler_count`
+- `counts.medium_confidence_handler_count`
+- `counts.low_confidence_handler_count`
+- `counts.symbolic_fact_count`
+- `counts.dynamic_pack_count`
+- `family_counts`
+- `symbolic_field_counts`
+- `confidence_counts`
+- `dynamic_pack_counts`
+- `top_operand_equation_targets`
+- `validation.py_compile_ok=true`
+- `validation.static_json_tool_ok=true`
+- `validation.status_json_tool_ok=true`
+- `validation.memory_sync_ok=true`
+- `validation.memory_search_v*_hit=true`
+- `validation.session_state_appended=true`
+- `validation.no_residual_process=true`
+- `dynamic_execution_performed=false`
+- `real_live_room_proof_present=false`
+- `strict_evidence_event_count=0`
+- `algorithm_status=not_recovered`
+- `algorithm_boundary_status=static_operand_equations_ready_for_dynamic_validation`
+- `opcode_semantics_recovered=false`
+- `vm_runtime_sequence_recovered=false`
+- `tt_encrypt_input_output_bound=false`
+- `key_mode_iv_padding_bound=false`
+- `pure_reproduction_ready=false`
+- `next_step=real LivePlayActivity/webcast foreground; run operand_equation_core/state_carry_bfxil_chain, validate runtime word/state deltas, then bind 0x2bd8 ttEncrypt IO and key/mode/IV/padding`
+
+### v233 VM slot-lane runtime assertion compiler 静态深化归档
+
+当一轮基于 v232 slot-lane hypotheses，把 lane 合约编译成 concrete runtime assertion contracts / guarded Frida assertion matrix / runner / analyzer（例如 v233：验证 `x21 + 8 + (x9 << 3)` write/read relation、critical/must-pass assertions、dominant `0x3048 -> 0x2f74` lane），但未执行真实直播间动态 attach，应归档为“VM slot-lane runtime assertion compiler static analysis completed”，不是算法恢复。
+
+关键经验：
+
+- v233 这类阶段的核心价值是把静态 lane hypothesis 转成可动态校验的 assertion contract；`runtime_assertion_count`、`critical_assertion_count`、`must_pass_assertion_count`、`unique_hook_target_count`、`dynamic_pack_count` 都是验证包准备度，不是 runtime proof。
+- 典型字段可写入 status/project memory：`slot_lane_count=12`、`compiled_lane_contract_count=12`、`runtime_assertion_count=20`、`critical_assertion_count=16`、`must_pass_assertion_count=16`、`unique_hook_target_count=4`、`dynamic_pack_count=5`、`target_pair_count=4`、`capture_field_count=25`。
+- 归档时应写入 status / project memory / daily / SESSION，并验证：static/matrix/status JSON `json.tool`、static/runner/analyzer `py_compile`、conclusion MD 非空、`memory-sync.py sync`、精确 memory search 命中、残留进程检查（如 `static_v233|run_v233|analyze_v233|v233_.*frida|frida.*aweme`）。
+- 在 `execute_code` 内生成 v233 归档脚本时，不要把外层 raw triple-quoted string、shell heredoc 与内层 Markdown triple-quoted string 混用；实测会把 Markdown 行 `Date: 2026-05-20` 当 Python 解析，触发 `SyntaxError: leading zeros in decimal integer literals`。稳妥做法：先用 `write_file` 写 `/tmp/archive_v233.py`，Markdown 模板用占位符 + `.replace()` 注入 JSON/路径，再用 terminal/execute_code 执行验证。
+- 没有真实 `LivePlayActivity/webcast` 动态 attach、runtime `x21/x9` write/read addr+value proof、`0x2bd8` ttEncrypt input/output binding、opcode-level semantic closure、key/mode/IV/padding binding、pure reproduction 前，必须保持 `algorithm_status=not_recovered`。
+
+建议字段：
+
+- `phase=vm-slot-lane-runtime-assertion-compiler-static`
+- `v*_archived=true`
+- `counts.slot_lane_count`
+- `counts.compiled_lane_contract_count`
+- `counts.runtime_assertion_count`
+- `counts.critical_assertion_count`
+- `counts.must_pass_assertion_count`
+- `counts.unique_hook_target_count`
+- `counts.dynamic_pack_count`
+- `counts.target_pair_count`
+- `counts.capture_field_count`
+- `priority_counts`
+- `target_pair_assertion_counts`
+- `hook_target_counts`
+- `slot_bits6_11_occurrence_counts`
+- `dynamic_assertion_packs`
+- `top_runtime_hook_targets`
+- `validation.py_compile_ok=true`
+- `validation.static_json_tool_ok=true`
+- `validation.matrix_json_tool_ok=true`
+- `validation.conclusion_md_nonempty=true`
+- `validation.runner_py_compile_ok=true`
+- `validation.analyzer_py_compile_ok=true`
+- `validation.runner_dry_run_ok=true`
+- `validation.status_json_tool_ok=true`
+- `validation.daily_memory_appended=true`
+- `validation.session_state_appended=true`
+- `validation.memory_sync_ok=true`
+- `validation.memory_search_v*_hit=true`
+- `validation.no_residual_process=true`
+- `dynamic_execution_performed=false`
+- `real_live_room_proof_present=false`
+- `strict_evidence_event_count=0`
+- `first_seen_evidence=false`
+- `new_value_source_evidence=false`
+- `proven_algorithm_evidence=false`
+- `algorithm_status=not_recovered`
+- `algorithm_boundary_status=static_runtime_assertions_ready_for_live_lane_validation`
+- `opcode_semantics_recovered=false`
+- `vm_runtime_sequence_recovered=false`
+- `tt_encrypt_input_output_bound=false`
+- `key_mode_iv_padding_bound=false`
+- `pure_reproduction_ready=false`
+- `next_step=real LivePlayActivity/webcast foreground; run critical_lane_must_pass_assertions / dominant_0x3048_to_0x2f74 assertions, capture x21/x9 write/read addr+values, then bind confirmed lanes to 0x2bd8 ttEncrypt IO and X-Cylons output`
+
+### v232 VM slot-lane semantic merger 静态深化归档
+
+当一轮基于 v231 VM slot write → consumer read bridges，把重复 bridge occurrence 合并成 slot lane hypotheses，并生成按 lane priority 分组的动态验证包（例如 v232：`critical_slot_lanes`、`high_repetition_slot_lanes`、`dominant_0x3048_to_0x2f74_lane`、`secondary_0x2ff0_to_0x3340_lane`、schema/combined pack），但未执行真实直播间动态 attach，应归档为“VM slot-lane semantic merger static analysis completed”，不是算法恢复。
+
+关键经验：
+
+- v232 这类阶段的核心价值是把单条 `write -> read` bridge 升级为可重复验证的 slot lane hypothesis：按 `low6/bits6_11/slot_target/consumer_target/x21+x9 8-byte addr formula` 聚类，并为每条 lane 生成 runtime acceptance contract；`slot_lane_count`、`critical_lane_count`、`dedup_bridge_occurrence_count`、`dynamic_pack_count` 都是静态收敛/下一轮动态验证输入，不是 runtime proof。
+- 典型字段可写入 status/project memory：`slot_lane_count=12`、`critical_lane_count=8`、`high_lane_count=1`、`medium_lane_count=3`、`dedup_bridge_occurrence_count=20`、`target_pair_count=4`、`dynamic_pack_count=5`。
+- Top lanes（尤其 `0x3048 -> 0x2f74` dominant lane、`0x2ff0 -> 0x3340` secondary lane）应标注为 dynamic validation priority targets，而不是已证明算法节点。
+- 如果只生成 static script / static JSON / conclusion MD / status / project memory / daily / SESSION，并完成 `py_compile`、`json.tool`、`memory-sync.py sync/search`、残留进程检查，必须保守写：`dynamic_execution_performed=false`、`real_live_room_proof_present=false`、`strict_evidence_event_count=0`、`algorithm_status=not_recovered`。
+- `memory-sync.py search` 的精确 slug query 可能被历史 VM 阶段相似文本稀释，甚至 Top5 不命中新文件；如果 sync 日志明确包含本轮 project memory，且 broad query（例如 `v232 VM slot lane semantic merger algorithm_status not_recovered critical 8`）Top5 命中本轮 project memory，可记录 `memory_search_v232_hit=true`，并在 status 的 `memory_search_note` 说明 older VM stages ranked above due semantic similarity。
+- 归档时建议同时写 daily memory 和 SESSION-STATE，并在 status `validation` 中记录：`py_compile_ok`、`static_json_tool_ok`、`conclusion_md_nonempty`、`status_json_tool_ok`、`daily_memory_appended`、`session_state_appended`、`memory_sync_ok`、`memory_search_v232_hit`、`no_residual_process`。
+- 没有真实 `LivePlayActivity/webcast` 动态 attach、runtime `x21/x9` write/read addr+value proof、`0x2bd8` ttEncrypt input/output binding、opcode-level semantic closure、key/mode/IV/padding binding、pure reproduction 前，必须保持 `algorithm_status=not_recovered`。
+
+建议字段：
+
+- `phase=vm-slot-lane-semantic-merger-static`
+- `v*_archived=true`
+- `counts.slot_lane_count`
+- `counts.critical_lane_count`
+- `counts.high_lane_count`
+- `counts.medium_lane_count`
+- `counts.dedup_bridge_occurrence_count`
+- `counts.target_pair_count`
+- `counts.dynamic_pack_count`
+- `validation_priority_counts`
+- `lane_relation_counts`
+- `target_pair_counts`
+- `top_slot_lanes`
+- `dynamic_trace_packs`
+- `validation.py_compile_ok=true`
+- `validation.static_json_tool_ok=true`
+- `validation.conclusion_md_nonempty=true`
+- `validation.status_json_tool_ok=true`
+- `validation.daily_memory_appended=true`
+- `validation.session_state_appended=true`
+- `validation.memory_sync_ok=true`
+- `validation.memory_search_v*_hit=true`
+- `validation.no_residual_process=true`
+- `dynamic_execution_performed=false`
+- `real_live_room_proof_present=false`
+- `strict_evidence_event_count=0`
+- `first_seen_evidence=false`
+- `new_value_source_evidence=false`
+- `proven_algorithm_evidence=false`
+- `algorithm_status=not_recovered`
+- `algorithm_boundary_status=static_slot_lane_hypotheses_ready_for_runtime_validation`
+- `opcode_semantics_recovered=false`
+- `vm_runtime_sequence_recovered=false`
+- `tt_encrypt_input_output_bound=false`
+- `key_mode_iv_padding_bound=false`
+- `pure_reproduction_ready=false`
+- `next_step=real LivePlayActivity/webcast foreground; run critical_slot_lanes/dominant/high_repetition packs, capture x21/x9 write/read addr+values, then bind confirmed lanes to 0x2bd8 ttEncrypt IO and X-Cylons output`
+
+### v234 VM lane → ttEncrypt terminal binding plan 静态/动态准备归档
+
+当一轮基于 v233 slot-lane runtime assertions，把 VM lane handler addr/value delta 与 `libEncryptor.so` / `ttEncrypt` terminal boundary 绑定到同一动态验证矩阵（例如 v234：lane hook targets `0x2f74/0x2ff0/0x3048`，ttEncrypt boundary `0x2bd8`，JNI wrapper `0x7d8c`，VM dispatcher `0x2d2c`），但只完成 static generation、runner dry-run、empty-log analyzer、status/project memory/daily/SESSION 归档验证，应归档为“VM lane → ttEncrypt terminal binding plan ready”，不是算法恢复。
+
+关键经验：
+
+- v234 这类阶段的核心价值是把 v233 的 lane assertion contract 接到 terminal ttEncrypt boundary：同时准备 lane addr/value delta capture 与同线程/同请求窗口 `0x2bd8` input/output capture；`selected_binding_assertion_count`、`critical_binding_count`、`lane_hook_targets`、`terminal_boundary_count` 都是动态验证计划规模，不是 runtime proof。
+- 典型字段可写入 status/project memory：`selected_binding_assertion_count=18`、`critical_binding_count=16`、`unique_lane_hook_target_count=3`、`target_pair_count=2`、`lane_count=10`、`dynamic_pack_count=5`、`terminal_boundary_count=1`。
+- Hook/boundary 字段建议保留：`lane_hook_target_rvas=["0x2f74","0x2ff0","0x3048"]`，`tt_encrypt_boundary.target_module=libEncryptor.so`，`tt_encrypt_jni_wrapper_rva=0x7d8c`，`byte_pointer_transform_callee_rva=0x2bd8`，`vm_dispatcher_rva=0x2d2c`，`vm_bytecode_blob_va=0xb2d0`。
+- empty-log analyzer baseline 若 `event_count=0`、`lane_event_count=0`、`ttencrypt_event_count=0`、`terminal_binding_candidate=false`、`algorithm_proven=false`，这是准备包验证结果，应保守写 `dynamic_execution_performed=false` 和 `algorithm_status=not_recovered`。
+- 归档验证应覆盖：static/matrix/status JSON `json.tool`，static/runner/analyzer `py_compile`，runner dry-run，empty-log analyzer JSON，conclusion MD 非空，`memory-sync.py sync`，精确 memory search 命中，daily memory 与 SESSION 追加，残留进程检查（如 `static_v234|run_v234|analyze_v234|v234_.*frida|frida.*aweme`）。
+- 没有真实 `LivePlayActivity/webcast` 动态 attach、runtime lane value delta、同线程/同请求窗口 `0x2bd8` ttEncrypt input/output、X-Cylons/security header carry、key/mode/IV/padding binding、pure reproduction 前，必须保持 `algorithm_status=not_recovered`。
+
+建议字段：
+
+- `phase=vm-lane-ttencrypt-terminal-binding-plan-static-and-dryrun-validation`
+- `v*_vm_lane_ttencrypt_terminal_binding_plan_ready=true`
+- `counts.selected_binding_assertion_count`
+- `counts.critical_binding_count`
+- `counts.unique_lane_hook_target_count`
+- `counts.target_pair_count`
+- `counts.lane_count`
+- `counts.dynamic_pack_count`
+- `counts.terminal_boundary_count`
+- `lane_hook_target_rvas`
+- `lane_hook_target_counts`
+- `target_pair_binding_counts`
+- `selection_source_counts`
+- `tt_encrypt_boundary`
+- `analysis_baseline.event_count=0`
+- `analysis_baseline.lane_event_count=0`
+- `analysis_baseline.ttencrypt_event_count=0`
+- `analysis_baseline.terminal_binding_candidate=false`
+- `analysis_baseline.algorithm_proven=false`
+- `validation.py_compile_ok=true`
+- `validation.static_json_tool_ok=true`
+- `validation.matrix_json_tool_ok=true`
+- `validation.runner_dry_run_ok=true`
+- `validation.analyzer_empty_log_ok=true`
+- `validation.conclusion_md_nonempty=true`
+- `validation.daily_memory_appended=true`
+- `validation.session_state_appended=true`
+- `validation.memory_sync_ok=true`
+- `validation.memory_search_v*_hit=true`
+- `validation.no_residual_process=true`
+- `dynamic_execution_performed=false`
+- `real_live_room_proof_present=false`
+- `strict_evidence_event_count=0`
+- `first_seen_evidence=false`
+- `new_value_source_evidence=false`
+- `proven_algorithm_evidence=false`
+- `algorithm_status=not_recovered`
+- `algorithm_boundary_status=static_lane_to_ttencrypt_terminal_binding_plan_ready_for_live_validation`
+- `ttencrypt_terminal_binding_proven=false`
+- `tt_encrypt_input_output_bound=false`
+- `key_mode_iv_padding_bound=false`
+- `pure_reproduction_ready=false`
+- `next_step=real LivePlayActivity/webcast foreground; run terminal_binding_critical_lanes/dominant_0x3048_to_0x2f74, capture lane addr/value deltas plus same-thread 0x2bd8 ttEncrypt input/output, then prove deterministic influence and key/mode/IV/padding for pure reproduction`
+
+### v235 lane influence → ttEncrypt oracle 静态/动态准备归档
+
+当一轮基于 v234 terminal binding assertions，把 lane delta 与 `0x2bd8` ttEncrypt input/output 关系进一步编译成 observe-only deterministic influence oracle（例如 v235：18 influence probes、3 个 lane hook targets `0x2f74/0x2ff0/0x3048`、`0x2bd8` terminal boundary、4 个 dynamic packs），但未执行真实直播间动态 attach，应归档为“lane influence → ttEncrypt oracle package ready”，不是算法恢复。
+
+关键经验：
+
+- v235 这类阶段的核心价值是把 terminal binding assertion 转成可重复采样的 influence oracle：要求未来在同线程/同请求窗口内观测 lane value delta 与 `0x2bd8` input/output hash 变化相关；`influence_probe_count`、`critical_probe_count`、`lane_hook_target_count`、`dynamic_pack_count` 都是验证包准备度，不是 runtime proof。
+- 典型字段可写入 status/project memory：`v234_binding_assertion_count=18`、`influence_probe_count=18`、`critical_probe_count=15`、`dynamic_pack_count=4`、`lane_hook_target_count=3`、`slot_bits6_11_group_count=8`。
+- analyzer synthetic positive fixture 可以证明分析器能识别 deterministic influence candidate，但必须保持 `algorithm_proven=false`；这只是 analyzer 自测，不是算法证据。
+- 归档验证应覆盖：static/matrix/status JSON `json.tool`，static/runner/analyzer `py_compile`，runner dry-run，analyzer synthetic positive，conclusion MD 非空，`memory-sync.py sync`，精确 memory search 命中，daily memory 与 SESSION 追加，残留进程检查（如 `static_v235|run_v235|analyze_v235|v235_.*frida|frida.*aweme`）。
+- 在 Hermes `execute_code` 内做 v235 归档时，避免把长 Markdown triple-quoted f-string 嵌套进 shell heredoc / outer Python string；实测会让 Markdown 行被当成 Python 解析并触发 `SyntaxError: invalid character '→'`。稳妥做法：先用 `write_file` 写 `/tmp/archive_v235.py`，Markdown 模板用占位符 `.replace()` 注入 JSON/路径，再用 `execute_code`/terminal 执行验证。
+- 没有真实 `LivePlayActivity/webcast` 动态 attach、runtime lane value delta、同线程/同请求窗口 `0x2bd8` ttEncrypt input/output、X-Cylons/security header carry、key/mode/IV/padding binding、pure reproduction 前，必须保持 `algorithm_status=not_recovered`。
+
+建议字段：
+
+- `phase=vm-lane-influence-ttencrypt-oracle-static-and-dryrun-validation`
+- `v*_archived=true`
+- `v*_lane_influence_ttencrypt_oracle_ready=true`
+- `counts.v234_binding_assertion_count`
+- `counts.influence_probe_count`
+- `counts.critical_probe_count`
+- `counts.dynamic_pack_count`
+- `counts.lane_hook_target_count`
+- `counts.slot_bits6_11_group_count`
+- `lane_hook_target_rvas`
+- `tt_encrypt_boundary`
+- `dynamic_packs`
+- `analysis_baseline.event_count=0`
+- `analysis_baseline.lane_event_count=0`
+- `analysis_baseline.ttencrypt_event_count=0`
+- `analysis_baseline.deterministic_lane_influence_proven=false`
+- `analysis_baseline.algorithm_proven=false`
+- `validation.py_compile_ok=true`
+- `validation.static_json_tool_ok=true`
+- `validation.matrix_json_tool_ok=true`
+- `validation.runner_dry_run_ok=true`
+- `validation.analyzer_synthetic_positive_ok=true`
+- `validation.conclusion_md_nonempty=true`
+- `validation.daily_memory_appended=true`
+- `validation.session_state_appended=true`
+- `validation.memory_sync_ok=true`
+- `validation.memory_search_v*_hit=true`
+- `validation.no_residual_process=true`
+- `dynamic_execution_performed=false`
+- `real_live_room_proof_present=false`
+- `strict_evidence_event_count=0`
+- `first_seen_evidence=false`
+- `new_value_source_evidence=false`
+- `proven_algorithm_evidence=false`
+- `algorithm_status=not_recovered`
+- `algorithm_boundary_status=static_lane_influence_ttencrypt_oracle_ready_for_live_validation`
+- `deterministic_lane_influence_proven=false`
+- `ttencrypt_terminal_binding_proven=false`
+- `tt_encrypt_input_output_bound=false`
+- `key_mode_iv_padding_bound=false`
+- `pure_reproduction_ready=false`
+- `next_step=real LivePlayActivity/webcast foreground; run observe-only influence packs, capture repeated lane addr/value deltas plus same-thread 0x2bd8 ttEncrypt input/output windows, then prove deterministic influence and key/mode/IV/padding for pure reproduction`
+
+### v236 deterministic influence → opcode/key-lane backfill 静态深化归档
+
+当一轮基于 v235 lane influence → ttEncrypt oracle，把 influence probes 回填到 VM opcode/key-lane class，并生成 observe-only opcode/key-lane backfill checker/runner/analyzer（例如 v236：18 条 backfill records、15 条 critical backfills、lane hook targets `0x2f74/0x2ff0/0x3048`、terminal boundary `0x2bd8`），但未执行真实直播间动态 attach，应归档为“deterministic influence → opcode/key-lane backfill static/dry-run completed”，不是算法恢复。
+
+关键经验：
+
+- v236 这类阶段的核心价值是把 v235 的 deterministic influence oracle 与 VM opcode/key-lane 分类打通：把 lane/probe 关联到 opcode/key-lane class，并生成下一轮 observe-only checker；`backfill_count`、`critical_backfill_count`、`opcode/key-lane class count`、dynamic pack count 都是静态回填/动态准备度，不是 runtime proof。
+- 典型字段可写入 status/project memory：`backfill_count=18`、`critical_backfill_count=15`、`lane_hook_target_count=3`、`dynamic_pack_count`、`opcode_key_lane_class_count`，以及 `lane_hook_target_rvas=["0x2f74","0x2ff0","0x3048"]`、`tt_encrypt_boundary=libEncryptor.so:0x2bd8`。
+- analyzer synthetic positive fixture 只能证明 analyzer 能识别 `opcode_key_lane_influence_candidate`；必须保持 `algorithm_proven=false`、`algorithm_status=not_recovered`，不能把 synthetic candidate 当真实算法证据。
+- 归档验证应覆盖：static/matrix/status JSON `json.tool`，static/runner/analyzer `py_compile`，runner dry-run，analyzer synthetic positive，checker observe-only 标记，`memory-sync.py sync`，精确 memory search 命中，daily memory 与 SESSION 追加，残留进程检查（如 `static_v236|run_v236|analyze_v236|v236_.*frida|frida.*aweme`）。
+- 如果在 `execute_code` 中直接写归档文件，写完 status 后要再跑一轮 `python3 -m json.tool`，并 patch `validation.status_json_tool_ok=true`、`memory_sync_ok=true`、`memory_search_v236_hit=true`、`no_residual_process=true`；不要在 sync/search 前提前宣称归档完成。
+- 没有真实 `LivePlayActivity/webcast` 动态 attach、runtime lane addr/value deltas、同线程/同请求窗口 `0x2bd8` ttEncrypt input/output、X-Cylons/security header carry、key/mode/IV/padding binding、pure reproduction 前，必须保持 `algorithm_status=not_recovered`。
+
+建议字段：
+
+- `phase=deterministic-influence-opcode-keylane-backfill-static-and-dryrun-validation`
+- `v*_archived=true`
+- `v*_deterministic_influence_opcode_keylane_backfill_completed=true`
+- `counts.backfill_count`
+- `counts.critical_backfill_count`
+- `counts.lane_hook_target_count`
+- `counts.dynamic_pack_count`
+- `counts.opcode_key_lane_class_count`
+- `lane_hook_target_rvas`
+- `tt_encrypt_boundary`
+- `dynamic_backfill_packs`
+- `analysis_baseline.synthetic_candidate_count`
+- `analysis_baseline.strict_evidence_event_count=0`
+- `analysis_baseline.algorithm_proven=false`
+- `validation.py_compile_ok=true`
+- `validation.static_json_tool_ok=true`
+- `validation.matrix_json_tool_ok=true`
+- `validation.runner_dry_run_ok=true`
+- `validation.analyzer_synthetic_positive_ok=true`
+- `validation.checker_observe_only=true`
+- `validation.status_json_tool_ok=true`
+- `validation.daily_memory_appended=true`
+- `validation.session_state_appended=true`
+- `validation.memory_sync_ok=true`
+- `validation.memory_search_v*_hit=true`
+- `validation.no_residual_process=true`
+- `dynamic_execution_performed=false`
+- `real_live_room_proof_present=false`
+- `strict_evidence_event_count=0`
+- `first_seen_evidence=false`
+- `new_value_source_evidence=false`
+- `proven_algorithm_evidence=false`
+- `algorithm_status=not_recovered`
+- `algorithm_boundary_status=static_opcode_keylane_backfill_ready_for_live_validation`
+- `deterministic_lane_influence_proven=false`
+- `opcode_key_lane_backfill_proven=false`
+- `tt_encrypt_input_output_bound=false`
+- `key_mode_iv_padding_bound=false`
+- `pure_reproduction_ready=false`
+- `next_step=real LivePlayActivity/webcast foreground; run observe-only critical_opcode_keylane_backfill, capture repeated lane addr/value deltas plus same-thread 0x2bd8 ttEncrypt input/output windows, then prove deterministic influence and key/mode/IV/padding for pure reproduction`
+
+### v237 cross-window opcode/key-lane promotion checker 归档
+
+当一轮基于 v236 opcode/key-lane backfill，把 repeated lane delta windows 与同线程 `libEncryptor.so:0x2bd8` ttEncrypt terminal input/output hash 观测按 cluster 聚合，并生成 cross-window opcode/key-lane promotion checker / guarded runner / analyzer（例如 v237：4 个 promotion clusters、1 个 critical cluster、lane hook targets `0x2f74/0x2ff0/0x3048`），但未执行真实直播间动态 attach，应归档为“cross-window opcode/key-lane promotion checker ready”，不是算法恢复。
+
+关键经验：
+
+- v237 这类阶段的核心价值是把 v236 的 backfill records 提升成跨窗口重复候选：按 lane hook target、target pair、key-lane class、terminal `0x2bd8` window 聚类，生成 observe-only promotion checker；`promotion_cluster_count`、`critical_cluster_count`、`key_lane_class_count`、dynamic pack count 都是验证准备度，不是 runtime proof。
+- 典型字段可写入 status/project memory：`v236_backfill_count=18`、`promotion_cluster_count=4`、`critical_cluster_count=1`、`lane_hook_target_count=3`、`dynamic_pack_count=4`、`backfill_id_count=18`、`key_lane_class_count=2`，以及 `lane_hook_target_rvas=["0x2f74","0x2ff0","0x3048"]`、`tt_encrypt_boundary.byte_pointer_transform_callee_rva=0x2bd8`。
+- analyzer fixture-positive 只能证明分析器能把重复窗口提升为 promotion candidate；若 `strict_evidence_event_count=0`、`algorithm_proven=false`，必须保持 `algorithm_status=not_recovered`，不能把 fixture candidate 当真实算法证据。
+- runner dry-run 应显示 observe-only 与 live-room proof gate；缺少真实 live-room proof 时只输出 manual Frida command / DRY_RUN_ONLY，不执行 attach。
+- 归档验证应覆盖：static/matrix/status JSON `json.tool`，static/runner/analyzer `py_compile`，runner dry-run，analyzer fixture-positive JSON，project memory/daily/SESSION 写入，`memory-sync.py sync`，精确 memory search 命中，残留进程检查（如 `static_v237|run_v237|analyze_v237|v237_.*frida|frida.*aweme`）。
+- status final check 应显式验证：`status=completed`、`v237_archived=true`、`algorithm_status=not_recovered`、`dynamic_execution_performed=false`、`strict_evidence_event_count=0`、`proven_algorithm_evidence=false`、`analysis_baseline.algorithm_proven=false`、`validation.status_json_tool_ok=true`、`memory_sync_ok=true`、`memory_search_v237_hit=true`、`no_residual_process=true`。
+- 没有真实 `LivePlayActivity/webcast` 动态 attach、repeated lane addr/value delta、same-thread/same-window `0x2bd8` ttEncrypt input/output hash、deterministic influence proof、key/mode/IV/padding binding、pure reproduction 前，必须保持 `algorithm_status=not_recovered`。
+
+建议字段：
+
+- `phase=cross-window-opcode-keylane-promotion-static-and-dryrun-validation`
+- `v*_archived=true`
+- `v*_cross_window_opcode_keylane_promotion_checker_ready=true`
+- `counts.v236_backfill_count`
+- `counts.promotion_cluster_count`
+- `counts.critical_cluster_count`
+- `counts.lane_hook_target_count`
+- `counts.dynamic_pack_count`
+- `counts.backfill_id_count`
+- `counts.key_lane_class_count`
+- `key_lane_class_counts`
+- `target_pair_counts`
+- `lane_hook_target_rvas`
+- `tt_encrypt_boundary`
+- `dynamic_promotion_packs`
+- `top_promotion_clusters`
+- `analysis_baseline.fixture_event_count`
+- `analysis_baseline.fixture_lane_leave_count`
+- `analysis_baseline.fixture_ttencrypt_event_count`
+- `analysis_baseline.fixture_same_thread_terminal_window_count`
+- `analysis_baseline.fixture_cross_window_cluster_count`
+- `analysis_baseline.fixture_promotion_candidate_count`
+- `analysis_baseline.strict_evidence_event_count=0`
+- `analysis_baseline.opcode_key_lane_promotion_proven=true`（candidate-only，需在文字中注明不是算法 proof）
+- `analysis_baseline.algorithm_proven=false`
+- `validation.py_compile_ok=true`
+- `validation.static_json_tool_ok=true`
+- `validation.matrix_json_tool_ok=true`
+- `validation.runner_dry_run_ok=true`
+- `validation.runner_observe_only=true`
+- `validation.analyzer_fixture_positive_ok=true`
+- `validation.fixture_promotes_candidates_only=true`
+- `validation.fixture_algorithm_proven_false=true`
+- `validation.fixture_algorithm_status_not_recovered=true`
+- `validation.status_json_tool_ok=true`
+- `validation.project_memory_written=true`
+- `validation.daily_memory_appended=true`
+- `validation.session_state_appended=true`
+- `validation.memory_sync_ok=true`
+- `validation.memory_search_v*_hit=true`
+- `validation.no_residual_process=true`
+- `dynamic_execution_performed=false`
+- `real_live_room_proof_present=false`
+- `strict_evidence_event_count=0`
+- `first_seen_evidence=false`
+- `new_value_source_evidence=false`
+- `proven_algorithm_evidence=false`
+- `algorithm_status=not_recovered`
+- `algorithm_boundary_status=static_cross_window_opcode_keylane_promotion_checker_ready_for_live_validation`
+- `deterministic_lane_influence_proven=false`
+- `opcode_key_lane_promotion_proven=false`（真实 runtime proof 仍 false；fixture candidate 另记）
+- `ttencrypt_terminal_binding_proven=false`
+- `tt_encrypt_input_output_bound=false`
+- `key_mode_iv_padding_bound=false`
+- `pure_reproduction_ready=false`
+- `next_step=real LivePlayActivity/webcast foreground; run observe-only critical_cross_window_promotion_core, collect repeated lane addr/value deltas plus same-thread 0x2bd8 ttEncrypt input/output hashes across windows, then prove deterministic influence and key/mode/IV/padding before pure reproduction`
+
+### v238 cross-cluster key-lane terminal influence atlas 归档
+
+当一轮基于 v235 influence probes、v236 opcode/key-lane backfills、v237 cross-window promotion clusters，合并生成 cross-cluster terminal influence atlas / observe-only checker / guarded runner / analyzer（例如 v238：4 个 terminal influence atlas、1 个 critical atlas、lane hook targets `0x2f74/0x2ff0/0x3048`、terminal boundary `libEncryptor.so:0x2bd8`），但未执行真实直播间动态 attach，应归档为“cross-cluster key-lane terminal influence atlas ready”，不是算法恢复。
+
+关键经验：
+
+- v238 这类阶段的核心价值是把上一轮 promotion/backfill/oracle 候选整合成跨 cluster 的 terminal influence atlas，用于后续真实直播间 observe-only 验证；`terminal_influence_atlas_count`、`critical_atlas_count`、`dynamic_pack_count`、`lane_hook_target_rvas` 都是准备度/候选规模，不是 runtime proof。
+- analyzer fixture-positive 可以证明分析器能识别 terminal influence candidate；若 `strict_evidence_event_count=0`、`algorithm_proven=false`，必须保持 `algorithm_status=not_recovered`，不能把 fixture candidate 当真实算法证据。
+- 归档验证应覆盖：static/runner/analyzer `py_compile`，static/matrix/status JSON `json.tool`，runner dry-run，fixture-positive analyzer JSON，project memory/daily/SESSION 写入，`memory-sync.py sync`，精确 memory search 命中，残留进程检查（如 `static_v238|run_v238|analyze_v238|v238_.*frida|frida.*aweme`）。
+- status final check 应显式验证：`status=completed`、`v238_archived=true`、`algorithm_status=not_recovered`、`dynamic_execution_performed=false`、`strict_evidence_event_count=0`、`proven_algorithm_evidence=false`、`analysis_baseline.algorithm_proven=false`、`validation.status_json_tool_ok=true`、`memory_sync_ok=true`、`memory_search_v238_hit=true`、`no_residual_process=true`。
+- 没有真实 `LivePlayActivity/webcast` 动态 attach、repeated lane addr/value delta、same-thread/same-window `0x2bd8` ttEncrypt input/output hash、X-Cylons/security header carry、key/mode/IV/padding binding、pure reproduction 前，必须保持 `algorithm_status=not_recovered`。
+
+建议字段：
+
+- `phase=cross-cluster-keylane-terminal-influence-atlas-static-and-dryrun-validation`
+- `v*_archived=true`
+- `v*_cross_cluster_keylane_terminal_influence_atlas_ready=true`
+- `counts.terminal_influence_atlas_count`
+- `counts.critical_atlas_count`
+- `counts.dynamic_pack_count`
+- `lane_hook_target_rvas=["0x2f74","0x2ff0","0x3048"]`
+- `tt_encrypt_boundary.byte_pointer_transform_callee_rva=0x2bd8`
+- `dynamic_influence_atlas_packs`
+- `top_terminal_influence_atlas`
+- `analysis_baseline.fixture_event_count`
+- `analysis_baseline.fixture_lane_leave_count`
+- `analysis_baseline.fixture_ttencrypt_event_count`
+- `analysis_baseline.fixture_same_thread_terminal_window_count`
+- `analysis_baseline.fixture_atlas_window_group_count`
+- `analysis_baseline.fixture_terminal_influence_candidate_count`
+- `analysis_baseline.strict_evidence_event_count=0`
+- `analysis_baseline.algorithm_proven=false`
+- `validation.py_compile_ok=true`
+- `validation.static_json_tool_ok=true`
+- `validation.matrix_json_tool_ok=true`
+- `validation.runner_dry_run_ok=true`
+- `validation.runner_observe_only=true`
+- `validation.analyzer_fixture_positive_ok=true`
+- `validation.fixture_promotes_candidates_only=true`
+- `validation.fixture_algorithm_proven_false=true`
+- `validation.fixture_algorithm_status_not_recovered=true`
+- `validation.status_json_tool_ok=true`
+- `validation.project_memory_written=true`
+- `validation.daily_memory_appended=true`
+- `validation.session_state_appended=true`
+- `validation.memory_sync_ok=true`
+- `validation.memory_search_v*_hit=true`
+- `validation.no_residual_process=true`
+- `dynamic_execution_performed=false`
+- `real_live_room_proof_present=false`
+- `strict_evidence_event_count=0`
+- `first_seen_evidence=false`
+- `new_value_source_evidence=false`
+- `proven_algorithm_evidence=false`
+- `algorithm_status=not_recovered`
+- `algorithm_boundary_status=static_cross_cluster_terminal_influence_atlas_ready_for_live_validation`
+- `deterministic_lane_influence_proven=false`
+- `opcode_key_lane_terminal_influence_proven=false`
+- `ttencrypt_terminal_binding_proven=false`
+- `tt_encrypt_input_output_bound=false`
+- `key_mode_iv_padding_bound=false`
+- `pure_reproduction_ready=false`
+- `next_step=real LivePlayActivity/webcast foreground; run observe-only critical_terminal_influence_atlas_core, collect repeated lane addr/value deltas plus same-thread 0x2bd8 ttEncrypt input/output hashes and X-Cylons/security header carry, then prove deterministic influence and key/mode/IV/padding before pure reproduction`
+
+### v239 terminal influence consistency oracle 静态/动态准备归档
+
+当一轮基于 v238 cross-cluster terminal influence atlas、v237 promotion clusters、v236 opcode/key-lane backfills，把 terminal influence atlas 进一步编译成 observe-only terminal influence consistency oracle / guarded runner / analyzer（例如 v239：4 个 terminal consistency oracles、1 个 critical oracle、lane hook targets `0x2f74/0x2ff0/0x3048`、terminal boundary `libEncryptor.so:0x2bd8`），但未执行真实直播间动态 attach，应归档为“terminal influence consistency oracle package ready”，不是算法恢复。
+
+关键经验：
+
+- v239 这类阶段的核心价值是把上一轮 terminal influence atlas 提升成可重复窗口一致性检查：要求未来在同线程/同请求窗口内观测 lane addr/value delta 与 `0x2bd8` ttEncrypt input/output hash 的 repeated consistency；`terminal_consistency_oracle_count`、`critical_oracle_count`、`lane_hook_target_count`、`dynamic_pack_count` 都是验证包准备度，不是 runtime proof。
+- 典型字段可写入 status/project memory：`v238_terminal_influence_atlas_count=4`、`v237_promotion_cluster_count=4`、`v236_backfill_count=18`、`terminal_consistency_oracle_count=4`、`critical_oracle_count=1`、`high_oracle_count=3`、`lane_hook_target_count=3`、`dynamic_pack_count=4`。
+- analyzer fixture-positive 可以证明分析器能识别 `terminal_consistency_candidate`；但若 `strict_evidence_event_count=0`、`algorithm_proven=false`，必须保持 `algorithm_status=not_recovered`，不能把 fixture candidate 当真实算法证据。
+- runner dry-run 应显示 observe-only 与双门控：缺少 `--i-understand-dynamic-hook` 或真实 `--live-room-proof` 时，只输出 manual Frida command / dry-run，不执行 attach。
+- 归档验证应覆盖：static/matrix/status JSON `json.tool`，static/runner/analyzer `py_compile`，`--list-packs`，runner dry-run，analyzer fixture-positive JSON，project memory/daily/SESSION 写入，`memory-sync.py sync`，精确 memory search 命中，残留进程检查（如 `static_v239|run_v239|analyze_v239|v239_.*frida|frida.*aweme`）。
+- `memory-sync.py search "v239 terminal influence consistency oracle algorithm_status not_recovered"` Top1 命中新 project memory，可作为语义层可检索验证；sync 日志应包含 `projects/2026-05-20_project_douyin-xcylons-v239-terminal-influence-consistency-oracle.md`。
+- 没有真实 `LivePlayActivity/webcast` 动态 attach、repeated lane addr/value delta、same-thread/same-window `0x2bd8` ttEncrypt input/output hash、X-Cylons/security header carry、key/mode/IV/padding binding、pure reproduction 前，必须保持 `algorithm_status=not_recovered`。
+
+建议字段：
+
+- `phase=terminal-influence-consistency-oracle-static-and-dryrun-validation`
+- `v*_archived=true`
+- `v*_terminal_influence_consistency_oracle_ready=true`
+- `counts.v238_terminal_influence_atlas_count`
+- `counts.v237_promotion_cluster_count`
+- `counts.v236_backfill_count`
+- `counts.terminal_consistency_oracle_count`
+- `counts.critical_oracle_count`
+- `counts.high_oracle_count`
+- `counts.lane_hook_target_count`
+- `counts.dynamic_pack_count`
+- `lane_hook_target_rvas=["0x2f74","0x2ff0","0x3048"]`
+- `tt_encrypt_boundary.byte_pointer_transform_callee_rva=0x2bd8`
+- `dynamic_consistency_packs`
+- `top_terminal_consistency_oracles`
+- `analysis_baseline.fixture_event_count`
+- `analysis_baseline.fixture_lane_event_count`
+- `analysis_baseline.fixture_ttencrypt_event_count`
+- `analysis_baseline.fixture_terminal_consistency_candidate_count`
+- `analysis_baseline.strict_evidence_event_count=0`
+- `analysis_baseline.algorithm_proven=false`
+- `analysis_baseline.algorithm_status=not_recovered`
+- `validation.py_compile_ok=true`
+- `validation.static_json_tool_ok=true`
+- `validation.matrix_json_tool_ok=true`
+- `validation.runner_dry_run_ok=true`
+- `validation.runner_observe_only=true`
+- `validation.analyzer_fixture_positive_ok=true`
+- `validation.fixture_promotes_candidates_only=true`
+- `validation.fixture_algorithm_proven_false=true`
+- `validation.fixture_algorithm_status_not_recovered=true`
+- `validation.status_json_tool_ok=true`
+- `validation.project_memory_written=true`
+- `validation.daily_memory_appended=true`
+- `validation.session_state_appended=true`
+- `validation.memory_sync_ok=true`
+- `validation.memory_search_v*_hit=true`
+- `validation.no_residual_process=true`
+- `dynamic_execution_performed=false`
+- `real_live_room_proof_present=false`
+- `strict_evidence_event_count=0`
+- `first_seen_evidence=false`
+- `new_value_source_evidence=false`
+- `proven_algorithm_evidence=false`
+- `algorithm_status=not_recovered`
+- `algorithm_boundary_status=static_terminal_influence_consistency_oracle_ready_for_live_validation`
+- `deterministic_lane_influence_proven=false`
+- `terminal_influence_consistency_proven=false`
+- `ttencrypt_terminal_binding_proven=false`
+- `tt_encrypt_input_output_bound=false`
+- `key_mode_iv_padding_bound=false`
+- `pure_reproduction_ready=false`
+- `next_step=real LivePlayActivity/webcast foreground; run observe-only critical_terminal_consistency_core/high_terminal_consistency_repeat, collect repeated lane addr/value deltas plus same-thread 0x2bd8 ttEncrypt input/output hashes and X-Cylons/security header carry, then prove deterministic influence and key/mode/IV/padding before pure reproduction`
+
+### v241 terminal carry proof ledger 归档
+
+当一轮基于 v240 terminal consistency → X-Cylons/security-header carry checker，把 lane delta、`libEncryptor.so:0x2bd8` ttEncrypt terminal IO、X-Cylons/security-header carry 的同线程/同请求窗口候选进一步整理成 proof ledger / observe-only ledger runner / analyzer（例如 v241），但仍未执行真实直播间动态 attach，应归档为“terminal carry proof ledger ready”，不是算法恢复。
+
+关键经验：
+
+- v241 这类阶段的核心价值是把 v240 的 carry checker 转成可审计 proof ledger：为后续真实采样记录每个 terminal/carry/lane relation 的窗口、hash、thread、request/header carry 证明字段；`contract_count`、`ledger_entry_count`、`carry_relation_count`、dynamic pack count 只是验证账本准备度，不是 runtime proof。
+- analyzer fixture-positive / synthetic positive 只能证明分析器能识别 proof-ledger candidate；如果 `strict_evidence_event_count=0`、`algorithm_proven=false`，必须保持 `algorithm_status=not_recovered`，不能把 fixture candidate 当真实算法证据。
+- 归档验证应覆盖：static/matrix/status JSON `json.tool`，static/runner/analyzer `py_compile`，`--list-packs`，runner dry-run，fixture-positive analyzer JSON，project memory/daily/SESSION 写入，`memory-sync.py sync`，精确 memory search Top1/Top5 命中，残留进程检查。
+- 残留进程检查可用：`ps -ef | grep -E 'static_v241|run_v241|analyze_v241|v241_.*frida|frida.*aweme|terminal_carry_proof_ledger' | grep -v grep || true`。常驻 `frida-mobile-mcp`、ADB 启动的设备侧 `frida-server` 属于共享基础设施；只有本轮 `static_v241/run_v241/analyze_v241/v241_.*frida/frida.*aweme/terminal_carry_proof_ledger` 命中才算 v241 残留。
+- status final check 应显式验证：`status=completed`、`v241_archived=true`、`algorithm_status=not_recovered`、`dynamic_execution_performed=false`、`strict_evidence_event_count=0`、`proven_algorithm_evidence=false`、`validation.status_json_tool_ok=true`、`memory_sync_ok=true`、`memory_search_v241_hit=true`、`no_residual_process=true`。
+- 没有真实 `LivePlayActivity/webcast` 动态 attach、repeated lane addr/value delta、same-thread/same-window `0x2bd8` ttEncrypt input/output hash、`X-Cylons`/security-header carry 对齐、key/mode/IV/padding 绑定、pure reproduction 前，必须保持 `algorithm_status=not_recovered`。
+
+建议字段：
+
+- `phase=terminal-carry-proof-ledger-static-and-dryrun-validation`
+- `v*_archived=true`
+- `v*_terminal_carry_proof_ledger_ready=true`
+- `counts.terminal_consistency_oracle_count`
+- `counts.carry_checker_count`
+- `counts.proof_ledger_contract_count` / `counts.ledger_contract_count`
+- `counts.critical_ledger_contract_count`
+- `lane_hook_target_rvas=["0x2f74","0x2ff0","0x3048"]`
+- `tt_encrypt_boundary.byte_pointer_transform_callee_rva=0x2bd8`
+- `analysis_baseline.fixture_ledger_candidate_count`
+- `analysis_baseline.strict_evidence_event_count=0`
+- `analysis_baseline.algorithm_proven=false`
+- `validation.py_compile_ok=true`
+- `validation.static_json_tool_ok=true`
+- `validation.matrix_json_tool_ok=true`
+- `validation.runner_dry_run_ok=true`
+- `validation.runner_observe_only=true`
+- `validation.analyzer_fixture_positive_ok=true`
+- `validation.fixture_promotes_candidates_only=true`
+- `validation.status_json_tool_ok=true`
+- `validation.project_memory_written=true`
+- `validation.daily_memory_appended=true`
+- `validation.session_state_appended=true`
+- `validation.memory_sync_ok=true`
+- `validation.memory_search_v*_hit=true`
+- `validation.no_residual_process=true`
+- `dynamic_execution_performed=false`
+- `real_live_room_proof_present=false`
+- `strict_evidence_event_count=0`
+- `first_seen_evidence=false`
+- `new_value_source_evidence=false`
+- `proven_algorithm_evidence=false`
+- `algorithm_status=not_recovered`
+- `algorithm_boundary_status=static_terminal_carry_proof_ledger_ready_for_live_validation`
+- `terminal_influence_consistency_proven=false`
+- `xcylons_security_header_carry_proven=false`
+- `tt_encrypt_input_output_bound=false`
+- `key_mode_iv_padding_bound=false`
+- `pure_reproduction_ready=false`
+- `next_step=real LivePlayActivity/webcast foreground; run observe-only critical_terminal_carry_proof_core / terminal_consistency_xcylons_header_carry / combined_terminal_carry_ledger, collect repeated lane deltas plus same-thread 0x2bd8 ttEncrypt IO hashes and header carry, then prove deterministic influence and key/mode/IV/padding before pure reproduction`
+
+### v240 terminal consistency → X-Cylons/security-header carry checker 归档
+
+当一轮基于 v239 terminal influence consistency oracle，把 same-thread/same-window `0x2bd8` ttEncrypt terminal consistency 进一步接到 `X-Cylons` / security-header carry 观测链，生成 observe-only carry checker / guarded runner / analyzer（例如 v240），但未执行真实直播间动态 attach，应归档为“terminal consistency → X-Cylons/security-header carry checker ready”，不是算法恢复。
+
+关键经验：
+
+- v240 这类阶段的核心价值是把 terminal consistency oracle 扩展到 header carry 验证：后续需在真实直播间同线程/同请求窗口内同时观测 lane addr/value delta、`libEncryptor.so:0x2bd8` ttEncrypt input/output hash、`X-Cylons` 或 security-header carry；静态 checker/fixture/dry-run 只是准备度，不是 runtime proof。
+- analyzer fixture-positive 可以证明分析器能识别 carry candidate；如果 `strict_evidence_event_count=0`、`algorithm_proven=false`，必须保持 `algorithm_status=not_recovered`，不能把 fixture candidate 当真实算法证据。
+- 归档验证应覆盖：static/matrix/status JSON `json.tool`，static/runner/analyzer `py_compile`，runner dry-run，fixture-positive analyzer JSON，project memory/daily/SESSION 写入，`memory-sync.py sync`，精确 memory search 命中，残留进程检查。
+- 残留进程检查可用：`ps -ef | grep -E 'static_v240|run_v240|analyze_v240|v240_.*frida|frida.*aweme|terminal_consistency_xcylons_carry' | grep -v grep || true`。常驻 `frida-mobile-mcp`、ADB 启动的设备侧 `frida-server` 属于共享基础设施；只有本轮 `static_v240/run_v240/analyze_v240/v240_.*frida/frida.*aweme/terminal_consistency_xcylons_carry` 命中才算 v240 残留。
+- status final check 应显式验证：`status=completed`、`v240_archived=true`、`algorithm_status=not_recovered`、`dynamic_execution_performed=false`、`strict_evidence_event_count=0`、`proven_algorithm_evidence=false`、`validation.status_json_tool_ok=true`、`memory_sync_ok=true`、`memory_search_v240_hit=true`、`no_residual_process=true`。
+- 没有真实 `LivePlayActivity/webcast` 动态 attach、repeated lane addr/value delta、same-thread/same-window `0x2bd8` ttEncrypt input/output hash、`X-Cylons`/security-header carry 对齐、key/mode/IV/padding 绑定、pure reproduction 前，必须保持 `algorithm_status=not_recovered`。
+
+建议字段：
+
+- `phase=terminal-consistency-xcylons-carry-checker-static-and-dryrun-validation`
+- `v*_archived=true`
+- `v*_terminal_consistency_xcylons_carry_checker_ready=true`
+- `counts.terminal_consistency_oracle_count`
+- `counts.carry_checker_count`
+- `counts.critical_carry_checker_count`
+- `lane_hook_target_rvas=["0x2f74","0x2ff0","0x3048"]`
+- `tt_encrypt_boundary.byte_pointer_transform_callee_rva=0x2bd8`
+- `analysis_baseline.fixture_carry_candidate_count`
+- `analysis_baseline.strict_evidence_event_count=0`
+- `analysis_baseline.algorithm_proven=false`
+- `validation.py_compile_ok=true`
+- `validation.static_json_tool_ok=true`
+- `validation.matrix_json_tool_ok=true`
+- `validation.runner_dry_run_ok=true`
+- `validation.runner_observe_only=true`
+- `validation.analyzer_fixture_positive_ok=true`
+- `validation.fixture_promotes_candidates_only=true`
+- `validation.status_json_tool_ok=true`
+- `validation.project_memory_written=true`
+- `validation.daily_memory_appended=true`
+- `validation.session_state_appended=true`
+- `validation.memory_sync_ok=true`
+- `validation.memory_search_v*_hit=true`
+- `validation.no_residual_process=true`
+- `dynamic_execution_performed=false`
+- `real_live_room_proof_present=false`
+- `strict_evidence_event_count=0`
+- `first_seen_evidence=false`
+- `new_value_source_evidence=false`
+- `proven_algorithm_evidence=false`
+- `algorithm_status=not_recovered`
+- `algorithm_boundary_status=static_terminal_consistency_xcylons_carry_checker_ready_for_live_validation`
+- `terminal_influence_consistency_proven=false`
+- `xcylons_security_header_carry_proven=false`
+- `tt_encrypt_input_output_bound=false`
+- `key_mode_iv_padding_bound=false`
+- `pure_reproduction_ready=false`
+- `next_step=real LivePlayActivity/webcast foreground; run observe-only terminal consistency + X-Cylons/security-header carry packs, collect repeated lane deltas plus same-thread 0x2bd8 ttEncrypt IO hashes and header carry, then prove deterministic influence and key/mode/IV/padding before pure reproduction`
+
+### v243 pure reproduction harness 静态/动态准备归档
+
+当一轮基于 v242 terminal crypto parameter binding oracle，把 `libEncryptor.so:0x2bd8` terminal input/output、lane delta、X-Cylons/security-header carry 与候选 `key/mode/IV/padding` 组合成 observe-only pure reproduction harness / guarded runner / analyzer（例如 v243），但仍未执行真实直播间动态 attach，应归档为“pure reproduction harness ready”，不是算法恢复。
+
+关键经验：
+
+- v243 这类阶段的核心价值是把 crypto parameter oracle 转成可复验的纯算复现验证框架：采集 concrete terminal bytes、绑定 lane delta/header carry、枚举候选 key/mode/IV/padding，并用 heldout replay gate 检查纯算复现；这些都是准备度，不是 runtime proof。
+- 典型字段可写入 status/project memory：`v242_crypto_parameter_oracle_count=4`、`pure_reproduction_hypothesis_count=4`、`critical_reproduction_hypothesis_count=1`、`high_reproduction_hypothesis_count=3`、`lane_hook_target_count=3`、`candidate_crypto_parameter_field_count=16`、`dynamic_pack_count=5`、`heldout_replay_gate_count=1`。
+- Dynamic pack 建议保留：`critical_pure_reproduction_scaffold`、`mode_key_iv_padding_hypothesis_tests`、`dominant_lane_reproduction_projection`、`high_priority_reproduction_candidates`、`all_terminal_reproduction_harness`。
+- analyzer fixture-positive 可以证明分析器能识别 reproduction candidate / heldout replay candidate；但如果 `strict_evidence_event_count=0`、`algorithm_proven=false` 或 `fixture_algorithm_proven_false=true`，必须保持 `algorithm_status=not_recovered`，不能把 fixture candidate 当真实算法证据。
+- runner 必须保持 observe-only 与双门控：缺少 `--i-understand-dynamic-hook` 或真实 `--live-room-proof` 时只 dry-run / 输出 manual Frida command，不执行 attach。
+- 归档验证应覆盖：static/matrix/status JSON `json.tool`，static/runner/analyzer `py_compile`，`--list-packs`，runner dry-run，analyzer fixture-positive JSON，project memory/daily/SESSION 写入，`memory-sync.py sync`，精确 memory search 命中，残留进程检查（如 `static_v243|run_v243|analyze_v243|v243_.*frida|frida.*aweme|pure_reproduction_harness`）。
+- status final check 应显式验证：`status=completed`、`v243_archived=true`、`algorithm_status=not_recovered`、`dynamic_execution_performed=false`、`strict_evidence_event_count=0`、`pure_reproduction_ready=false`、`key_mode_iv_padding_bound=false`、`validation.runner_observe_only=true`、`validation.fixture_algorithm_proven_false=true`、`validation.memory_sync_ok=true`、`validation.memory_search_v243_hit=true`、`validation.no_residual_process=true`。
+- 没有真实 `LivePlayActivity/webcast` 动态 attach、concrete `0x2bd8` terminal bytes、same-thread/same-window lane/header carry、key/mode/IV/padding 绑定、heldout pure reproduction 通过前，必须保持 `algorithm_status=not_recovered`。
+
+建议字段：
+
+- `phase=pure-reproduction-harness-static-and-dryrun-validation`
+- `v*_archived=true`
+- `v*_pure_reproduction_harness_ready=true`
+- `counts.v242_crypto_parameter_oracle_count`
+- `counts.pure_reproduction_hypothesis_count`
+- `counts.critical_reproduction_hypothesis_count`
+- `counts.high_reproduction_hypothesis_count`
+- `counts.lane_hook_target_count`
+- `counts.candidate_crypto_parameter_field_count`
+- `counts.dynamic_pack_count`
+- `counts.heldout_replay_gate_count`
+- `dynamic_reproduction_packs`
+- `top_pure_reproduction_hypotheses`
+- `tt_encrypt_boundary.byte_pointer_transform_callee_rva=0x2bd8`
+- `analysis_baseline.fixture_reproduction_candidate_count`
+- `analysis_baseline.heldout_replay_candidate_count`
+- `analysis_baseline.strict_evidence_event_count=0`
+- `analysis_baseline.algorithm_proven=false`
+- `validation.py_compile_ok=true`
+- `validation.static_json_tool_ok=true`
+- `validation.matrix_json_tool_ok=true`
+- `validation.runner_dry_run_ok=true`
+- `validation.runner_observe_only=true`
+- `validation.analyzer_fixture_positive_ok=true`
+- `validation.fixture_algorithm_proven_false=true`
+- `validation.fixture_algorithm_status_not_recovered=true`
+- `validation.status_json_tool_ok=true`
+- `validation.project_memory_written=true`
+- `validation.daily_memory_appended=true`
+- `validation.session_state_appended=true`
+- `validation.memory_sync_ok=true`
+- `validation.memory_search_v*_hit=true`
+- `validation.no_residual_process=true`
+- `dynamic_execution_performed=false`
+- `real_live_room_proof_present=false`
+- `strict_evidence_event_count=0`
+- `algorithm_status=not_recovered`
+- `algorithm_boundary_status=static_pure_reproduction_harness_ready_for_live_validation`
+- `ttencrypt_terminal_binding_proven=false`
+- `tt_encrypt_input_output_bound=false`
+- `key_mode_iv_padding_bound=false`
+- `pure_reproduction_ready=false`
+- `next_step=real LivePlayActivity/webcast foreground; run observe-only critical_pure_reproduction_scaffold, collect concrete terminal bytes + lane/header carry + candidate key/mode/IV/padding, then require heldout pure reproduction before upgrading algorithm_status`
 
 ## 汇报模板
 
